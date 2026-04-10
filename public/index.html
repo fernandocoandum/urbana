@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urbana — Sistema de Ocorrências Urbanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --font-ui:'DM Sans',sans-serif;--font-display:'Syne',sans-serif;
+  --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-200:#bfdbfe;--blue-400:#60a5fa;--blue-500:#3b82f6;--blue-600:#2563eb;--blue-700:#1d4ed8;--blue-800:#1e40af;--blue-900:#1e3a8a;
+  --teal-600:#0d9488;--green-50:#f0fdf4;--green-100:#dcfce7;--green-500:#22c55e;--green-600:#16a34a;--green-700:#15803d;
+  --amber-50:#fffbeb;--amber-100:#fef3c7;--amber-500:#f59e0b;--amber-600:#d97706;--amber-700:#b45309;
+  --slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;--slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;--slate-800:#1e293b;--slate-900:#0f172a;
+  --red-50:#fef2f2;--red-100:#fee2e2;--red-500:#ef4444;--red-600:#dc2626;
+  --surface:#fff;--bg:#f1f5f9;--border:#e2e8f0;--sidebar-bg:#0f172a;--sidebar-w:240px;
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh-md:0 4px 12px rgba(0,0,0,.08);--sh-lg:0 12px 32px rgba(0,0,0,.1);
+}
+html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(--slate-800);font-size:14px;line-height:1.5}
+
+/* ─ VIEWS ─ */
+.view{display:none!important}.view.active{display:flex!important;flex-direction:column;min-height:100vh}
+
+/* ─ AUTH SCREEN ─ */
+.auth-wrap{min-height:100vh;display:flex;background:var(--slate-900);position:relative;overflow:hidden}
+.auth-wrap::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.2) 0%,transparent 70%);top:-200px;left:-100px;pointer-events:none}
+.auth-wrap::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,.15) 0%,transparent 70%);bottom:-100px;right:-100px;pointer-events:none}
+.auth-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px;position:relative;z-index:1;max-width:520px}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:48px}
+.auth-logo-mark{width:40px;height:40px;background:var(--blue-600);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.auth-logo-mark svg{width:22px;height:22px;fill:#fff}
+.auth-brand{font-family:var(--font-display);font-size:22px;font-weight:700;color:#f8fafc}
+.auth-brand span{color:#60a5fa}
+.auth-title{font-family:var(--font-display);font-size:36px;font-weight:800;color:#f8fafc;line-height:1.15;margin-bottom:12px;letter-spacing:-.02em}
+.auth-sub{font-size:15px;color:#94a3b8;line-height:1.7;margin-bottom:40px}
+.auth-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-xl);padding:32px}
+.auth-tabs{display:flex;gap:4px;background:rgba(255,255,255,.06);border-radius:var(--r-md);padding:4px;margin-bottom:28px}
+.auth-tab{flex:1;padding:9px;border-radius:var(--r-sm);text-align:center;font-size:13.5px;font-weight:600;cursor:pointer;color:#64748b;transition:all .2s;border:none;background:transparent;font-family:var(--font-ui)}
+.auth-tab.active{background:var(--blue-600);color:#fff}
+.auth-form-group{margin-bottom:16px}
+.auth-label{display:block;font-size:12.5px;font-weight:600;color:#94a3b8;margin-bottom:6px;letter-spacing:.02em}
+.auth-input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);padding:11px 14px;font-family:var(--font-ui);font-size:14px;color:#f1f5f9;outline:none;transition:border .15s}
+.auth-input:focus{border-color:var(--blue-500);background:rgba(255,255,255,.09)}
+.auth-input::placeholder{color:#475569}
+.auth-input option{background:#1e293b;color:#f1f5f9}
+.auth-btn{width:100%;background:var(--blue-600);color:#fff;border:none;padding:13px;border-radius:var(--r-md);font-family:var(--font-ui);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.auth-btn:hover{background:var(--blue-700)}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-error{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5;padding:10px 14px;border-radius:var(--r-sm);font-size:13px;margin-bottom:12px;display:none}
+.auth-error.show{display:block}
+.auth-right{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px;position:relative;z-index:1}
+.auth-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:380px}
+.auth-stat-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-lg);padding:20px}
+.auth-stat-n{font-family:var(--font-display);font-size:32px;font-weight:700;color:#60a5fa}
+.auth-stat-l{font-size:12px;color:#64748b;margin-top:4px}
+
+/* ─ LAYOUT ─ */
+.layout{display:flex;flex:1}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--sidebar-bg);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh}
+.sb-logo{padding:20px 20px 18px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
+.sb-logo-mark{width:32px;height:32px;background:var(--blue-600);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.sb-logo-mark svg{width:18px;height:18px;fill:#fff}
+.sb-brand{font-family:var(--font-display);font-size:18px;font-weight:700;color:#f8fafc}
+.sb-brand span{color:#60a5fa}
+.sb-section{padding:20px 12px 8px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#475569}
+.sb-nav{list-style:none;padding:0 8px}
+.sb-nav li{margin-bottom:2px}
+.sb-nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r-sm);color:#94a3b8;text-decoration:none;font-size:13.5px;font-weight:500;transition:all .15s;cursor:pointer;border:none;background:transparent;width:100%;font-family:var(--font-ui)}
+.sb-nav a:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.sb-nav a.active{background:rgba(37,99,235,.2);color:#93c5fd}
+.sb-nav a svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.sb-nav a.active svg{opacity:1}
+.sb-user{margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-800);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#bfdbfe;flex-shrink:0}
+.sb-user-info .name{font-size:13px;font-weight:600;color:#e2e8f0}
+.sb-user-info .role{font-size:11px;color:#475569}
+.sb-logout{margin:0 8px 12px;padding:9px 12px;border-radius:var(--r-sm);color:#475569;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.06);background:transparent;transition:all .15s;font-family:var(--font-ui);width:calc(100% - 16px)}
+.sb-logout:hover{background:rgba(239,68,68,.1);color:#fca5a5;border-color:rgba(239,68,68,.2)}
+
+/* ─ MAIN ─ */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-shrink:0}
+.topbar-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--slate-900);line-height:1.2}
+.topbar-sub{font-size:12px;color:var(--slate-400)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn-new{background:var(--blue-600);color:#fff;border:none;padding:9px 18px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:7px}
+.btn-new:hover{background:var(--blue-700)}
+.content{padding:28px;flex:1}
+
+/* ─ BADGES ─ */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11.5px;font-weight:600}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.badge-recebida{background:var(--slate-100);color:var(--slate-600)}.badge-recebida::before{background:var(--slate-400)}
+.badge-analise{background:var(--amber-100);color:var(--amber-700)}.badge-analise::before{background:var(--amber-500)}
+.badge-atendimento{background:var(--blue-100);color:var(--blue-700)}.badge-atendimento::before{background:var(--blue-500)}
+.badge-resolvida{background:var(--green-100);color:var(--green-700)}.badge-resolvida::before{background:var(--green-500)}
+.badge-encaminhada{background:#f3e8ff;color:#7c3aed}.badge-encaminhada::before{background:#8b5cf6}
+
+/* ─ METRICS ─ */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.metric-card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:20px;box-shadow:var(--sh-sm)}
+.mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mc-label{font-size:12.5px;font-weight:500;color:var(--slate-500)}
+.mc-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.mc-icon svg{width:16px;height:16px}
+.mc-num{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--slate-900);line-height:1}
+.mc-footer{font-size:11.5px;color:var(--slate-400);margin-top:6px}
+.mc-blue .mc-icon{background:var(--blue-50)}.mc-blue .mc-icon svg{color:var(--blue-600)}
+.mc-amber .mc-icon{background:var(--amber-50)}.mc-amber .mc-icon svg{color:var(--amber-600)}
+.mc-teal .mc-icon{background:#f0fdfa}.mc-teal .mc-icon svg{color:var(--teal-600)}
+.mc-green .mc-icon{background:var(--green-50)}.mc-green .mc-icon svg{color:var(--green-600)}
+
+/* ─ CARDS ─ */
+.card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:24px;box-shadow:var(--sh-sm)}
+.card-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:16px}
+
+/* ─ TABLES ─ */
+.table-wrap{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);box-shadow:var(--sh-sm);overflow:hidden}
+.table-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-head-title{font-weight:600;font-size:15px;color:var(--slate-800)}
+.search-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search-inner{position:relative}
+.search-icon-abs{position:absolute;left:10px;top:50%;transform:translateY(-50%);pointer-events:none}
+.search-icon-abs svg{width:14px;height:14px;color:var(--slate-400)}
+.input-search{border:1px solid var(--border);background:var(--slate-50);border-radius:var(--r-sm);padding:8px 12px 8px 34px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);width:220px;outline:none;transition:border .15s}
+.input-search:focus{border-color:var(--blue-400)}
+.filter-sel{border:1px solid var(--border);background:var(--surface);border-radius:var(--r-sm);padding:8px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-600);outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+thead th{padding:11px 16px;text-align:left;font-size:11.5px;font-weight:600;color:var(--slate-400);letter-spacing:.05em;text-transform:uppercase;background:var(--slate-50);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--slate-100);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--slate-50)}
+tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
+.td-bold{font-weight:600;color:var(--slate-900)}
+.td-mono{font-family:monospace;font-size:12px;color:var(--slate-500)}
+.btn-detail{background:transparent;border:1px solid var(--border);color:var(--slate-600);padding:5px 12px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-detail:hover{background:var(--blue-50);border-color:var(--blue-200);color:var(--blue-700)}
+
+/* ─ FORM ─ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12.5px;font-weight:600;color:var(--slate-600)}
+.form-input,.form-select,.form-textarea{border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:var(--font-ui);font-size:13.5px;color:var(--slate-800);background:var(--surface);outline:none;transition:border .15s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.form-textarea{min-height:90px;resize:vertical}
+.upload-zone{border:1.5px dashed var(--slate-300);border-radius:var(--r-md);padding:28px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--slate-50);position:relative;overflow:hidden}
+.upload-zone:hover{border-color:var(--blue-400);background:var(--blue-50)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-preview{width:100%;max-height:200px;border-radius:var(--r-md);object-fit:cover;margin-top:12px;display:none}
+.form-footer{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.btn-submit{background:var(--blue-600);color:#fff;border:none;padding:11px 28px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:8px}
+.btn-submit:hover{background:var(--blue-700)}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed}
+.btn-cancel{background:transparent;color:var(--slate-500);border:1px solid var(--border);padding:11px 20px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:14px;cursor:pointer;transition:all .15s}
+.btn-cancel:hover{background:var(--slate-50)}
+
+/* ─ TIMELINE ─ */
+.tl-item{display:flex;gap:14px;position:relative}
+.tl-item:not(:last-child)::after{content:'';position:absolute;left:13px;top:28px;bottom:-12px;width:2px;background:var(--slate-200);z-index:0}
+.tl-item.done:not(:last-child)::after{background:var(--green-200)}
+.tl-dot{width:28px;height:28px;border-radius:50%;background:var(--slate-200);flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;margin-top:10px}
+.tl-dot svg{width:13px;height:13px;color:var(--slate-400)}
+.tl-item.done .tl-dot{background:var(--green-500)}.tl-item.done .tl-dot svg{color:#fff}
+.tl-item.current .tl-dot{background:var(--blue-600)}.tl-item.current .tl-dot svg{color:#fff}
+.tl-body{padding:10px 0 18px;flex:1}
+.tl-title{font-size:13.5px;font-weight:600;color:var(--slate-700)}
+.tl-item.done .tl-title{color:var(--green-700)}
+.tl-item.current .tl-title{color:var(--blue-700)}
+.tl-desc{font-size:12px;color:var(--slate-400);margin-top:2px;line-height:1.5}
+
+/* ─ DETAIL ─ */
+.detail-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.df-label{font-size:11.5px;font-weight:600;color:var(--slate-400);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.df-val{font-size:14px;color:var(--slate-800);line-height:1.6}
+.detail-sep{height:1px;background:var(--border);margin:18px 0}
+.detail-img-wrap{width:100%;height:200px;border-radius:var(--r-md);overflow:hidden;background:linear-gradient(135deg,#475569,#334155);display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.detail-img-wrap img{width:100%;height:100%;object-fit:cover}
+
+/* ─ ACTION CARD ─ */
+.action-sel{border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:var(--surface);width:100%;outline:none;margin-bottom:10px}
+.action-ta{border:1px solid var(--border);border-radius:var(--r-sm);padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:var(--surface);width:100%;outline:none;min-height:80px;resize:vertical;margin-bottom:10px}
+.action-btn{padding:10px 14px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-align:center;width:100%;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.ab-primary{background:var(--blue-600);color:#fff;border:none}.ab-primary:hover{background:var(--blue-700)}
+.ab-success{background:var(--green-600);color:#fff;border:none}.ab-success:hover{background:var(--green-700)}
+.ab-outline{background:transparent;border:1px solid var(--border);color:var(--slate-600)}.ab-outline:hover{background:var(--slate-50)}
+
+/* ─ BANNER ─ */
+.cit-banner{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:var(--r-xl);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.cit-banner::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
+.cit-banner-t{font-family:var(--font-display);font-size:20px;font-weight:700;color:#fff;margin-bottom:4px}
+.cit-banner-s{font-size:13.5px;color:rgba(255,255,255,.7)}
+.btn-banner{background:#fff;color:var(--blue-700);border:none;padding:11px 22px;border-radius:var(--r-sm);font-family:var(--font-ui);font-size:13.5px;font-weight:700;cursor:pointer;flex-shrink:0;position:relative;z-index:1}
+.btn-banner:hover{background:var(--blue-50)}
+
+/* ─ MINI STATS ─ */
+.mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.mini-stat{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:16px 18px;box-shadow:var(--sh-sm)}
+.ms-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate-900)}
+.ms-label{font-size:12px;color:var(--slate-400);margin-top:2px}
+
+/* ─ CAT CHART ─ */
+.cat-bar-item{margin-bottom:14px}
+.cat-bar-item:last-child{margin-bottom:0}
+.cat-bar-label{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.cat-bar-label span:first-child{color:var(--slate-600);font-weight:500}
+.cat-bar-label span:last-child{color:var(--slate-400)}
+.cat-bar-track{background:var(--slate-100);border-radius:100px;height:7px;overflow:hidden}
+.cat-bar-fill{height:100%;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+/* ─ TWO-COL ─ */
+.two-col-wide{display:grid;grid-template-columns:3fr 2fr;gap:20px;align-items:start;margin-bottom:20px}
+
+/* ─ BACK LINK ─ */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--slate-400);font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:var(--font-ui)}
+.back-link:hover{color:var(--blue-600)}
+.back-link svg{width:14px;height:14px}
+
+/* ─ OCORR CARDS (morador) ─ */
+.ocorr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.ocorr-card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);padding:18px 20px;box-shadow:var(--sh-sm);cursor:pointer;transition:all .15s}
+.ocorr-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+.oc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.oc-cat{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--blue-600);background:var(--blue-50);padding:3px 9px;border-radius:100px}
+.oc-title{font-weight:600;font-size:14px;color:var(--slate-900);margin-bottom:4px;line-height:1.4}
+.oc-addr{font-size:12px;color:var(--slate-400)}
+.oc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--slate-100)}
+.oc-proto{font-family:monospace;font-size:11px;color:var(--slate-400)}
+.oc-date{font-size:11px;color:var(--slate-400)}
+
+/* ─ SUCCESS ─ */
+.success-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center}
+.success-icon{width:72px;height:72px;background:var(--green-100);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.success-icon svg{width:36px;height:36px;color:var(--green-600)}
+.proto-box{background:var(--slate-900);color:#60a5fa;font-family:monospace;font-size:22px;font-weight:700;padding:14px 32px;border-radius:var(--r-md);letter-spacing:.05em;margin-bottom:28px}
+
+/* ─ LOADING ─ */
+.loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--slate-400);font-size:14px;gap:10px}
+.spinner{width:20px;height:20px;border:2px solid var(--slate-200);border-top-color:var(--blue-500);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─ EMPTY STATE ─ */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--slate-400)}
+.empty svg{width:48px;height:48px;margin-bottom:16px;opacity:.4}
+.empty p{font-size:14px}
+
+/* ─ TOAST ─ */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--slate-900);color:#f8fafc;padding:12px 20px;border-radius:var(--r-md);font-size:13.5px;font-weight:500;box-shadow:var(--sh-lg);z-index:9999;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all .3s;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.toast-dot.green{background:var(--green-500)}
+.toast-dot.red{background:var(--red-500)}
+.toast-dot.blue{background:var(--blue-500)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══ TELA DE AUTH ══════════════════════════════════════════════════ -->
+<div id="v-auth" class="view active" style="display:flex!important">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-logo">
+        <div class="auth-logo-mark"><svg viewBox="0 0 20 20"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div>
+        <span class="auth-brand">Urb<span>ana</span></span>
+      </div>
+      <h1 class="auth-title">Sua cidade<br>mais organizada</h1>
+      <p class="auth-sub">Registre problemas urbanos, acompanhe em tempo real e veja a prefeitura agir. Transparência para todos.</p>
+
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login" onclick="authTab('login')">Entrar</button>
+          <button class="auth-tab" id="tab-cadastro" onclick="authTab('cadastro')">Criar conta</button>
+        </div>
+
+        <!-- login -->
+        <div id="form-login">
+          <div id="login-error" class="auth-error"></div>
+          <div class="auth-form-group">
+            <label class="auth-label">E-mail</label>
+            <input id="login-email" class="auth-input" type="email" placeholder="seu@email.com" value="admin@prefeitura.gov.br">
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label">Senha</label>
+            <input id="login-senha" class="auth-input" type="password" placeholder="••••••••" value="admin">
+          </div>
+          <button class="auth-btn" id="btn-login" onclick="doLogin()">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
+            Entrar no sistema
+          </button>
+          <p style="font-size:12px;color:#475569;text-align:center;margin-top:14px">
+            Admin: admin@prefeitura.gov.br / admin<br>
+            Ou crie uma conta de morador
+          </p>
+        </div>
+
+        <!-- cadastro -->
+        <div id="form-cadastro" style="display:none">
+          <div id="cad-error" class="auth-error"></div>
+          <div class="auth-form-group">
+            <label class="auth-label">Nome completo</label>
+            <input id="cad-nome" class="auth-input" type="text" placeholder="Seu nome">
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label">E-mail</label>
+            <input id="cad-email" class="auth-input" type="email" placeholder="seu@email.com">
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label">Senha (mínimo 6 caracteres)</label>
+            <input id="cad-senha" class="auth-input" type="password" placeholder="••••••••">
+          </div>
+          <div class="auth-form-group">
+            <label class="auth-label">Bairro</label>
+            <select id="cad-bairro" class="auth-input">
+              <option value="">Selecione seu bairro</option>
+              <option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option><option>Outro</option>
+            </select>
+          </div>
+          <button class="auth-btn" id="btn-cad" onclick="doCadastro()">
+            <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>
+            Criar minha conta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div style="margin-bottom:24px;text-align:center">
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:#e2e8f0;margin-bottom:6px">Sistema Urbana</div>
+        <div style="font-size:13px;color:#475569">Transparência e eficiência municipal</div>
+      </div>
+      <div class="auth-stat-grid">
+        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-total">...</div><div class="auth-stat-l">Ocorrências registradas</div></div>
+        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-res">...</div><div class="auth-stat-l">Resolvidas</div></div>
+        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-and">...</div><div class="auth-stat-l">Em andamento</div></div>
+        <div class="auth-stat-card"><div class="auth-stat-n" style="color:#34d399">24h</div><div class="auth-stat-l">Resposta inicial</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MORADOR: DASHBOARD ════════════════════════════════════════════ -->
+<div id="v-morador-dash" class="view">
+  <div class="layout">
+    <aside class="sidebar" id="sb-morador">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Menu</div>
+      <ul class="sb-nav">
+        <li><a id="mn-dash" class="active" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a id="mn-lista" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a id="mn-form" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()">
+        <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
+        Sair da conta
+      </button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-m-av">?</div><div class="sb-user-info"><div class="name" id="sb-m-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar">
+        <div><div class="topbar-title" id="m-topbar-t">Olá 👋</div><div class="topbar-sub">Bem-vindo ao Urbana</div></div>
+        <div class="topbar-right"><button class="btn-new" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova ocorrência</button></div>
+      </header>
+      <div class="content">
+        <div class="cit-banner"><div><div class="cit-banner-t">Encontrou um problema na cidade?</div><div class="cit-banner-s">Registre agora. Leva menos de 2 minutos.</div></div><button class="btn-banner" onclick="moradorNav('form')">Registrar →</button></div>
+        <div class="mini-stats" id="m-mini-stats">
+          <div class="mini-stat"><div class="ms-num" id="ms-total">-</div><div class="ms-label">Total</div></div>
+          <div class="mini-stat"><div class="ms-num" id="ms-analise" style="color:#b45309">-</div><div class="ms-label">Em análise</div></div>
+          <div class="mini-stat"><div class="ms-num" id="ms-atend" style="color:#1d4ed8">-</div><div class="ms-label">Em atendimento</div></div>
+          <div class="mini-stat"><div class="ms-num" id="ms-resolvida" style="color:#15803d">-</div><div class="ms-label">Resolvidas</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div><div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--slate-900)">Ocorrências recentes</div></div>
+          <button class="btn-detail" onclick="moradorNav('lista')">Ver todas →</button>
+        </div>
+        <div class="ocorr-grid" id="m-cards-recentes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MORADOR: LISTA ════════════════════════════════════════════════ -->
+<div id="v-morador-lista" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Menu</div>
+      <ul class="sb-nav">
+        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-m2-av">?</div><div class="sb-user-info"><div class="name" id="sb-m2-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Minhas Ocorrências</div><div class="topbar-sub">Histórico completo</div></div><div class="topbar-right"><button class="btn-new" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova</button></div></header>
+      <div class="content">
+        <div class="table-wrap">
+          <div class="table-head">
+            <span class="table-head-title" id="m-lista-count">Carregando...</span>
+            <div class="search-wrap">
+              <div class="search-inner"><div class="search-icon-abs"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg></div><input class="input-search" id="m-busca" placeholder="Buscar..." oninput="renderMoradorLista()"></div>
+              <select class="filter-sel" id="m-filtro-status" onchange="renderMoradorLista()"><option value="">Todos os status</option><option>Recebida</option><option>Em análise</option><option>Encaminhada</option><option>Em atendimento</option><option>Resolvida</option></select>
+            </div>
+          </div>
+          <div id="m-lista-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MORADOR: FORM ═════════════════════════════════════════════════ -->
+<div id="v-morador-form" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Menu</div>
+      <ul class="sb-nav">
+        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-m3-av">?</div><div class="sb-user-info"><div class="name" id="sb-m3-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Nova Ocorrência</div><div class="topbar-sub">Preencha os dados do problema</div></div></header>
+      <div class="content">
+        <button class="back-link" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar</button>
+        <div class="card" style="max-width:760px">
+          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:4px">Registrar nova ocorrência</div>
+            <div style="font-size:13px;color:var(--slate-400)">Preencha com o máximo de detalhes possível</div>
+          </div>
+          <div id="form-error" class="auth-error" style="background:var(--red-50);border-color:var(--red-100);color:var(--red-600)"></div>
+          <div class="form-grid">
+            <div class="form-group form-full"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
+            <div class="form-group form-full"><label class="form-label">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
+            <div class="form-group"><label class="form-label">Categoria *</label>
+              <select class="form-select" id="f-categoria">
+                <option value="">Selecione...</option>
+                <option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbana</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Bairro *</label>
+              <select class="form-select" id="f-bairro">
+                <option value="">Selecione...</option>
+                <option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option><option>Outro</option>
+              </select>
+            </div>
+            <div class="form-group form-full"><label class="form-label">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
+            <div class="form-group form-full"><label class="form-label">Ponto de referência</label><input class="form-input" id="f-referencia" placeholder="Em frente ao mercado, próximo à escola..."></div>
+            <div class="form-group form-full">
+              <label class="form-label">Foto do problema</label>
+              <div class="upload-zone" id="upload-zone">
+                <input type="file" accept="image/*" id="f-foto" onchange="previewFoto(this)">
+                <div style="font-size:28px;margin-bottom:8px">📷</div>
+                <div style="font-size:13px;font-weight:500;color:var(--slate-600)">Clique para adicionar uma foto</div>
+                <div style="font-size:11.5px;color:var(--slate-400);margin-top:3px">JPG, PNG · Até 5 MB</div>
+                <img id="foto-preview" class="upload-preview">
+              </div>
+            </div>
+          </div>
+          <div class="form-footer">
+            <button class="btn-submit" id="btn-enviar" onclick="enviarOcorrencia()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência</button>
+            <button class="btn-cancel" onclick="moradorNav('dash')">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUCESSO ═══════════════════════════════════════════════════════ -->
+<div id="v-sucesso" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <ul class="sb-nav" style="padding:16px 8px 0"></ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-s-av">?</div><div class="sb-user-info"><div class="name" id="sb-s-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Ocorrência enviada!</div></div></header>
+      <div class="content">
+        <div class="success-wrap">
+          <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div style="font-family:var(--font-display);font-size:26px;font-weight:700;margin-bottom:8px">Ocorrência registrada!</div>
+          <div style="font-size:15px;color:var(--slate-400);margin-bottom:24px">Seu protocolo é:</div>
+          <div class="proto-box" id="proto-gerado">PROT-2026-0000</div>
+          <div style="font-size:13px;color:var(--slate-400);max-width:380px;margin-bottom:28px;line-height:1.7">Nossa equipe analisará em até <strong>48 horas</strong>. Acompanhe em "Minhas Ocorrências".</div>
+          <div style="display:flex;gap:12px">
+            <button class="btn-submit" onclick="moradorNav('lista')">Ver minhas ocorrências</button>
+            <button class="btn-cancel" onclick="moradorNav('dash')">Início</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MORADOR: DETALHE ══════════════════════════════════════════════ -->
+<div id="v-morador-det" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Menu</div>
+      <ul class="sb-nav">
+        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a class="active" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-md-av">?</div><div class="sb-user-info"><div class="name" id="sb-md-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title" id="mdet-topbar-t">Detalhe</div><div class="topbar-sub" id="mdet-topbar-s">–</div></div></header>
+      <div class="content" id="mdet-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PREFEITURA: DASHBOARD ════════════════════════════════════════ -->
+<div id="v-pref-dash" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Prefeitura</div>
+      <ul class="sb-nav">
+        <li><a class="active" onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f" id="sb-a-av">A</div><div class="sb-user-info"><div class="name" id="sb-a-nome">Admin</div><div class="role">Prefeitura</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Dashboard</div><div class="topbar-sub" id="pref-dash-sub">Visão geral</div></div></header>
+      <div class="content">
+        <div class="metric-grid" id="pref-metrics">
+          <div class="metric-card mc-blue"><div class="mc-header"><span class="mc-label">Total</span><div class="mc-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M14 1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/></svg></div></div><div class="mc-num" id="pm-total">-</div></div>
+          <div class="metric-card mc-amber"><div class="mc-header"><span class="mc-label">Pendentes</span><div class="mc-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3.5a.5.5 0 0 1-.5-.5v-3.5A.5.5 0 0 1 8 4z"/></svg></div></div><div class="mc-num" id="pm-analise">-</div><div class="mc-footer" id="pm-analise-s">–</div></div>
+          <div class="metric-card mc-teal"><div class="mc-header"><span class="mc-label">Em atendimento</span><div class="mc-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5z"/></svg></div></div><div class="mc-num" id="pm-atend">-</div></div>
+          <div class="metric-card mc-green"><div class="mc-header"><span class="mc-label">Resolvidas</span><div class="mc-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg></div></div><div class="mc-num" id="pm-res">-</div><div class="mc-footer" id="pm-res-s">–</div></div>
+        </div>
+        <div class="two-col-wide">
+          <div class="card"><div class="card-title">Ocorrências por categoria</div><div id="pref-cat-chart"></div></div>
+          <div class="card"><div class="card-title">Bairros com mais registros</div><div id="pref-bairro-chart"></div></div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><span class="table-head-title">Recentes</span><button class="btn-detail" onclick="prefNav('lista')">Ver todas →</button></div>
+          <div id="pref-dash-table"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PREFEITURA: LISTA ════════════════════════════════════════════ -->
+<div id="v-pref-lista" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Prefeitura</div>
+      <ul class="sb-nav">
+        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name" id="sb-al-nome">Admin</div><div class="role">Prefeitura</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Ocorrências</div><div class="topbar-sub" id="pl-sub">Todas</div></div></header>
+      <div class="content">
+        <div class="table-wrap">
+          <div class="table-head" style="flex-wrap:wrap;gap:10px">
+            <span class="table-head-title">Gerenciar ocorrências</span>
+            <div class="search-wrap">
+              <div class="search-inner"><div class="search-icon-abs"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg></div><input class="input-search" id="pl-busca" placeholder="Protocolo, cidadão, bairro..." oninput="loadPrefLista()"></div>
+              <select class="filter-sel" id="pl-status" onchange="loadPrefLista()"><option value="todos">Todos os status</option><option>Recebida</option><option>Em análise</option><option>Encaminhada</option><option>Em atendimento</option><option>Resolvida</option></select>
+              <select class="filter-sel" id="pl-cat" onchange="loadPrefLista()"><option value="todas">Todas as categorias</option><option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbana</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option></select>
+              <select class="filter-sel" id="pl-bairro" onchange="loadPrefLista()"><option value="todos">Todos os bairros</option><option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option></select>
+            </div>
+          </div>
+          <div id="pl-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PREFEITURA: DETALHE ═══════════════════════════════════════════ -->
+<div id="v-pref-det" class="view">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Prefeitura</div>
+      <ul class="sb-nav">
+        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a class="active" onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name">Admin</div><div class="role">Prefeitura</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title" id="pdet-t">Detalhe</div><div class="topbar-sub" id="pdet-s">–</div></div><div class="topbar-right"><button class="btn-new" style="background:var(--green-600)" id="btn-resolver" onclick="marcarResolvida()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>Marcar resolvida</button></div></header>
+      <div class="content" id="pdet-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<div class="toast" id="toast"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span></div>
+
+<script>
+const API = '';  // mesmo host
+let SESSION = null;  // { token, role, nome, email, id }
+let ocorrencias = [];
+let currentOcId = null;
+
+// ─── API helper ──────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (SESSION?.token) opts.headers['Authorization'] = 'Bearer ' + SESSION.token;
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.erro || 'Erro desconhecido');
+  return data;
+}
+
+// ─── VIEW ────────────────────────────────────────────────────────────
+function goView(id) {
+  document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+  const el = document.getElementById(id);
+  if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+  window.scrollTo(0, 0);
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────
+function toast(msg, type = 'green') {
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-dot').className = 'toast-dot ' + type;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── BADGE ───────────────────────────────────────────────────────────
+const BADGE_MAP = { 'Recebida': 'badge-recebida', 'Em análise': 'badge-analise', 'Encaminhada': 'badge-encaminhada', 'Em atendimento': 'badge-atendimento', 'Resolvida': 'badge-resolvida' };
+function badge(status) { return `<span class="badge ${BADGE_MAP[status] || 'badge-recebida'}">${status}</span>`; }
+
+function catEmoji(cat) {
+  const m = { 'Pavimentação': '🚧', 'Iluminação pública': '💡', 'Limpeza urbana': '🗑️', 'Sinalização': '🚦', 'Drenagem / Bueiro': '💧', 'Parques e jardins': '🌳', 'Outros': '📋' };
+  return (m[cat] || '📋') + ' ' + cat;
+}
+
+function fmtDate(iso) {
+  if (!iso) return '–';
+  return new Date(iso).toLocaleDateString('pt-BR');
+}
+function fmtDateTime(iso) {
+  if (!iso) return '–';
+  return new Date(iso).toLocaleString('pt-BR');
+}
+function initials(nome) {
+  return (nome || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────
+function authTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-cadastro').classList.toggle('active', tab === 'cadastro');
+  document.getElementById('form-login').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('form-cadastro').style.display = tab === 'cadastro' ? '' : 'none';
+}
+
+async function doLogin() {
+  const btn = document.getElementById('btn-login');
+  const err = document.getElementById('login-error');
+  err.classList.remove('show');
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  try {
+    const data = await api('POST', '/api/login', {
+      email: document.getElementById('login-email').value.trim(),
+      senha: document.getElementById('login-senha').value
+    });
+    SESSION = data;
+    localStorage.setItem('urbana_session', JSON.stringify(data));
+    afterLogin();
+  } catch (e) {
+    err.textContent = e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Entrar no sistema';
+  }
+}
+
+async function doCadastro() {
+  const btn = document.getElementById('btn-cad');
+  const err = document.getElementById('cad-error');
+  err.classList.remove('show');
+  const senha = document.getElementById('cad-senha').value;
+  if (senha.length < 6) { err.textContent = 'Senha deve ter no mínimo 6 caracteres.'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  try {
+    await api('POST', '/api/cadastro', {
+      nome: document.getElementById('cad-nome').value.trim(),
+      email: document.getElementById('cad-email').value.trim(),
+      senha,
+      bairro: document.getElementById('cad-bairro').value
+    });
+    toast('Conta criada! Faça login.');
+    authTab('login');
+    document.getElementById('login-email').value = document.getElementById('cad-email').value;
+  } catch (e) {
+    err.textContent = e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Criar minha conta';
+  }
+}
+
+async function doLogout() {
+  try { await api('POST', '/api/logout'); } catch {}
+  SESSION = null;
+  localStorage.removeItem('urbana_session');
+  goView('v-auth');
+  loadAuthStats();
+}
+
+function afterLogin() {
+  const ini = initials(SESSION.nome);
+  // atualizar sidebars
+  ['sb-m-av','sb-m2-av','sb-m3-av','sb-s-av','sb-md-av'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = ini; });
+  ['sb-m-nome','sb-m2-nome','sb-m3-nome','sb-s-nome','sb-md-nome'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = SESSION.nome; });
+  document.getElementById('sb-a-av').textContent = ini;
+  document.getElementById('sb-a-nome').textContent = SESSION.nome;
+  if (document.getElementById('sb-al-nome')) document.getElementById('sb-al-nome').textContent = SESSION.nome;
+
+  if (SESSION.role === 'admin') {
+    loadPrefDash();
+  } else {
+    loadMoradorDash();
+  }
+}
+
+// ─── MORADOR ─────────────────────────────────────────────────────────
+async function moradorNav(page) {
+  if (page === 'dash') { await loadMoradorDash(); return; }
+  if (page === 'lista') { goView('v-morador-lista'); await loadMoradorLista(); return; }
+  if (page === 'form') { goView('v-morador-form'); return; }
+}
+
+async function loadMoradorDash() {
+  goView('v-morador-dash');
+  const nome = SESSION?.nome?.split(' ')[0] || '';
+  document.getElementById('m-topbar-t').textContent = `Olá, ${nome} 👋`;
+  try {
+    const lista = await api('GET', '/api/ocorrencias');
+    ocorrencias = lista;
+    document.getElementById('ms-total').textContent = lista.length;
+    document.getElementById('ms-analise').textContent = lista.filter(o => o.status === 'Em análise').length;
+    document.getElementById('ms-atend').textContent = lista.filter(o => o.status === 'Em atendimento').length;
+    document.getElementById('ms-resolvida').textContent = lista.filter(o => o.status === 'Resolvida').length;
+
+    const recentes = lista.slice(0, 3);
+    const container = document.getElementById('m-cards-recentes');
+    if (recentes.length === 0) {
+      container.innerHTML = `<div class="empty" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg><p>Você ainda não tem ocorrências.</p></div>`;
+      return;
+    }
+    container.innerHTML = recentes.map(o => `
+      <div class="ocorr-card" onclick="abrirMoradorDet('${o.id}')">
+        <div class="oc-top"><div class="oc-cat">${catEmoji(o.categoria)}</div>${badge(o.status)}</div>
+        <div class="oc-title">${esc(o.titulo)}</div>
+        <div class="oc-addr">${esc(o.endereco)}</div>
+        <div class="oc-foot"><span class="oc-proto">${o.protocolo}</span><span class="oc-date">${fmtDate(o.criadoEm)}</span></div>
+      </div>`).join('');
+  } catch (e) { toast('Erro ao carregar: ' + e.message, 'red'); }
+}
+
+async function loadMoradorLista() {
+  const busca = (document.getElementById('m-busca')?.value || '').toLowerCase();
+  const filtroStatus = document.getElementById('m-filtro-status')?.value || '';
+  let lista = ocorrencias;
+  if (!lista.length) {
+    try { lista = await api('GET', '/api/ocorrencias'); ocorrencias = lista; } catch {}
+  }
+  let filtrada = lista;
+  if (busca) filtrada = filtrada.filter(o => o.titulo.toLowerCase().includes(busca) || o.protocolo.toLowerCase().includes(busca));
+  if (filtroStatus) filtrada = filtrada.filter(o => o.status === filtroStatus);
+
+  document.getElementById('m-lista-count').textContent = `${filtrada.length} ocorrência(s)`;
+
+  if (filtrada.length === 0) {
+    document.getElementById('m-lista-body').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg><p>Nenhuma ocorrência encontrada.</p></div>`;
+    return;
+  }
+  document.getElementById('m-lista-body').innerHTML = `
+    <table>
+      <thead><tr><th>Protocolo</th><th>Título</th><th>Categoria</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+      <tbody>
+        ${filtrada.map(o => `
+          <tr onclick="abrirMoradorDet('${o.id}')">
+            <td class="td-mono">${o.protocolo}</td>
+            <td class="td-bold">${esc(o.titulo)}</td>
+            <td>${catEmoji(o.categoria)}</td>
+            <td>${fmtDate(o.criadoEm)}</td>
+            <td>${badge(o.status)}</td>
+            <td><button class="btn-detail" onclick="event.stopPropagation();abrirMoradorDet('${o.id}')">Ver</button></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderMoradorLista() { loadMoradorLista(); }
+
+async function abrirMoradorDet(id) {
+  currentOcId = id;
+  goView('v-morador-det');
+  const content = document.getElementById('mdet-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+  try {
+    const o = await api('GET', `/api/ocorrencias/${id}`);
+    document.getElementById('mdet-topbar-t').textContent = o.titulo;
+    document.getElementById('mdet-topbar-s').textContent = `${o.protocolo} · ${o.categoria}`;
+
+    const todosStatus = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
+    const idxAtual = todosStatus.indexOf(o.status);
+
+    const mensagensHTML = o.mensagens && o.mensagens.length
+      ? `<div class="detail-sep"></div>
+         <div class="df-label" style="margin-bottom:10px">Mensagens da prefeitura</div>
+         ${o.mensagens.map(m => `<div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px"><div style="font-size:12px;color:var(--blue-600);margin-bottom:4px">Prefeitura · ${fmtDateTime(m.data)}</div><div style="font-size:13.5px;color:var(--slate-700)">${esc(m.texto)}</div></div>`).join('')}`
+      : '';
+
+    content.innerHTML = `
+      <button class="back-link" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar</button>
+      <div class="detail-layout">
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px">
+              <div><div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px">${esc(o.titulo)}</div>
+              <span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo} · ${fmtDateTime(o.criadoEm)}</span></div>
+              ${badge(o.status)}
+            </div>
+            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${['🚧','💡','🗑️','🚦','💧','🌳','📋'][Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.values({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5}).indexOf(o.categoria)]] || 6]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
+            <div class="form-grid" style="gap:14px">
+              <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
+              <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
+              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}</div></div>
+              ${o.descricao ? `<div style="grid-column:1/-1"><div class="df-label">Descrição</div><div class="df-val">${esc(o.descricao)}</div></div>` : ''}
+            </div>
+            ${mensagensHTML}
+          </div>
+          <div class="card">
+            <div class="card-title">Acompanhamento</div>
+            <div>
+              ${todosStatus.map((s, i) => {
+                const entry = o.historico.find(h => h.status === s);
+                const isDone = entry && i <= idxAtual;
+                const isCurrent = s === o.status;
+                const isLast = i === todosStatus.length - 1;
+                return `<div class="tl-item ${isDone && !isCurrent ? 'done' : ''} ${isCurrent ? 'current' : ''}" style="${!isLast ? 'margin-bottom:0' : ''}">
+                  <div class="tl-dot"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
+                  <div class="tl-body">
+                    <div class="tl-title">${s}</div>
+                    <div class="tl-desc">${entry ? fmtDateTime(entry.data) + (entry.obs ? ' · ' + esc(entry.obs) : '') : 'Aguardando'}</div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="background:var(--blue-50);border-color:var(--blue-100)">
+            <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Status atual</div>
+            ${badge(o.status)}
+            <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
+          </div>
+        </div>
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div class="empty"><p>Erro ao carregar: ${e.message}</p></div>`;
+  }
+}
+
+// ─── FOTO UPLOAD ─────────────────────────────────────────────────────
+function previewFoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('foto-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── ENVIAR OCORRÊNCIA ───────────────────────────────────────────────
+async function enviarOcorrencia() {
+  const btn = document.getElementById('btn-enviar');
+  const err = document.getElementById('form-error');
+  err.classList.remove('show');
+  const titulo = document.getElementById('f-titulo').value.trim();
+  const categoria = document.getElementById('f-categoria').value;
+  const bairro = document.getElementById('f-bairro').value;
+  const endereco = document.getElementById('f-endereco').value.trim();
+  if (!titulo || !categoria || !bairro || !endereco) {
+    err.textContent = 'Preencha os campos obrigatórios: Título, Categoria, Bairro e Endereço.';
+    err.classList.add('show'); return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:16px;height:16px"></div>Enviando...';
+
+  let fotoUrl = null;
+  const fotoInput = document.getElementById('f-foto');
+  if (fotoInput.files[0]) {
+    try {
+      const reader = new FileReader();
+      fotoUrl = await new Promise((res, rej) => {
+        reader.onload = e => res(e.target.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(fotoInput.files[0]);
+      });
+      const up = await api('POST', '/api/upload', { data: fotoUrl });
+      fotoUrl = up.url;
+    } catch { fotoUrl = null; }
+  }
+
+  try {
+    const result = await api('POST', '/api/ocorrencias', {
+      titulo,
+      descricao: document.getElementById('f-descricao').value.trim(),
+      categoria,
+      bairro,
+      endereco,
+      referencia: document.getElementById('f-referencia').value.trim(),
+      foto: fotoUrl
+    });
+    document.getElementById('proto-gerado').textContent = result.protocolo;
+    // limpar form
+    ['f-titulo','f-descricao','f-endereco','f-referencia'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-categoria').value = '';
+    document.getElementById('f-bairro').value = '';
+    document.getElementById('foto-preview').style.display = 'none';
+    fotoInput.value = '';
+    ocorrencias = [];
+    goView('v-sucesso');
+  } catch (e) {
+    err.textContent = e.message; err.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+  }
+}
+
+// ─── PREFEITURA ──────────────────────────────────────────────────────
+async function prefNav(page) {
+  if (page === 'dash') { await loadPrefDash(); return; }
+  if (page === 'lista') { goView('v-pref-lista'); await loadPrefLista(); return; }
+}
+
+async function loadPrefDash() {
+  goView('v-pref-dash');
+  document.getElementById('pref-dash-sub').textContent = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  try {
+    const [stats, lista] = await Promise.all([api('GET', '/api/stats'), api('GET', '/api/ocorrencias')]);
+    document.getElementById('pm-total').textContent = stats.total;
+    const pend = stats.recebida + stats.analise + stats.encaminhada;
+    document.getElementById('pm-analise').textContent = pend;
+    document.getElementById('pm-analise-s').textContent = `${stats.recebida} recebidas, ${stats.analise} em análise`;
+    document.getElementById('pm-atend').textContent = stats.atendimento;
+    document.getElementById('pm-res').textContent = stats.resolvida;
+    document.getElementById('pm-res-s').textContent = stats.total ? Math.round(stats.resolvida / stats.total * 100) + '% do total' : '–';
+
+    // chart categorias
+    const maxCat = stats.categorias[0]?.[1] || 1;
+    const catColors = ['#2563eb','#0d9488','#d97706','#7c3aed','#0ea5e9','#16a34a','#64748b'];
+    document.getElementById('pref-cat-chart').innerHTML = stats.categorias.slice(0, 6).map(([cat, n], i) =>
+      `<div class="cat-bar-item"><div class="cat-bar-label"><span>${catEmoji(cat)}</span><span>${n}</span></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${Math.round(n/maxCat*100)}%;background:${catColors[i%catColors.length]}"></div></div></div>`
+    ).join('') || '<p style="color:var(--slate-400);font-size:13px">Sem dados</p>';
+
+    // chart bairros
+    const maxB = stats.bairros[0]?.[1] || 1;
+    document.getElementById('pref-bairro-chart').innerHTML = stats.bairros.map(([b, n]) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:13px;color:var(--slate-600)">${esc(b)}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:80px;height:5px;background:var(--slate-100);border-radius:100px;overflow:hidden"><div style="width:${Math.round(n/maxB*100)}%;height:100%;background:var(--blue-500);border-radius:100px"></div></div>
+          <span style="font-size:12px;color:var(--slate-400);min-width:20px;text-align:right">${n}</span>
+        </div>
+      </div>`
+    ).join('') || '<p style="color:var(--slate-400);font-size:13px">Sem dados</p>';
+
+    // tabela recentes
+    const recentes = lista.slice(0, 6);
+    document.getElementById('pref-dash-table').innerHTML = recentes.length ? `
+      <table>
+        <thead><tr><th>Protocolo</th><th>Cidadão</th><th>Categoria</th><th>Bairro</th><th>Data</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${recentes.map(o => `<tr onclick="abrirPrefDet('${o.id}')">
+            <td class="td-mono">${o.protocolo}</td>
+            <td class="td-bold">${esc(o.nomeUsuario)}</td>
+            <td>${catEmoji(o.categoria)}</td>
+            <td>${esc(o.bairro)}</td>
+            <td>${fmtDate(o.criadoEm)}</td>
+            <td>${badge(o.status)}</td>
+            <td><button class="btn-detail" onclick="event.stopPropagation();abrirPrefDet('${o.id}')">Ver</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div class="empty"><p>Nenhuma ocorrência ainda.</p></div>';
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+async function loadPrefLista() {
+  const busca = document.getElementById('pl-busca')?.value || '';
+  const status = document.getElementById('pl-status')?.value || 'todos';
+  const cat = document.getElementById('pl-cat')?.value || 'todas';
+  const bairro = document.getElementById('pl-bairro')?.value || 'todos';
+  const body = document.getElementById('pl-body');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+  try {
+    const params = new URLSearchParams();
+    if (busca) params.set('busca', busca);
+    if (status !== 'todos') params.set('status', status);
+    if (cat !== 'todas') params.set('categoria', cat);
+    if (bairro !== 'todos') params.set('bairro', bairro);
+    const lista = await api('GET', `/api/ocorrencias?${params}`);
+    document.getElementById('pl-sub').textContent = `${lista.length} resultado(s)`;
+    body.innerHTML = lista.length ? `
+      <table>
+        <thead><tr><th>Protocolo</th><th>Cidadão</th><th>Categoria</th><th>Bairro</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody>
+          ${lista.map(o => `<tr onclick="abrirPrefDet('${o.id}')">
+            <td class="td-mono">${o.protocolo}</td>
+            <td class="td-bold">${esc(o.nomeUsuario)}</td>
+            <td>${catEmoji(o.categoria)}</td>
+            <td>${esc(o.bairro)}</td>
+            <td>${fmtDate(o.criadoEm)}</td>
+            <td>${badge(o.status)}</td>
+            <td><button class="btn-detail" onclick="event.stopPropagation();abrirPrefDet('${o.id}')">Ver</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>` : '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;opacity:.4"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg><p>Nenhuma ocorrência encontrada.</p></div>';
+  } catch (e) {
+    body.innerHTML = `<div class="empty"><p>Erro: ${e.message}</p></div>`;
+  }
+}
+
+async function abrirPrefDet(id) {
+  currentOcId = id;
+  goView('v-pref-det');
+  const content = document.getElementById('pdet-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+  try {
+    const o = await api('GET', `/api/ocorrencias/${id}`);
+    document.getElementById('pdet-t').textContent = o.titulo;
+    document.getElementById('pdet-s').textContent = `${o.protocolo} · ${o.categoria} · ${o.bairro}`;
+    const btnRes = document.getElementById('btn-resolver');
+    if (o.status === 'Resolvida') { btnRes.style.display = 'none'; }
+    else { btnRes.style.display = ''; }
+
+    const todosStatus = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
+    const idxAtual = todosStatus.indexOf(o.status);
+
+    content.innerHTML = `
+      <button class="back-link" onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar para ocorrências</button>
+      <div class="detail-layout">
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px">
+              <div>
+                <div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px">${esc(o.titulo)}</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${badge(o.status)}<span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo}</span></div>
+              </div>
+            </div>
+            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
+            <div class="form-grid" style="gap:14px">
+              <div><div class="df-label">Cidadão</div><div class="df-val">${esc(o.nomeUsuario)}</div></div>
+              <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
+              <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
+              <div><div class="df-label">Registrado em</div><div class="df-val">${fmtDateTime(o.criadoEm)}</div></div>
+              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}</div></div>
+              ${o.descricao ? `<div style="grid-column:1/-1"><div class="df-label">Descrição</div><div class="df-val">${esc(o.descricao)}</div></div>` : ''}
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Histórico de atualizações</div>
+            <div>
+              ${o.historico.map((h, i) => {
+                const isLast = i === o.historico.length - 1;
+                const isCurrent = isLast;
+                return `<div class="tl-item ${!isCurrent ? 'done' : 'current'}">
+                  <div class="tl-dot"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
+                  <div class="tl-body">
+                    <div class="tl-title">${h.status}</div>
+                    <div class="tl-desc">${fmtDateTime(h.data)}${h.obs ? ' · ' + esc(h.obs) : ''}${h.setor ? ' · Setor: ' + esc(h.setor) : ''}</div>
+                  </div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="card" style="background:var(--blue-50);border-color:var(--blue-100)">
+            <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Status atual</div>
+            ${badge(o.status)}
+            <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Alterar status</div>
+            <select class="action-sel" id="det-status">
+              ${todosStatus.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+            <textarea class="action-ta" id="det-obs" placeholder="Observação sobre a mudança de status..."></textarea>
+            <button class="action-btn ab-primary" onclick="aplicarStatus()">Aplicar status</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Encaminhar para setor</div>
+            <select class="action-sel" id="det-setor">
+              <option>Secretaria de Obras</option><option>Secretaria de Limpeza</option><option>Iluminação Pública</option><option>Trânsito e Mobilidade</option><option>Parques e Jardins</option>
+            </select>
+            <textarea class="action-ta" id="det-obs-setor" placeholder="Observações para o setor..."></textarea>
+            <button class="action-btn ab-outline" onclick="encaminharSetor()">Encaminhar</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Mensagem ao cidadão</div>
+            <textarea class="action-ta" id="det-msg" placeholder="Escreva uma mensagem de retorno..."></textarea>
+            <button class="action-btn ab-outline" onclick="enviarMensagem()">Enviar mensagem</button>
+          </div>
+        </div>
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div class="empty"><p>Erro: ${e.message}</p></div>`;
+  }
+}
+
+async function aplicarStatus() {
+  const status = document.getElementById('det-status').value;
+  const obs = document.getElementById('det-obs').value;
+  try {
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status, obs });
+    toast(`Status atualizado: ${status}`);
+    await abrirPrefDet(currentOcId);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+async function encaminharSetor() {
+  const setor = document.getElementById('det-setor').value;
+  const obs = document.getElementById('det-obs-setor').value || `Encaminhada para ${setor}`;
+  try {
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: 'Encaminhada', obs, setor });
+    toast(`Encaminhada para ${setor}`);
+    await abrirPrefDet(currentOcId);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+async function enviarMensagem() {
+  const msg = document.getElementById('det-msg').value.trim();
+  if (!msg) { toast('Escreva uma mensagem.', 'red'); return; }
+  const statusAtual = document.getElementById('det-status').value;
+  try {
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: statusAtual, obs: 'Mensagem enviada ao cidadão', mensagem: msg });
+    toast('Mensagem enviada ao cidadão!');
+    document.getElementById('det-msg').value = '';
+    await abrirPrefDet(currentOcId);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+async function marcarResolvida() {
+  try {
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: 'Resolvida', obs: 'Ocorrência resolvida pela equipe' });
+    toast('Ocorrência marcada como resolvida!');
+    await abrirPrefDet(currentOcId);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+// ─── AUTH STATS (pública) ─────────────────────────────────────────────
+async function loadAuthStats() {
+  try {
+    const r = await fetch('/api/stats');
+    if (r.ok) {
+      const s = await r.json();
+      document.getElementById('stat-total').textContent = s.total;
+      document.getElementById('stat-res').textContent = s.resolvida;
+      document.getElementById('stat-and').textContent = s.atendimento + s.analise;
+    }
+  } catch {}
+}
+
+// ─── HELPER XSS ──────────────────────────────────────────────────────
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────
+(function init() {
+  const saved = localStorage.getItem('urbana_session');
+  if (saved) {
+    try {
+      SESSION = JSON.parse(saved);
+      // verifica se token ainda é válido
+      api('GET', '/api/me').then(u => {
+        SESSION.nome = u.nome;
+        afterLogin();
+      }).catch(() => {
+        SESSION = null;
+        localStorage.removeItem('urbana_session');
+        goView('v-auth');
+        loadAuthStats();
+      });
+      return;
+    } catch {}
+  }
+  goView('v-auth');
+  loadAuthStats();
+})();
+
+// Enter para login
+document.getElementById('login-senha').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
