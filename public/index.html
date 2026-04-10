@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Urbana — Sistema de Ocorrências Urbanas</title>
+<title>Urbaniza+ — Sistema de Ocorrências Urbanas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
 <style>
@@ -265,10 +265,10 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
     <div class="auth-left">
       <div class="auth-logo">
         <div class="auth-logo-mark"><svg viewBox="0 0 20 20"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div>
-        <span class="auth-brand">Urb<span>ana</span></span>
+        <span class="auth-brand">Urb<span>aniza+</span></span>
       </div>
       <h1 class="auth-title">Sua cidade<br>mais organizada</h1>
-      <p class="auth-sub">Registre problemas urbanos, acompanhe em tempo real e veja a prefeitura agir. Transparência para todos.</p>
+      <p class="auth-sub">Registre problemas urbanos em Braço do Norte, acompanhe em tempo real e veja a prefeitura agir. Transparência para todos.</p>
 
       <div class="auth-card">
         <div class="auth-tabs">
@@ -312,7 +312,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
             <label class="auth-label">Bairro</label>
             <select id="cad-bairro" class="auth-input">
               <option value="">Selecione seu bairro</option>
-              <option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option><option>Outro</option>
+              <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
             </select>
           </div>
           <button class="auth-btn" id="btn-cad" onclick="doCadastro()">
@@ -323,16 +323,30 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
       </div>
     </div>
 
-    <div class="auth-right">
-      <div style="margin-bottom:24px;text-align:center">
-        <div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:#e2e8f0;margin-bottom:6px">Sistema Urbana</div>
-        <div style="font-size:13px;color:#475569">Transparência e eficiência municipal</div>
+    <div class="auth-right" style="padding:0;position:relative;overflow:hidden">
+      <!-- Mapa de Braço do Norte -->
+      <div style="position:absolute;inset:0;z-index:0">
+        <iframe
+          src="https://www.openstreetmap.org/export/embed.html?bbox=-49.1800%2C-28.2550%2C-49.1100%2C-28.2000&layer=mapnik"
+          style="width:100%;height:100%;border:none;filter:saturate(0.4) brightness(0.35) hue-rotate(200deg);"
+          scrolling="no">
+        </iframe>
       </div>
-      <div class="auth-stat-grid">
-        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-total">...</div><div class="auth-stat-l">Ocorrências registradas</div></div>
-        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-res">...</div><div class="auth-stat-l">Resolvidas</div></div>
-        <div class="auth-stat-card"><div class="auth-stat-n" id="stat-and">...</div><div class="auth-stat-l">Em andamento</div></div>
-        <div class="auth-stat-card"><div class="auth-stat-n" style="color:#34d399">24h</div><div class="auth-stat-l">Resposta inicial</div></div>
+      <!-- Degradê sobre o mapa -->
+      <div style="position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgba(15,23,42,0.55) 0%,rgba(30,64,175,0.35) 50%,rgba(15,23,42,0.6) 100%)"></div>
+      <!-- Conteúdo sobre o mapa -->
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:48px">
+        <div style="margin-bottom:24px;text-align:center">
+          <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#60a5fa;margin-bottom:8px">📍 Braço do Norte — SC</div>
+          <div style="font-family:var(--font-display);font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Sistema Urbaniza+</div>
+          <div style="font-size:13px;color:#94a3b8">Transparência e eficiência municipal</div>
+        </div>
+        <div class="auth-stat-grid">
+          <div class="auth-stat-card" style="background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.1)"><div class="auth-stat-n" id="stat-total">...</div><div class="auth-stat-l">Ocorrências registradas</div></div>
+          <div class="auth-stat-card" style="background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.1)"><div class="auth-stat-n" id="stat-res">...</div><div class="auth-stat-l">Resolvidas</div></div>
+          <div class="auth-stat-card" style="background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.1)"><div class="auth-stat-n" id="stat-and">...</div><div class="auth-stat-l">Em andamento</div></div>
+          <div class="auth-stat-card" style="background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);border-color:rgba(255,255,255,.1)"><div class="auth-stat-n" style="color:#34d399">24h</div><div class="auth-stat-l">Resposta inicial</div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -342,7 +356,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-morador-dash" class="view">
   <div class="layout">
     <aside class="sidebar" id="sb-morador">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
         <li><a id="mn-dash" class="active" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
@@ -357,7 +371,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
     </aside>
     <div class="main">
       <header class="topbar">
-        <div><div class="topbar-title" id="m-topbar-t">Olá 👋</div><div class="topbar-sub">Bem-vindo ao Urbana</div></div>
+        <div><div class="topbar-title" id="m-topbar-t">Olá 👋</div><div class="topbar-sub">Bem-vindo ao Urbaniza+</div></div>
         <div class="topbar-right"><button class="btn-new" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova ocorrência</button></div>
       </header>
       <div class="content">
@@ -382,7 +396,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-morador-lista" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
@@ -414,7 +428,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-morador-form" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
@@ -440,13 +454,13 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
             <div class="form-group"><label class="form-label">Categoria *</label>
               <select class="form-select" id="f-categoria">
                 <option value="">Selecione...</option>
-                <option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbana</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option>
+                <option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbaniza+</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option>
               </select>
             </div>
             <div class="form-group"><label class="form-label">Bairro *</label>
               <select class="form-select" id="f-bairro">
                 <option value="">Selecione...</option>
-                <option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option><option>Outro</option>
+                <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
               </select>
             </div>
             <div class="form-group form-full"><label class="form-label">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
@@ -476,7 +490,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-sucesso" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <ul class="sb-nav" style="padding:16px 8px 0"></ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-s-av">?</div><div class="sb-user-info"><div class="name" id="sb-s-nome">–</div><div class="role">Morador</div></div></div>
@@ -504,7 +518,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-morador-det" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
@@ -525,7 +539,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-pref-dash" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
         <li><a class="active" onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
@@ -560,7 +574,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-pref-lista" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
         <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
@@ -578,8 +592,8 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
             <div class="search-wrap">
               <div class="search-inner"><div class="search-icon-abs"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg></div><input class="input-search" id="pl-busca" placeholder="Protocolo, cidadão, bairro..." oninput="loadPrefLista()"></div>
               <select class="filter-sel" id="pl-status" onchange="loadPrefLista()"><option value="todos">Todos os status</option><option>Recebida</option><option>Em análise</option><option>Encaminhada</option><option>Em atendimento</option><option>Resolvida</option></select>
-              <select class="filter-sel" id="pl-cat" onchange="loadPrefLista()"><option value="todas">Todas as categorias</option><option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbana</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option></select>
-              <select class="filter-sel" id="pl-bairro" onchange="loadPrefLista()"><option value="todos">Todos os bairros</option><option>Centro</option><option>Santa Clara</option><option>Jardim das Flores</option><option>Vila Nova</option><option>Parque Industrial</option></select>
+              <select class="filter-sel" id="pl-cat" onchange="loadPrefLista()"><option value="todas">Todas as categorias</option><option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbaniza+</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option></select>
+              <select class="filter-sel" id="pl-bairro" onchange="loadPrefLista()"><option value="todos">Todos os bairros</option><option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option></select>
             </div>
           </div>
           <div id="pl-body"></div>
@@ -593,7 +607,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 <div id="v-pref-det" class="view">
   <div class="layout">
     <aside class="sidebar">
-      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>aniza+</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
         <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
@@ -653,7 +667,7 @@ const BADGE_MAP = { 'Recebida': 'badge-recebida', 'Em análise': 'badge-analise'
 function badge(status) { return `<span class="badge ${BADGE_MAP[status] || 'badge-recebida'}">${status}</span>`; }
 
 function catEmoji(cat) {
-  const m = { 'Pavimentação': '🚧', 'Iluminação pública': '💡', 'Limpeza urbana': '🗑️', 'Sinalização': '🚦', 'Drenagem / Bueiro': '💧', 'Parques e jardins': '🌳', 'Outros': '📋' };
+  const m = { 'Pavimentação': '🚧', 'Iluminação pública': '💡', 'Limpeza urbaniza+': '🗑️', 'Sinalização': '🚦', 'Drenagem / Bueiro': '💧', 'Parques e jardins': '🌳', 'Outros': '📋' };
   return (m[cat] || '📋') + ' ' + cat;
 }
 
@@ -688,7 +702,7 @@ async function doLogin() {
       senha: document.getElementById('login-senha').value
     });
     SESSION = data;
-    localStorage.setItem('urbana_session', JSON.stringify(data));
+    localStorage.setItem('urbaniza+_session', JSON.stringify(data));
     afterLogin();
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
@@ -724,7 +738,7 @@ async function doCadastro() {
 async function doLogout() {
   try { await api('POST', '/api/logout'); } catch {}
   SESSION = null;
-  localStorage.removeItem('urbana_session');
+  localStorage.removeItem('urbaniza+_session');
   goView('v-auth');
   loadAuthStats();
 }
@@ -845,7 +859,7 @@ async function abrirMoradorDet(id) {
               <span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo} · ${fmtDateTime(o.criadoEm)}</span></div>
               ${badge(o.status)}
             </div>
-            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${['🚧','💡','🗑️','🚦','💧','🌳','📋'][Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.values({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbana':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5}).indexOf(o.categoria)]] || 6]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
+            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${['🚧','💡','🗑️','🚦','💧','🌳','📋'][Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbaniza+':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.values({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbaniza+':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5})[Object.keys({'Pavimentação':0,'Iluminação pública':1,'Limpeza urbaniza+':2,'Sinalização':3,'Drenagem / Bueiro':4,'Parques e jardins':5}).indexOf(o.categoria)]] || 6]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
             <div class="form-grid" style="gap:14px">
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
               <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
@@ -1198,7 +1212,7 @@ function esc(str) {
 
 // ─── INIT ─────────────────────────────────────────────────────────────
 (function init() {
-  const saved = localStorage.getItem('urbana_session');
+  const saved = localStorage.getItem('urbaniza+_session');
   if (saved) {
     try {
       SESSION = JSON.parse(saved);
@@ -1208,7 +1222,7 @@ function esc(str) {
         afterLogin();
       }).catch(() => {
         SESSION = null;
-        localStorage.removeItem('urbana_session');
+        localStorage.removeItem('urbaniza+_session');
         goView('v-auth');
         loadAuthStats();
       });
