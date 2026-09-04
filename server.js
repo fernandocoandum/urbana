@@ -22,7 +22,9 @@ async function initDB() {
           role TEXT DEFAULT 'morador',
           bairro TEXT DEFAULT '',
           criado_em TIMESTAMPTZ DEFAULT NOW(),
-          termos_aceitos_em TIMESTAMPTZ
+          termos_aceitos_em TIMESTAMPTZ,
+          foto TEXT,
+          premium BOOLEAN DEFAULT false
         );
         CREATE TABLE IF NOT EXISTS ocorrencias (
           id TEXT PRIMARY KEY,
@@ -54,7 +56,16 @@ async function initDB() {
           key TEXT PRIMARY KEY,
           value TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS chat_mensagens (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          nome TEXT NOT NULL,
+          texto TEXT NOT NULL,
+          criado_em TIMESTAMPTZ DEFAULT NOW()
+        );
         ALTER TABLE users ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS premium BOOLEAN DEFAULT false;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS apoios JSONB DEFAULT '[]';
@@ -104,17 +115,22 @@ let jsonDB = null;
 
 function initJsonDB() {
   if (fs.existsSync(DB_FILE)) {
-    try { jsonDB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); return; } catch {}
+    try {
+      jsonDB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+      if (!jsonDB.chatMensagens) jsonDB.chatMensagens = [];
+      return;
+    } catch {}
   }
   jsonDB = {
-    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hash('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z' }],
+    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hash('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null, premium:false }],
     ocorrencias: [
       { id:'oc1', protocolo:'PROT-2026-0001', userId:'u1', titulo:'Buraco na Rua João Machado', descricao:'Buraco de aproximadamente 80cm de diâmetro na pista principal.', categoria:'Pavimentação', endereco:'Rua João Machado, 450', bairro:'Centro', referencia:'Em frente à padaria Pão de Mel', foto:null, status:'Em atendimento', criadoEm:'2026-01-02T14:32:00.000Z', atualizadoEm:'2026-01-05T08:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-02T14:32:00.000Z',obs:'Registrada pelo cidadão'},{status:'Em análise',data:'2026-01-03T09:15:00.000Z',obs:'Avaliação técnica iniciada'},{status:'Encaminhada',data:'2026-01-03T16:48:00.000Z',obs:'Encaminhada para Secretaria de Obras'},{status:'Em atendimento',data:'2026-01-05T08:00:00.000Z',obs:'Equipe de campo em ação'}], mensagens:[], lat:-28.2761, lng:-49.1712, apoios:[], avaliacao:null },
       { id:'oc2', protocolo:'PROT-2026-0002', userId:'u1', titulo:'Poste sem iluminação — Av. Principal', descricao:'Poste apagado há mais de uma semana.', categoria:'Iluminação pública', endereco:'Av. Principal, 1200', bairro:'Centro', referencia:'Próximo ao Banco do Brasil', foto:null, status:'Em análise', criadoEm:'2026-01-05T10:00:00.000Z', atualizadoEm:'2026-01-06T09:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-05T10:00:00.000Z',obs:'Registrada'},{status:'Em análise',data:'2026-01-06T09:00:00.000Z',obs:'Verificação agendada'}], mensagens:[], lat:-28.2745, lng:-49.1698, apoios:[], avaliacao:null },
       { id:'oc3', protocolo:'PROT-2026-0003', userId:'u1', titulo:'Descarte irregular — Santa Clara', descricao:'Lixo e entulho descartados irregularmente.', categoria:'Limpeza urbana', endereco:'Estrada Santa Clara, s/n', bairro:'Santa Clara', referencia:'Ao lado da Escola Municipal', foto:null, status:'Resolvida', criadoEm:'2025-12-15T09:00:00.000Z', atualizadoEm:'2025-12-20T16:00:00.000Z', historico:[{status:'Recebida',data:'2025-12-15T09:00:00.000Z',obs:'Registrada'},{status:'Resolvida',data:'2025-12-20T16:00:00.000Z',obs:'Área limpa'}], mensagens:[], lat:-28.2815, lng:-49.1655, apoios:[], avaliacao:{nota:5,comentario:'Ficou ótimo, rápido demais!',data:'2025-12-21T10:00:00.000Z'} }
     ],
     sessions: {},
-    nextProtocolo: 4
+    nextProtocolo: 4,
+    chatMensagens: []
   };
   saveJsonDB();
 }
@@ -149,7 +165,7 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, premium:!!u.premium };
     }
     return jsonDB.users.find(u => u.email === email) || null;
   },
@@ -158,9 +174,33 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, premium:!!u.premium };
     }
     return jsonDB.users.find(u => u.id === id) || null;
+  },
+  async updatePerfil(userId, { nome, foto }) {
+    if (usePostgres) {
+      if (nome !== undefined && foto !== undefined) {
+        await pool.query('UPDATE users SET nome=$1, foto=$2 WHERE id=$3', [nome, foto, userId]);
+      } else if (nome !== undefined) {
+        await pool.query('UPDATE users SET nome=$1 WHERE id=$2', [nome, userId]);
+      } else if (foto !== undefined) {
+        await pool.query('UPDATE users SET foto=$1 WHERE id=$2', [foto, userId]);
+      }
+      return;
+    }
+    const u = jsonDB.users.find(u => u.id === userId);
+    if (!u) return;
+    if (nome !== undefined) u.nome = nome;
+    if (foto !== undefined) u.foto = foto;
+    saveJsonDB();
+  },
+  async contarApoiosDados(userId) {
+    if (usePostgres) {
+      const r = await pool.query(`SELECT COUNT(*) FROM ocorrencias WHERE apoios @> $1::jsonb`, [JSON.stringify([userId])]);
+      return parseInt(r.rows[0].count);
+    }
+    return jsonDB.ocorrencias.filter(o => (o.apoios||[]).includes(userId)).length;
   },
   async createUser(user) {
     if (usePostgres) {
@@ -337,6 +377,22 @@ const db = {
       categorias: Object.entries(catMap).sort((a,b)=>b[1]-a[1]),
       bairros: Object.entries(bairroMap).sort((a,b)=>b[1]-a[1]).slice(0,5)
     };
+  },
+  async listChatMensagens(limit = 60) {
+    if (usePostgres) {
+      const r = await pool.query('SELECT * FROM chat_mensagens ORDER BY criado_em DESC LIMIT $1', [limit]);
+      return r.rows.reverse().map(m => ({ id:m.id, userId:m.user_id, nome:m.nome, texto:m.texto, criadoEm:m.criado_em }));
+    }
+    return jsonDB.chatMensagens.slice(-limit);
+  },
+  async addChatMensagem(msg) {
+    if (usePostgres) {
+      await pool.query('INSERT INTO chat_mensagens (id,user_id,nome,texto) VALUES ($1,$2,$3,$4)', [msg.id, msg.userId, msg.nome, msg.texto]);
+      return;
+    }
+    jsonDB.chatMensagens.push(msg);
+    if (jsonDB.chatMensagens.length > 300) jsonDB.chatMensagens = jsonDB.chatMensagens.slice(-300);
+    saveJsonDB();
   }
 };
 
@@ -415,7 +471,7 @@ const server = http.createServer(async (req, res) => {
       if (!nome?.trim() || !email?.trim() || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
       if (senha.length < 6) return json(res, 400, { erro:'Senha deve ter no mínimo 6 caracteres.' });
       if (await db.emailExists(email.trim())) return json(res, 400, { erro:'E-mail já cadastrado.' });
-      await db.createUser({ id:'u'+Date.now(), nome:nome.trim(), email:email.trim().toLowerCase(), senha:hash(senha), role:'morador', bairro:bairro||'' });
+      await db.createUser({ id:'u'+Date.now(), nome:nome.trim(), email:email.trim().toLowerCase(), senha:hash(senha), role:'morador', bairro:bairro||'', foto:null, premium:false });
       return json(res, 201, { ok:true });
     }
 
@@ -425,7 +481,7 @@ const server = http.createServer(async (req, res) => {
       if (!user || user.senha !== hash(senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
       const token = genToken();
       await db.createSession(token, user.id);
-      return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm });
+      return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null, premium: !!user.premium });
     }
 
     if (pathname === '/api/logout' && req.method === 'POST') {
@@ -447,6 +503,50 @@ const server = http.createServer(async (req, res) => {
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
       await db.aceitarTermos(user.id);
       return json(res, 200, { ok:true });
+    }
+
+    if (pathname === '/api/perfil' && req.method === 'GET') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const minhas = await db.listOcorrencias({ userId: user.id });
+      const resolvidas = minhas.filter(o => o.status === 'Resolvida').length;
+      const apoiosDados = await db.contarApoiosDados(user.id);
+      return json(res, 200, {
+        nome:user.nome, email:user.email, foto:user.foto||null, premium: !!user.premium,
+        stats: { ocorrencias: minhas.length, resolvidas, apoiosDados }
+      });
+    }
+
+    if (pathname === '/api/perfil' && req.method === 'PUT') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const { nome, foto } = await parseBody(req);
+      const upd = {};
+      if (nome !== undefined) {
+        if (!nome.trim()) return json(res, 400, { erro:'Nome não pode ficar em branco.' });
+        upd.nome = nome.trim();
+      }
+      if (foto !== undefined) upd.foto = foto;
+      await db.updatePerfil(user.id, upd);
+      return json(res, 200, { ok:true });
+    }
+
+    if (pathname === '/api/chat-premium' && req.method === 'GET') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      if (!user.premium) return json(res, 403, { erro:'Recurso exclusivo para assinantes premium.' });
+      return json(res, 200, await db.listChatMensagens());
+    }
+
+    if (pathname === '/api/chat-premium' && req.method === 'POST') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      if (!user.premium) return json(res, 403, { erro:'Recurso exclusivo para assinantes premium.' });
+      const { texto } = await parseBody(req);
+      if (!texto?.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
+      const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:texto.trim().slice(0,500), criadoEm:new Date().toISOString() };
+      await db.addChatMensagem(msg);
+      return json(res, 201, { ok:true });
     }
 
     if (pathname === '/api/stats' && req.method === 'GET') {
