@@ -397,11 +397,27 @@ const db = {
 };
 
 function parseBody(req) {
-  return new Promise((res,rej) => {
+  return new Promise((res, rej) => {
     let body = '';
-    req.on('data', c => { body += c; if (body.length > 10e6) req.destroy(); });
-    req.on('end', () => { try { res(JSON.parse(body||'{}')); } catch { res({}); } });
-    req.on('error', rej);
+    let tooLarge = false;
+    req.on('data', c => {
+      if (tooLarge) return;
+      body += c;
+      if (body.length > 20e6) {
+        tooLarge = true;
+        const err = new Error('PAYLOAD_TOO_LARGE');
+        err.tooLarge = true;
+        req.destroy(err);
+      }
+    });
+    req.on('end', () => {
+      if (tooLarge) return;
+      try { res(JSON.parse(body || '{}')); } catch { res({}); }
+    });
+    req.on('error', (err) => {
+      if (tooLarge || (err && err.tooLarge)) { rej(Object.assign(new Error('PAYLOAD_TOO_LARGE'), { tooLarge:true })); }
+      else rej(err);
+    });
   });
 }
 
@@ -549,7 +565,13 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/chat-premium' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
-      return json(res, 200, await db.listChatMensagens());
+      const msgs = await db.listChatMensagens();
+      const fotosPorUsuario = {};
+      for (const uid of [...new Set(msgs.map(m => m.userId))]) {
+        const u = await db.findUserById(uid);
+        fotosPorUsuario[uid] = u ? (u.foto || null) : null;
+      }
+      return json(res, 200, msgs.map(m => ({ ...m, foto: fotosPorUsuario[m.userId] })));
     }
 
     if (pathname === '/api/chat-premium' && req.method === 'POST') {
@@ -667,6 +689,10 @@ const server = http.createServer(async (req, res) => {
 
     json(res, 404, { erro:'Rota não encontrada.' });
   } catch (e) {
+    if (e && e.tooLarge) {
+      console.error('Erro: payload muito grande');
+      return json(res, 413, { erro:'Arquivo muito grande. Tente uma imagem menor.' });
+    }
     console.error('Erro:', e.message);
     json(res, 500, { erro:'Erro interno do servidor.' });
   }
