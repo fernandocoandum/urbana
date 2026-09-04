@@ -6,6 +6,8 @@
 <title>Urbana — Sistema de Ocorrências Urbanas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -219,6 +221,11 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue-400);box-shadow:0 0 0 4px rgba(37,99,235,.1)}
 .form-textarea{min-height:90px;resize:vertical}
 .upload-zone{border:1.5px dashed var(--slate-300);border-radius:16px;padding:30px 20px;text-align:center;cursor:pointer;transition:border-color .2s ease,background-color .2s ease,transform .15s ease;background:rgba(248,250,252,.6);position:relative;overflow:hidden}
+.btn-geo{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:100px;border:1px solid var(--blue-100);background:var(--blue-50);color:var(--blue-700);font-size:12.5px;font-weight:600;cursor:pointer;transition:background .2s ease,transform .1s ease;margin-bottom:6px}
+.btn-geo:hover{background:var(--blue-100)}
+.btn-geo:active{transform:scale(.97)}
+.btn-geo:disabled{opacity:.6;cursor:default}
+.geo-status{font-size:12px;color:var(--slate-400);margin:2px 0 14px;min-height:1px}
 .upload-zone:hover{border-color:var(--blue-400);background:var(--blue-50)}
 .upload-zone.dragover{border-color:var(--blue-500);background:var(--blue-100);transform:scale(1.012)}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
@@ -295,6 +302,25 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .action-tab:active{transform:scale(.97)}
 .action-panel{display:none;animation:cardRise .3s cubic-bezier(.22,1,.36,1) both}
 .action-panel.active{display:block}
+
+.mapa-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
+.mapa-leg-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--slate-600);font-weight:500}
+.mapa-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.mapa-leaflet{height:min(560px,calc(100vh - 260px));border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.08);border:1px solid var(--border)}
+.mapa-popup{min-width:200px}
+.mapa-popup-cat{font-size:11px;font-weight:700;color:var(--blue-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.mapa-popup-title{font-size:13.5px;font-weight:700;color:var(--slate-800);margin-bottom:4px}
+.mapa-popup-meta{font-size:12px;color:var(--slate-400);margin-bottom:10px}
+.mapa-popup-actions{display:flex;gap:8px;align-items:center}
+.mapa-btn-apoiar{flex:1;padding:7px 10px;border-radius:9px;border:1px solid var(--blue-200);background:var(--blue-50);color:var(--blue-700);font-size:12px;font-weight:600;cursor:pointer}
+.mapa-btn-apoiar.apoiado{background:var(--blue-600);color:#fff;border-color:var(--blue-600)}
+.mapa-popup-link{font-size:12px;font-weight:600;color:var(--blue-600);text-decoration:none}
+
+.aval-stars,.aval-stars-display{display:flex;gap:4px}
+.aval-star{font-size:26px;line-height:1;color:var(--slate-200);transition:color .15s ease,transform .1s ease}
+.aval-stars .aval-star{cursor:pointer}
+.aval-stars .aval-star:hover{transform:scale(1.15)}
+.aval-star.filled{color:#f59e0b}
 .action-sel{border:1px solid var(--border);border-radius:12px;padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:rgba(255,255,255,.7);width:100%;outline:none;margin-bottom:10px;transition:border-color .2s ease}
 .action-ta{border:1px solid var(--border);border-radius:12px;padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:rgba(255,255,255,.7);width:100%;outline:none;min-height:80px;resize:vertical;margin-bottom:10px;transition:border-color .2s ease}
 .action-sel:focus,.action-ta:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
@@ -390,6 +416,28 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .toast-dot.red{background:var(--red-500);box-shadow:0 0 8px rgba(239,68,68,.7)}
 .toast-dot.blue{background:var(--blue-500);box-shadow:0 0 8px rgba(59,130,246,.7)}
 
+.termos-modal{display:none;position:fixed;inset:0;z-index:5000;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,20,.72);backdrop-filter:blur(6px)}
+.termos-modal.show{display:flex}
+.termos-card{width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;background:#fff;border-radius:22px;box-shadow:0 30px 70px rgba(0,0,0,.4);overflow:hidden;animation:authCardIn .4s cubic-bezier(.22,1,.36,1) both}
+.termos-head{display:flex;align-items:center;gap:14px;padding:24px 26px 18px;border-bottom:1px solid var(--border)}
+.termos-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;box-shadow:0 6px 16px rgba(37,99,235,.35)}
+.termos-icon svg{width:22px;height:22px}
+.termos-head h2{font-size:17px;font-weight:700;color:var(--slate-800)}
+.termos-head p{font-size:12.5px;color:var(--slate-400);margin-top:2px}
+.termos-body{padding:20px 26px;overflow-y:auto;flex:1}
+.termos-body p{font-size:13px;line-height:1.65;color:var(--slate-600);margin-bottom:12px}
+.termos-body strong{color:var(--slate-800)}
+.termos-foot{display:flex;gap:10px;padding:18px 26px;border-top:1px solid var(--border);flex-wrap:wrap}
+.termos-btn-recusar{padding:11px 18px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--slate-500);font-size:13px;font-weight:600;cursor:pointer;transition:background .2s ease}
+.termos-btn-recusar:hover{background:var(--slate-50)}
+.termos-btn-aceitar{flex:1;padding:11px 18px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:#fff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(37,99,235,.35);transition:transform .15s ease}
+.termos-btn-aceitar:active{transform:scale(.97)}
+.termos-btn-aceitar:disabled{opacity:.7;cursor:default}
+@media (max-width:480px){
+  .termos-foot{flex-direction:column-reverse}
+  .termos-btn-recusar{width:100%;text-align:center}
+}
+
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @keyframes viewFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .view.active{animation:viewFadeIn .4s cubic-bezier(.22,1,.36,1) both}
@@ -454,6 +502,32 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.5 5.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1z"/></svg>
 </button>
 <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+<div id="termos-modal" class="termos-modal">
+  <div class="termos-card">
+    <div class="termos-head">
+      <div class="termos-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H4zm2 5h8v1.5H6V7zm0 3h8v1.5H6V10zm0 3h5v1.5H6V13z"/></svg></div>
+      <div>
+        <h2>Termo de Uso</h2>
+        <p>Leia com atenção antes de continuar</p>
+      </div>
+    </div>
+    <div class="termos-body">
+      <p><strong>1. Sobre o Urbana.</strong> O Urbana é um canal para que moradores de Braço do Norte relatem problemas de infraestrutura urbana (buracos, iluminação, limpeza, sinalização, drenagem e afins) à Prefeitura, e acompanhem o andamento de cada relato.</p>
+      <p><strong>2. Cadastro.</strong> Ao criar uma conta, você declara que as informações fornecidas (nome, e-mail e bairro) são verdadeiras. Você é responsável por manter sua senha em sigilo e por tudo o que for feito através da sua conta.</p>
+      <p><strong>3. Conteúdo enviado.</strong> As ocorrências, descrições, fotos e localização que você enviar devem ser verídicas e relacionadas a problemas reais de infraestrutura pública. Não é permitido enviar denúncias falsas, ofensivas, discriminatórias ou sem relação com o propósito do app. A Prefeitura pode rejeitar ou remover conteúdo que viole estas regras.</p>
+      <p><strong>4. Localização.</strong> Ao usar o recurso de localização automática, você autoriza o Urbana a acessar a posição aproximada do seu dispositivo apenas para preencher o endereço da ocorrência. Essa informação é usada somente dentro do app.</p>
+      <p><strong>5. Apoio entre moradores.</strong> Ocorrências de outros moradores podem ficar visíveis publicamente no mapa da cidade (sem exibir dados pessoais de quem registrou) para que você possa confirmar que também enfrenta o mesmo problema.</p>
+      <p><strong>6. Prazos.</strong> O Urbana é um canal de comunicação — o registro de uma ocorrência não garante um prazo específico de resolução, que depende da avaliação e da capacidade operacional da Prefeitura.</p>
+      <p><strong>7. Privacidade.</strong> Seus dados de cadastro são usados apenas para o funcionamento do sistema (identificação, contato e histórico de ocorrências) e não são compartilhados com terceiros.</p>
+      <p><strong>8. Aceite.</strong> Este é um projeto acadêmico desenvolvido para fins de estudo. Ao clicar em "Li e aceito os termos", você confirma que leu e concorda com as condições acima.</p>
+    </div>
+    <div class="termos-foot">
+      <button type="button" class="termos-btn-recusar" onclick="recusarTermos()">Recusar e sair</button>
+      <button type="button" class="termos-btn-aceitar" id="termos-btn-aceitar" onclick="aceitarTermos()">Li e aceito os termos</button>
+    </div>
+  </div>
+</div>
 
 <div id="app">
 
@@ -526,7 +600,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </div>
       </div>
 
-      <p class="auth-footnote">Prefeitura de Braço do Norte · Sistema Urbana</p>
+      <p class="auth-footnote">Sistema de Denúncias Urbanas · Braço do Norte · 2026</p>
     </div>
   </div>
 </div>
@@ -540,6 +614,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <li><a id="mn-dash" class="active" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
         <li><a id="mn-lista" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
         <li><a id="mn-form" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()">
         <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
@@ -589,6 +664,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
         <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
         <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-m2-av">?</div><div class="sb-user-info"><div class="name" id="sb-m2-nome">–</div><div class="role">Morador</div></div></div>
@@ -620,6 +696,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
         <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
         <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-m3-av">?</div><div class="sb-user-info"><div class="name" id="sb-m3-nome">–</div><div class="role">Morador</div></div></div>
@@ -659,6 +736,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           </div>
 
                     <div class="wz-panel" data-panel="2">
+            <input type="hidden" id="f-lat"><input type="hidden" id="f-lng">
+            <button type="button" class="btn-geo" id="btn-geo" onclick="usarLocalizacao()">
+              <svg viewBox="0 0 20 20" fill="currentColor" style="width:15px;height:15px"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z"/></svg>
+              Usar minha localização atual
+            </button>
+            <p class="geo-status" id="geo-status"></p>
             <div class="form-grid">
               <div class="form-group"><label class="form-label">Bairro *</label>
                 <select class="form-select" id="f-bairro">
@@ -738,6 +821,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
         <li><a class="active" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
         <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-md-av">?</div><div class="sb-user-info"><div class="name" id="sb-md-nome">–</div><div class="role">Morador</div></div></div>
@@ -757,6 +841,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <ul class="sb-nav">
         <li><a class="active" onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
         <li><a onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f" id="sb-a-av">A</div><div class="sb-user-info"><div class="name" id="sb-a-nome">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -791,6 +876,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <ul class="sb-nav">
         <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
         <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name" id="sb-al-nome">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -823,6 +909,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <ul class="sb-nav">
         <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
         <li><a class="active" onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -830,6 +917,47 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     <div class="main">
       <header class="topbar"><div><div class="topbar-title" id="pdet-t">Detalhe</div><div class="topbar-sub" id="pdet-s">–</div></div><div class="topbar-right"><button class="btn-new" style="background:var(--green-600)" id="btn-resolver" onclick="marcarResolvida()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>Marcar resolvida</button></div></header>
       <div class="content" id="pdet-content"><div class="loading"><div class="spinner"></div>Carregando...</div></div>
+    </div>
+  </div>
+</div>
+
+<div id="v-mapa" class="view">
+  <div class="layout">
+    <aside class="sidebar" id="sb-mapa-morador">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Menu</div>
+      <ul class="sb-nav">
+        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" id="sb-mapa-m-av">?</div><div class="sb-user-info"><div class="name" id="sb-mapa-m-nome">–</div><div class="role">Morador</div></div></div>
+    </aside>
+    <aside class="sidebar" id="sb-mapa-pref" style="display:none">
+      <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
+      <div class="sb-section">Prefeitura</div>
+      <ul class="sb-nav">
+        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
+        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+      </ul>
+      <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
+      <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f" id="sb-mapa-a-av">A</div><div class="sb-user-info"><div class="name" id="sb-mapa-a-nome">Admin</div><div class="role">Prefeitura</div></div></div>
+    </aside>
+    <div class="main">
+      <header class="topbar"><div><div class="topbar-title">Mapa da Cidade</div><div class="topbar-sub">Ocorrências reportadas por todos os moradores</div></div></header>
+      <div class="content">
+        <div class="mapa-legend">
+          <span class="mapa-leg-item"><span class="mapa-dot" style="background:var(--slate-400)"></span>Recebida</span>
+          <span class="mapa-leg-item"><span class="mapa-dot" style="background:var(--amber-500)"></span>Em análise</span>
+          <span class="mapa-leg-item"><span class="mapa-dot" style="background:#8b5cf6"></span>Encaminhada</span>
+          <span class="mapa-leg-item"><span class="mapa-dot" style="background:var(--blue-500)"></span>Em atendimento</span>
+          <span class="mapa-leg-item"><span class="mapa-dot" style="background:var(--green-500)"></span>Resolvida</span>
+        </div>
+        <div id="mapa-leaflet" class="mapa-leaflet"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -902,6 +1030,103 @@ function badge(status) { return `<span class="badge ${BADGE_MAP[status] || 'badg
 function catEmoji(cat) {
   const m = { 'Pavimentação': '🚧', 'Iluminação pública': '💡', 'Limpeza urbana': '🗑️', 'Sinalização': '🚦', 'Drenagem / Bueiro': '💧', 'Parques e jardins': '🌳', 'Outros': '📋' };
   return (m[cat] || '📋') + ' ' + cat;
+}
+
+const BAIRRO_CENTROS = {
+  'Centro': [-28.2761, -49.1712], 'Pinheiral': [-28.2650, -49.1580], 'Baixo Pinheiral': [-28.2700, -49.1520],
+  'São Maurício': [-28.2900, -49.1800], 'Rio Glória': [-28.2550, -49.1900], 'Santa Clara': [-28.2820, -49.1650],
+  'Outro': [-28.2761, -49.1712]
+};
+const MAPA_COR_STATUS = { 'Recebida': '#94a3b8', 'Em análise': '#f59e0b', 'Encaminhada': '#8b5cf6', 'Em atendimento': '#3b82f6', 'Resolvida': '#22c55e' };
+
+function jitterFromId(id, amount) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  const a = (((h % 1000) / 1000) - 0.5) * 2 * amount;
+  const b = ((((h >>> 3) % 1000) / 1000) - 0.5) * 2 * amount;
+  return [a, b];
+}
+
+let mapaLeaflet = null;
+let mapaMarkers = [];
+
+async function loadMapa() {
+  goView('v-mapa');
+  document.getElementById('sb-mapa-morador').style.display = SESSION.role === 'admin' ? 'none' : 'flex';
+  document.getElementById('sb-mapa-pref').style.display = SESSION.role === 'admin' ? 'flex' : 'none';
+
+  if (typeof L === 'undefined') {
+    document.getElementById('mapa-leaflet').innerHTML = '<div class="empty"><p>Não foi possível carregar o mapa (sem conexão com a internet).</p></div>';
+    return;
+  }
+
+  if (!mapaLeaflet) {
+    mapaLeaflet = L.map('mapa-leaflet').setView([-28.2761, -49.1712], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(mapaLeaflet);
+  } else {
+    setTimeout(() => mapaLeaflet.invalidateSize(), 50);
+  }
+
+  mapaMarkers.forEach(m => mapaLeaflet.removeLayer(m));
+  mapaMarkers = [];
+
+  try {
+    const pontos = await api('GET', '/api/mapa');
+    pontos.forEach(p => {
+      let lat = p.lat, lng = p.lng;
+      if (lat == null || lng == null) {
+        const centro = BAIRRO_CENTROS[p.bairro] || BAIRRO_CENTROS['Outro'];
+        const [ja, jb] = jitterFromId(p.id, 0.006);
+        lat = centro[0] + ja; lng = centro[1] + jb;
+      }
+      const cor = MAPA_COR_STATUS[p.status] || '#94a3b8';
+      const icon = L.divIcon({
+        className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:${cor};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8]
+      });
+      const marker = L.marker([lat, lng], { icon }).addTo(mapaLeaflet);
+      const acao = p.isMine || SESSION.role === 'admin'
+        ? `<a class="mapa-popup-link" href="#" onclick="fecharPopupEAbrir('${p.id}');return false;">Ver detalhes →</a>`
+        : `<button class="mapa-btn-apoiar ${p.apoiado ? 'apoiado' : ''}" id="apoiar-${p.id}" onclick="apoiarNoMapa('${p.id}')">${p.apoiado ? '✓ Você apoia' : 'Eu também tenho esse problema'}</button>`;
+      const quem = SESSION.role === 'admin' && p.nomeUsuario ? `${esc(p.nomeUsuario)} · ` : '';
+      marker.bindPopup(`
+        <div class="mapa-popup">
+          <div class="mapa-popup-cat">${esc(p.categoria)}</div>
+          <div class="mapa-popup-title">${esc(p.titulo)}</div>
+          <div class="mapa-popup-meta">${quem}${esc(p.bairro)} · ${p.protocolo} · ${p.apoios} apoio${p.apoios === 1 ? '' : 's'}</div>
+          <div class="mapa-popup-actions">${acao}</div>
+        </div>
+      `);
+      mapaMarkers.push(marker);
+    });
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+async function apoiarNoMapa(id) {
+  try {
+    const r = await api('POST', '/api/ocorrencias/' + id + '/apoiar');
+    const btn = document.getElementById('apoiar-' + id);
+    if (btn) {
+      btn.classList.toggle('apoiado', r.apoiado);
+      btn.textContent = r.apoiado ? '✓ Você apoia' : 'Eu também tenho esse problema';
+      const meta = btn.closest('.mapa-popup')?.querySelector('.mapa-popup-meta');
+      if (meta) meta.textContent = meta.textContent.replace(/\d+ apoios?/, `${r.total} apoio${r.total === 1 ? '' : 's'}`);
+    }
+    toast(r.apoiado ? 'Você apoiou essa ocorrência!' : 'Apoio removido.');
+  } catch (e) {
+    toast(e.message);
+  }
+}
+
+function fecharPopupEAbrir(id) {
+  if (mapaLeaflet) mapaLeaflet.closePopup();
+  if (SESSION.role === 'admin') abrirPrefDet(id);
+  else abrirMoradorDet(id);
 }
 
 function renderOcStepper(statusAtual) {
@@ -1011,17 +1236,44 @@ async function doLogout() {
 
 function afterLogin() {
   const ini = initials(SESSION.nome);
-  ['sb-m-av','sb-m2-av','sb-m3-av','sb-s-av','sb-md-av'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = ini; });
-  ['sb-m-nome','sb-m2-nome','sb-m3-nome','sb-s-nome','sb-md-nome'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = SESSION.nome; });
+  ['sb-m-av','sb-m2-av','sb-m3-av','sb-s-av','sb-md-av','sb-mapa-m-av'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = ini; });
+  ['sb-m-nome','sb-m2-nome','sb-m3-nome','sb-s-nome','sb-md-nome','sb-mapa-m-nome'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = SESSION.nome; });
   document.getElementById('sb-a-av').textContent = ini;
   document.getElementById('sb-a-nome').textContent = SESSION.nome;
   if (document.getElementById('sb-al-nome')) document.getElementById('sb-al-nome').textContent = SESSION.nome;
+  if (document.getElementById('sb-mapa-a-nome')) document.getElementById('sb-mapa-a-nome').textContent = SESSION.nome;
 
   if (SESSION.role === 'admin') {
     loadPrefDash();
   } else {
     loadMoradorDash();
   }
+  if (!SESSION.termosAceitos) mostrarTermos();
+}
+
+function mostrarTermos() {
+  document.getElementById('termos-modal').classList.add('show');
+}
+
+async function aceitarTermos() {
+  const btn = document.getElementById('termos-btn-aceitar');
+  btn.disabled = true; btn.textContent = 'Confirmando...';
+  try {
+    await api('POST', '/api/aceitar-termos');
+    SESSION.termosAceitos = true;
+    localStorage.setItem('urbaniza+_session', JSON.stringify(SESSION));
+    document.getElementById('termos-modal').classList.remove('show');
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Li e aceito os termos';
+  }
+}
+
+function recusarTermos() {
+  document.getElementById('termos-modal').classList.remove('show');
+  doLogout();
+  toast('É preciso aceitar os termos de uso para continuar.');
 }
 
 async function moradorNav(page) {
@@ -1115,7 +1367,49 @@ function wizardReset() {
   document.querySelectorAll('.wz-cat-card').forEach(c => c.classList.remove('selected'));
   const catInput = document.getElementById('f-categoria');
   if (catInput) catInput.value = '';
+  document.getElementById('f-lat').value = ''; document.getElementById('f-lng').value = '';
+  const gs = document.getElementById('geo-status');
+  if (gs) { gs.textContent = ''; gs.classList.remove('show'); }
   wizardGoTo(1);
+}
+
+async function usarLocalizacao() {
+  const btn = document.getElementById('btn-geo');
+  const status = document.getElementById('geo-status');
+  if (!navigator.geolocation) { toast('Seu navegador não suporta geolocalização.'); return; }
+  btn.disabled = true;
+  status.textContent = 'Obtendo sua localização...';
+  status.classList.add('show');
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const { latitude, longitude } = pos.coords;
+    document.getElementById('f-lat').value = latitude;
+    document.getElementById('f-lng').value = longitude;
+    status.textContent = 'Identificando o endereço...';
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, { headers: { 'Accept-Language': 'pt-BR' } });
+      const data = await r.json();
+      const addr = data.address || {};
+      const rua = addr.road || addr.pedestrian || addr.residential || '';
+      const numero = addr.house_number ? `, ${addr.house_number}` : '';
+      document.getElementById('f-endereco').value = rua ? (rua + numero) : (data.display_name ? data.display_name.split(',').slice(0, 2).join(',').trim() : `Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`);
+      const bairroDetectado = (addr.suburb || addr.neighbourhood || addr.village || '').toLowerCase();
+      const bairroSelect = document.getElementById('f-bairro');
+      const opcoes = Array.from(bairroSelect.options).map(o => o.value).filter(Boolean);
+      const match = bairroDetectado && opcoes.find(o => o.toLowerCase().includes(bairroDetectado) || bairroDetectado.includes(o.toLowerCase()));
+      if (match) bairroSelect.value = match;
+      status.textContent = '📍 Endereço preenchido pela sua localização — confira antes de continuar.';
+      toast('Localização aplicada!');
+    } catch (e) {
+      document.getElementById('f-endereco').value = `Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`;
+      status.textContent = 'Localização capturada, mas não deu pra identificar o endereço — confira/edite abaixo.';
+    } finally {
+      btn.disabled = false;
+    }
+  }, (err) => {
+    btn.disabled = false;
+    status.classList.remove('show');
+    toast(err.code === 1 ? 'Permissão de localização negada.' : 'Não foi possível obter sua localização.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
 async function loadMoradorDash() {
@@ -1238,10 +1532,47 @@ async function abrirMoradorDet(id) {
             ${badge(o.status)}
             <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
           </div>
+          ${renderAvaliacaoCard(o)}
         </div>
       </div>`;
   } catch (e) {
     content.innerHTML = `<div class="empty"><p>Erro ao carregar: ${e.message}</p></div>`;
+  }
+}
+
+let avaliacaoNotaSelecionada = 0;
+
+function renderAvaliacaoCard(o) {
+  if (o.status !== 'Resolvida') return '';
+  if (o.avaliacao) {
+    return `<div class="card" style="margin-top:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Sua avaliação</div>
+      <div class="aval-stars-display">${[1,2,3,4,5].map(n => `<span class="aval-star ${n <= o.avaliacao.nota ? 'filled' : ''}">★</span>`).join('')}</div>
+      ${o.avaliacao.comentario ? `<div style="font-size:13px;color:var(--slate-600);margin-top:10px;font-style:italic">"${esc(o.avaliacao.comentario)}"</div>` : ''}
+    </div>`;
+  }
+  avaliacaoNotaSelecionada = 0;
+  return `<div class="card" style="margin-top:16px">
+    <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Como foi a resolução?</div>
+    <div class="aval-stars" id="aval-stars">${[1,2,3,4,5].map(n => `<span class="aval-star" data-n="${n}" onclick="selecionarNota(${n})">★</span>`).join('')}</div>
+    <textarea class="form-textarea" id="aval-comentario" placeholder="Comentário (opcional)" style="margin-top:10px;min-height:70px"></textarea>
+    <button class="btn-submit" style="margin-top:10px;width:100%;justify-content:center" onclick="enviarAvaliacao('${o.id}')">Enviar avaliação</button>
+  </div>`;
+}
+
+function selecionarNota(n) {
+  avaliacaoNotaSelecionada = n;
+  document.querySelectorAll('#aval-stars .aval-star').forEach(s => s.classList.toggle('filled', +s.dataset.n <= n));
+}
+
+async function enviarAvaliacao(id) {
+  if (!avaliacaoNotaSelecionada) { toast('Escolha uma nota de 1 a 5 estrelas.'); return; }
+  try {
+    await api('POST', `/api/ocorrencias/${id}/avaliar`, { nota: avaliacaoNotaSelecionada, comentario: document.getElementById('aval-comentario').value.trim() });
+    toast('Obrigado pela avaliação!');
+    abrirMoradorDet(id);
+  } catch (e) {
+    toast(e.message);
   }
 }
 
@@ -1341,6 +1672,8 @@ async function enviarOcorrencia() {
   }
 
   try {
+    const latVal = document.getElementById('f-lat').value;
+    const lngVal = document.getElementById('f-lng').value;
     const result = await api('POST', '/api/ocorrencias', {
       titulo,
       descricao: document.getElementById('f-descricao').value.trim(),
@@ -1348,10 +1681,14 @@ async function enviarOcorrencia() {
       bairro,
       endereco,
       referencia: document.getElementById('f-referencia').value.trim(),
-      foto: fotoUrl
+      foto: fotoUrl,
+      lat: latVal ? parseFloat(latVal) : undefined,
+      lng: lngVal ? parseFloat(lngVal) : undefined
     });
     document.getElementById('proto-gerado').textContent = result.protocolo;
     ['f-titulo','f-descricao','f-endereco','f-referencia'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-lat').value = ''; document.getElementById('f-lng').value = '';
+    document.getElementById('geo-status').textContent = ''; document.getElementById('geo-status').classList.remove('show');
     document.getElementById('f-categoria').value = '';
     document.getElementById('f-bairro').value = '';
     document.getElementById('foto-preview').style.display = 'none';
@@ -1511,6 +1848,11 @@ async function abrirPrefDet(id) {
             ${badge(o.status)}
             <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
           </div>
+          ${o.avaliacao ? `<div class="card">
+            <div style="font-size:11px;font-weight:700;color:var(--slate-400);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Avaliação do cidadão</div>
+            <div class="aval-stars-display">${[1,2,3,4,5].map(n => `<span class="aval-star ${n <= o.avaliacao.nota ? 'filled' : ''}">★</span>`).join('')}</div>
+            ${o.avaliacao.comentario ? `<div style="margin-top:10px;font-size:13px;color:var(--slate-500);font-style:italic">"${esc(o.avaliacao.comentario)}"</div>` : ''}
+          </div>` : ''}
           <div class="card">
             <div class="action-tabs">
               <button type="button" class="action-tab active" data-tab="status" onclick="actionTab('status')">Status</button>
@@ -1613,6 +1955,8 @@ function esc(str) {
       SESSION = JSON.parse(saved);
       api('GET', '/api/me').then(u => {
         SESSION.nome = u.nome;
+        SESSION.termosAceitos = u.termosAceitos;
+        localStorage.setItem('urbaniza+_session', JSON.stringify(SESSION));
         afterLogin();
       }).catch(() => {
         SESSION = null;
