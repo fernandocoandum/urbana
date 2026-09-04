@@ -122,16 +122,23 @@ function saveJsonDB() {
 function hash(str) { return crypto.createHash('sha256').update(str).digest('hex'); }
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
 
+// Ano corrente no fuso de Braço do Norte (America/Sao_Paulo), para o protocolo
+// nunca ficar preso a um ano fixo (antes hardcoded em "2026").
+function anoAtualBR() {
+  return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', year: 'numeric' }).format(new Date());
+}
+
 async function gerarProtocolo() {
+  const ano = anoAtualBR();
   if (usePostgres) {
     const r = await pool.query(`UPDATE config SET value=(value::int+1)::text WHERE key='next_protocolo' RETURNING value`);
     const n = String(parseInt(r.rows[0].value) - 1).padStart(4,'0');
-    return `PROT-2026-${n}`;
+    return `PROT-${ano}-${n}`;
   }
   const n = String(jsonDB.nextProtocolo).padStart(4,'0');
   jsonDB.nextProtocolo++;
   saveJsonDB();
-  return `PROT-2026-${n}`;
+  return `PROT-${ano}-${n}`;
 }
 
 // ── DB ABSTRACTION ───────────────────────────────────────────────────
