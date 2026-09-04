@@ -340,8 +340,31 @@ const server = http.createServer(async (req, res) => {
     filePath = path.join(__dirname, 'public', filePath);
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath);
-      const mime = { '.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.gif':'image/gif', '.svg':'image/svg+xml', '.webp':'image/webp' };
-      res.writeHead(200, { 'Content-Type': mime[ext]||'application/octet-stream' });
+      const mime = { '.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.gif':'image/gif', '.svg':'image/svg+xml', '.webp':'image/webp', '.mp4':'video/mp4', '.webm':'video/webm' };
+      const contentType = mime[ext] || 'application/octet-stream';
+      const { size } = fs.statSync(filePath);
+
+      // Vídeo (e qualquer arquivo grande) precisa responder a "Range requests":
+      // sem isso, navegadores (principalmente Safari/iOS) recusam tocar o vídeo.
+      const range = req.headers.range;
+      if (range) {
+        const match = /bytes=(\d*)-(\d*)/.exec(range);
+        const start = match && match[1] ? parseInt(match[1], 10) : 0;
+        const end = match && match[2] ? parseInt(match[2], 10) : size - 1;
+        if (isNaN(start) || isNaN(end) || start > end || end >= size) {
+          res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+          return res.end();
+        }
+        res.writeHead(206, {
+          'Content-Type': contentType,
+          'Content-Length': end - start + 1,
+          'Content-Range': `bytes ${start}-${end}/${size}`,
+          'Accept-Ranges': 'bytes'
+        });
+        return fs.createReadStream(filePath, { start, end }).pipe(res);
+      }
+
+      res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': size, 'Accept-Ranges': 'bytes' });
       return fs.createReadStream(filePath).pipe(res);
     }
     const idx = path.join(__dirname, 'public', 'index.html');
