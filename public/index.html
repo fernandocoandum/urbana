@@ -31,7 +31,7 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 @keyframes authPulse{0%,100%{box-shadow:0 6px 18px rgba(37,99,235,.5)}50%{box-shadow:0 6px 26px rgba(37,99,235,.8)}}
 @keyframes authSheenMove{0%{transform:translate(-30%,-30%) rotate(0deg)}100%{transform:translate(-30%,-30%) rotate(360deg)}}
 
-.auth-stage{position:relative;min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#02040a}
+.auth-stage{position:relative;min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;overflow:clip;background:#02040a}
 .auth-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transform:scale(1.02)}
 .auth-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 38%,rgba(10,14,30,.1) 0%,rgba(4,8,22,.4) 55%,rgba(2,4,14,.68) 100%)}
 .auth-shell{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;padding:20px}
@@ -39,7 +39,7 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 /* the glass card itself: thin, very translucent, blurred + saturated backdrop
    (approximates Apple's "liquid glass" material), with a rotating specular
    sheen and a bright rim-light edge that catches like real glass */
-.auth-card{position:relative;overflow:hidden;width:100%;background:rgba(255,255,255,.08);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.28);border-radius:26px;padding:24px 22px 20px;box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.04);animation:authCardIn .6s cubic-bezier(.22,1,.36,1) both}
+.auth-card{position:relative;overflow:hidden;overflow:clip;width:100%;background:rgba(255,255,255,.08);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.28);border-radius:26px;padding:24px 22px 20px;box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.04);animation:authCardIn .6s cubic-bezier(.22,1,.36,1) both}
 .auth-card::before{content:'';position:absolute;z-index:0;top:-60%;left:-60%;width:220%;height:220%;background:conic-gradient(from 0deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.16) 8%,rgba(255,255,255,0) 20%,rgba(255,255,255,0) 100%);animation:authSheenMove 9s linear infinite;pointer-events:none}
 .auth-card::after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(160deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 40%);pointer-events:none}
 .auth-card-inner{position:relative;z-index:1}
@@ -98,7 +98,7 @@ body{background-color:var(--bg)}
 
 /* ─ LAYOUT ─ */
 .layout{display:flex;flex:1}
-.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);position:relative;background:linear-gradient(180deg,rgba(17,24,44,.94),rgba(9,13,26,.94));backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh;box-shadow:1px 0 0 rgba(255,255,255,.05);overflow-x:hidden}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);position:relative;background:linear-gradient(180deg,rgba(17,24,44,.94),rgba(9,13,26,.94));backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh;box-shadow:1px 0 0 rgba(255,255,255,.05);overflow-x:hidden;overflow-x:clip}
 .sidebar::before{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%);pointer-events:none;z-index:1}
 .sidebar::after{content:'';position:absolute;top:-80px;left:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.35),transparent 70%);pointer-events:none;filter:blur(10px)}
 .sb-logo{padding:20px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
@@ -335,7 +335,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
    bloco: CTA à esquerda, números agrupados à direita — menos peças
    soltas na tela, mais parecido com um "hub" pessoal do que um
    template de admin genérico. */
-.home-hero{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:26px;padding:34px 38px;margin-bottom:26px;position:relative;overflow:hidden;box-shadow:0 20px 48px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.home-hero{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:26px;padding:34px 38px;margin-bottom:26px;position:relative;overflow:hidden;overflow:clip;box-shadow:0 20px 48px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
 .home-hero::after{content:'';position:absolute;right:-70px;bottom:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)}
 .home-hero::before{content:'';position:absolute;top:0;left:0;width:70px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:bannerSheen 6s ease-in-out infinite;pointer-events:none}
 .home-hero-main{position:relative;z-index:1;flex:1;min-width:240px}
@@ -350,7 +350,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 
 /* ─ BANNER (mantido para outros usos) ─ */
 @keyframes bannerSheen{0%{transform:translateX(-120%) skewX(-15deg)}100%{transform:translateX(220%) skewX(-15deg)}}
-.cit-banner{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:22px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 16px 40px rgba(37,99,235,.28)}
+.cit-banner{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:22px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;overflow:clip;box-shadow:0 16px 40px rgba(37,99,235,.28)}
 .cit-banner::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
 .cit-banner::before{content:'';position:absolute;top:0;left:0;width:60px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);animation:bannerSheen 5s ease-in-out infinite;pointer-events:none}
 .cit-banner-t{font-family:var(--font-display);font-size:21px;font-weight:700;color:#fff;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.02em}
@@ -468,6 +468,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .form-footer{flex-wrap:wrap}
   .form-footer .btn-submit,.form-footer .btn-cancel{flex:1;justify-content:center;min-width:140px}
   .auth-video{transform:scale(1.15)}
+  .auth-input,.form-input,.form-select,.form-textarea,.input-search{font-size:16px}
   .home-hero{padding:26px}
   .home-hero-stats{width:100%;justify-content:space-between}
   .hh-stat{padding:0 8px}
