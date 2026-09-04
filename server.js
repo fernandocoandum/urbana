@@ -5,7 +5,6 @@ const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 
-// ── BANCO: usa PostgreSQL se disponível, senão JSON local ──────────
 let usePostgres = false;
 let pool = null;
 
@@ -51,26 +50,23 @@ async function initDB() {
           value TEXT NOT NULL
         );
       `);
-      // seed admin
       const adminHash = hash('admin');
       await pool.query(`
         INSERT INTO users (id, nome, email, senha, role) 
         VALUES ('u1','Admin Prefeitura','admin@prefeitura.gov.br',$1,'admin')
         ON CONFLICT (email) DO NOTHING
       `, [adminHash]);
-      // seed protocolo counter
       await pool.query(`INSERT INTO config (key,value) VALUES ('next_protocolo','4') ON CONFLICT (key) DO NOTHING`);
-      // seed ocorrências de exemplo
       await seedExamples();
       usePostgres = true;
-      console.log('  ✅  Banco PostgreSQL conectado');
+      console.log('Banco PostgreSQL conectado');
     } catch (e) {
-      console.log('  ⚠️  PostgreSQL falhou, usando JSON local:', e.message);
+      console.log('PostgreSQL falhou, usando JSON local:', e.message);
       usePostgres = false;
       initJsonDB();
     }
   } else {
-    console.log('  📁  Usando banco JSON local (db.json)');
+    console.log('Usando banco JSON local (db.json)');
     initJsonDB();
   }
 }
@@ -93,7 +89,6 @@ async function seedExamples() {
   await pool.query(`UPDATE config SET value='4' WHERE key='next_protocolo'`);
 }
 
-// ── JSON LOCAL ──────────────────────────────────────────────────────
 const DB_FILE = path.join(__dirname, 'db.json');
 let jsonDB = null;
 
@@ -118,12 +113,9 @@ function saveJsonDB() {
   try { fs.writeFileSync(DB_FILE, JSON.stringify(jsonDB, null, 2)); } catch {}
 }
 
-// ── HELPERS ─────────────────────────────────────────────────────────
 function hash(str) { return crypto.createHash('sha256').update(str).digest('hex'); }
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
 
-// Ano corrente no fuso de Braço do Norte (America/Sao_Paulo), para o protocolo
-// nunca ficar preso a um ano fixo (antes hardcoded em "2026").
 function anoAtualBR() {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', year: 'numeric' }).format(new Date());
 }
@@ -141,7 +133,6 @@ async function gerarProtocolo() {
   return `PROT-${ano}-${n}`;
 }
 
-// ── DB ABSTRACTION ───────────────────────────────────────────────────
 const db = {
   async findUser(email) {
     if (usePostgres) {
@@ -298,7 +289,6 @@ const db = {
   }
 };
 
-// ── HTTP HELPERS ─────────────────────────────────────────────────────
 function parseBody(req) {
   return new Promise((res,rej) => {
     let body = '';
@@ -324,7 +314,6 @@ async function authUser(req) {
   return await db.findUserById(session.userId);
 }
 
-// ── SERVIDOR ─────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = url.pathname;
@@ -334,7 +323,6 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  // Arquivos estáticos
   if (req.method === 'GET' && !pathname.startsWith('/api/')) {
     let filePath = pathname === '/' ? '/index.html' : pathname;
     filePath = path.join(__dirname, 'public', filePath);
@@ -344,8 +332,6 @@ const server = http.createServer(async (req, res) => {
       const contentType = mime[ext] || 'application/octet-stream';
       const { size } = fs.statSync(filePath);
 
-      // Vídeo (e qualquer arquivo grande) precisa responder a "Range requests":
-      // sem isso, navegadores (principalmente Safari/iOS) recusam tocar o vídeo.
       const range = req.headers.range;
       if (range) {
         const match = /bytes=(\d*)-(\d*)/.exec(range);
@@ -373,7 +359,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
-    // CADASTRO
     if (pathname === '/api/cadastro' && req.method === 'POST') {
       const { nome, email, senha, bairro } = await parseBody(req);
       if (!nome?.trim() || !email?.trim() || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
@@ -383,7 +368,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 201, { ok:true });
     }
 
-    // LOGIN
     if (pathname === '/api/login' && req.method === 'POST') {
       const { email, senha } = await parseBody(req);
       const user = await db.findUser(email?.trim().toLowerCase());
@@ -393,14 +377,12 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id });
     }
 
-    // LOGOUT
     if (pathname === '/api/logout' && req.method === 'POST') {
       const token = getToken(req);
       if (token) await db.deleteSession(token);
       return json(res, 200, { ok:true });
     }
 
-    // ME
     if (pathname === '/api/me' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
@@ -408,7 +390,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, safe);
     }
 
-    // STATS (público para landing)
     if (pathname === '/api/stats' && req.method === 'GET') {
       const user = await authUser(req);
       const stats = await db.getStats();
@@ -418,7 +399,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, stats);
     }
 
-    // LISTAR OCORRÊNCIAS
     if (pathname === '/api/ocorrencias' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
@@ -428,7 +408,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, await db.listOcorrencias(filters));
     }
 
-    // CRIAR OCORRÊNCIA
     if (pathname === '/api/ocorrencias' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
@@ -441,7 +420,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 201, { ok:true, protocolo, id:oc.id });
     }
 
-    // DETALHE
     const matchDet = pathname.match(/^\/api\/ocorrencias\/([^/]+)$/);
     if (matchDet && req.method === 'GET') {
       const user = await authUser(req);
@@ -452,7 +430,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, oc);
     }
 
-    // ATUALIZAR STATUS
     const matchUpd = pathname.match(/^\/api\/ocorrencias\/([^/]+)\/status$/);
     if (matchUpd && req.method === 'PUT') {
       const user = await authUser(req);
@@ -463,7 +440,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok:true });
     }
 
-    // UPLOAD FOTO
     if (pathname === '/api/upload' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
@@ -484,14 +460,13 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// ── START ─────────────────────────────────────────────────────────────
 initDB().then(() => {
   server.listen(PORT, '0.0.0.0', () => {
     console.log('');
-    console.log('  ✅  Servidor Urbana rodando!');
-    console.log(`  🌐  http://localhost:${PORT}`);
+    console.log('Servidor Urbana rodando na porta ' + PORT);
+    console.log(`http://localhost:${PORT}`);
     console.log('');
-    console.log('  Login admin: admin@prefeitura.gov.br / admin');
+    console.log('Login admin: admin@prefeitura.gov.br / admin');
     console.log('');
   });
 });

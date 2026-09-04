@@ -21,10 +21,8 @@
 }
 html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(--slate-800);font-size:14px;line-height:1.5}
 
-/* ─ VIEWS ─ */
 .view{display:none!important}.view.active{display:flex!important;flex-direction:column;min-height:100vh}
 
-/* ─ AUTH SCREEN — "liquid glass" ─ */
 @keyframes authFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes authCardIn{from{opacity:0;transform:translateY(22px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes authShake{10%,90%{transform:translateX(-1px)}20%,80%{transform:translateX(2px)}30%,50%,70%{transform:translateX(-4px)}40%,60%{transform:translateX(4px)}}
@@ -36,9 +34,6 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 .auth-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 38%,rgba(10,14,30,.1) 0%,rgba(4,8,22,.4) 55%,rgba(2,4,14,.68) 100%)}
 .auth-shell{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;padding:20px}
 
-/* the glass card itself: thin, very translucent, blurred + saturated backdrop
-   (approximates Apple's "liquid glass" material), with a rotating specular
-   sheen and a bright rim-light edge that catches like real glass */
 .auth-card{position:relative;overflow:hidden;overflow:clip;width:100%;background:rgba(255,255,255,.08);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:1px solid rgba(255,255,255,.28);border-radius:26px;padding:24px 22px 20px;box-shadow:0 16px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 0 1px rgba(255,255,255,.04);animation:authCardIn .6s cubic-bezier(.22,1,.36,1) both}
 .auth-card::before{content:'';position:absolute;z-index:0;top:-60%;left:-60%;width:220%;height:220%;background:conic-gradient(from 0deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.16) 8%,rgba(255,255,255,0) 20%,rgba(255,255,255,0) 100%);animation:authSheenMove 9s linear infinite;pointer-events:none}
 .auth-card::after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(160deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 40%);pointer-events:none}
@@ -80,12 +75,6 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
   .auth-panel,.auth-tab-indicator,.auth-btn,.auth-input{transition-duration:.01ms!important}
 }
 
-/* ─ AMBIENT BACKDROP (behind every glass panel in the app) ─
-   Sem cor/contraste aqui atrás, o backdrop-filter dos cards não tem nada
-   pra "borrar" e o efeito de vidro fica invisível. O sidebar escuro ocupa
-   a esquerda da tela, então os blobs vão no próprio .content (a área
-   clara onde os cards ficam) em vez do body — senão ficam escondidos
-   atrás do sidebar ou fora da viewport. */
 body{background-color:var(--bg)}
 .content{
   background-image:
@@ -96,7 +85,6 @@ body{background-color:var(--bg)}
   background-repeat:no-repeat;
 }
 
-/* ─ LAYOUT ─ */
 .layout{display:flex;flex:1}
 .sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);position:relative;background:linear-gradient(180deg,rgba(17,24,44,.94),rgba(9,13,26,.94));backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh;box-shadow:1px 0 0 rgba(255,255,255,.05);overflow-x:hidden;overflow-x:clip}
 .sidebar::before{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%);pointer-events:none;z-index:1}
@@ -126,7 +114,6 @@ body{background-color:var(--bg)}
 .sb-logout:hover{background:rgba(239,68,68,.12);color:#fca5a5;border-color:rgba(239,68,68,.25)}
 .sb-logout:active{transform:scale(.96)}
 
-/* ─ MAIN ─ */
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 .topbar{background:rgba(248,250,253,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(15,23,42,.06);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-shrink:0}
 .topbar-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--slate-900);line-height:1.2;letter-spacing:-.015em}
@@ -137,7 +124,6 @@ body{background-color:var(--bg)}
 .btn-new:active{transform:translateY(0) scale(.96)}
 .content{padding:28px;flex:1}
 
-/* ─ BADGES ─ */
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(1.4)}}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11.5px;font-weight:600}
 .badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
@@ -147,13 +133,10 @@ body{background-color:var(--bg)}
 .badge-resolvida{background:var(--green-100);color:var(--green-700)}.badge-resolvida::before{background:var(--green-500)}
 .badge-encaminhada{background:#f3e8ff;color:#7c3aed}.badge-encaminhada::before{background:#8b5cf6;animation:dotPulse 2s ease-in-out infinite}
 
-/* ─ GLASS SURFACE (shared) ─ */
 @keyframes cardRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .metric-card,.card,.table-wrap,.mini-stat,.ocorr-card{position:relative;background:rgba(255,255,255,.6);backdrop-filter:blur(26px) saturate(200%);-webkit-backdrop-filter:blur(26px) saturate(200%);border:1px solid rgba(255,255,255,.7);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 14px 34px rgba(15,23,42,.08)}
-/* borda superior "acesa" — luz pegando na borda do vidro, igual no card de login */
 .metric-card::before,.card::before,.table-wrap::before,.mini-stat::before,.ocorr-card::before{content:'';position:absolute;top:0;left:14px;right:14px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);pointer-events:none}
 
-/* ─ METRICS ─ */
 .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
 .metric-card{border-radius:18px;padding:20px;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease;animation:cardRise .5s cubic-bezier(.22,1,.36,1) both}
 .metric-card:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(15,23,42,.12)}
@@ -173,12 +156,9 @@ body{background-color:var(--bg)}
 .mc-teal .mc-icon{background:linear-gradient(150deg,#ccfbf1,#f0fdfa);box-shadow:0 4px 14px rgba(13,148,136,.2),0 1px 0 rgba(255,255,255,.6) inset}.mc-teal .mc-icon svg{color:var(--teal-600)}
 .mc-green .mc-icon{background:linear-gradient(150deg,var(--green-100),var(--green-50));box-shadow:0 4px 14px rgba(22,163,74,.2),0 1px 0 rgba(255,255,255,.6) inset}.mc-green .mc-icon svg{color:var(--green-600)}
 
-/* ─ CARDS ─ */
 .card{border-radius:18px;padding:24px}
 .card-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:16px}
 
-/* ─ ACTIVITY FEED (dashboard da prefeitura — mais enxuto que a tabela
-   completa da página "Ocorrências", pra não duplicar a mesma visão) ─ */
 .feed-list{display:flex;flex-direction:column}
 .feed-item{display:flex;align-items:center;gap:14px;padding:13px 6px;border-bottom:1px solid rgba(15,23,42,.05);cursor:pointer;transition:background .15s ease,transform .1s ease;animation:rowIn .35s cubic-bezier(.22,1,.36,1) both}
 .feed-item:last-child{border-bottom:none}
@@ -192,7 +172,6 @@ body{background-color:var(--bg)}
 .feed-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
 .feed-date{font-size:11px;color:var(--slate-400)}
 
-/* ─ TABLES ─ */
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .table-wrap{border-radius:18px;overflow:hidden}
 .table-head{padding:16px 20px;border-bottom:1px solid rgba(15,23,42,.06);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -232,7 +211,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .btn-icon:hover{background:var(--blue-50);border-color:var(--blue-200);color:var(--blue-700)}
 .btn-icon:active{transform:scale(.92)}
 
-/* ─ FORM ─ */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .form-full{grid-column:1/-1}
 .form-group{display:flex;flex-direction:column;gap:6px}
@@ -250,7 +228,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .upload-preview{width:100%;max-height:200px;border-radius:12px;object-fit:cover;margin-top:0;display:none;animation:cardRise .4s cubic-bezier(.22,1,.36,1) both}
 .form-footer{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
 
-/* ─ WIZARD (nova ocorrência) ─ */
 .wizard-head{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
 .wizard-title{font-family:var(--font-display);font-size:19px;font-weight:700;margin-bottom:4px;letter-spacing:-.015em;color:var(--slate-900)}
 .wizard-sub{font-size:13px;color:var(--slate-400);margin-bottom:20px}
@@ -286,7 +263,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .btn-cancel:hover{background:var(--slate-50)}
 .btn-cancel:active{transform:scale(.96)}
 
-/* ─ TIMELINE ─ */
 @keyframes tlIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 .tl-item{display:flex;gap:14px;position:relative;animation:tlIn .4s cubic-bezier(.22,1,.36,1) both}
 .tl-item:nth-child(1){animation-delay:.03s}.tl-item:nth-child(2){animation-delay:.09s}.tl-item:nth-child(3){animation-delay:.15s}.tl-item:nth-child(4){animation-delay:.21s}.tl-item:nth-child(5){animation-delay:.27s}.tl-item:nth-child(n+6){animation-delay:.32s}
@@ -302,7 +278,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .tl-item.current .tl-title{color:var(--blue-700)}
 .tl-desc{font-size:12px;color:var(--slate-400);margin-top:2px;line-height:1.5}
 
-/* ─ DETAIL ─ */
 .oc-stepper{display:flex;align-items:center;margin:16px 0 4px;overflow-x:auto;padding-bottom:2px;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,#000 92%,transparent 100%)}
 .oc-stepper .wz-step{flex-shrink:0}
 .detail-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
@@ -314,7 +289,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .detail-img-wrap:hover{transform:scale(1.01)}
 .detail-img-wrap img{width:100%;height:100%;object-fit:cover}
 
-/* ─ ACTION CARD ─ */
 .action-tabs{display:flex;gap:2px;background:var(--slate-100);border-radius:100px;padding:3px;margin-bottom:16px}
 .action-tab{flex:1;padding:7px 8px;border-radius:100px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate-500);transition:all .2s ease;border:none;background:transparent;font-family:var(--font-ui)}
 .action-tab.active{background:#fff;color:var(--blue-700);box-shadow:0 1px 4px rgba(15,23,42,.12)}
@@ -330,11 +304,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .ab-success{background:linear-gradient(135deg,var(--green-500),var(--green-700));color:#fff;border:none;box-shadow:0 4px 14px rgba(22,163,74,.3)}.ab-success:hover{box-shadow:0 8px 20px rgba(22,163,74,.4);transform:translateY(-1px)}
 .ab-outline{background:transparent;border:1px solid var(--border);color:var(--slate-600)}.ab-outline:hover{background:var(--slate-50)}
 
-/* ─ HOME HERO (dashboard do morador) ─
-   Substitui banner + 4 caixas de estatística separadas por um único
-   bloco: CTA à esquerda, números agrupados à direita — menos peças
-   soltas na tela, mais parecido com um "hub" pessoal do que um
-   template de admin genérico. */
 .home-hero{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:26px;padding:34px 38px;margin-bottom:26px;position:relative;overflow:hidden;overflow:clip;box-shadow:0 20px 48px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
 .home-hero::after{content:'';position:absolute;right:-70px;bottom:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)}
 .home-hero::before{content:'';position:absolute;top:0;left:0;width:70px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:bannerSheen 6s ease-in-out infinite;pointer-events:none}
@@ -348,7 +317,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .hh-label{font-size:10.5px;color:rgba(255,255,255,.68);margin-top:4px;white-space:nowrap}
 .hh-sep{width:1px;height:34px;background:rgba(255,255,255,.18);flex-shrink:0}
 
-/* ─ BANNER (mantido para outros usos) ─ */
 @keyframes bannerSheen{0%{transform:translateX(-120%) skewX(-15deg)}100%{transform:translateX(220%) skewX(-15deg)}}
 .cit-banner{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:22px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;overflow:clip;box-shadow:0 16px 40px rgba(37,99,235,.28)}
 .cit-banner::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
@@ -359,7 +327,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .btn-banner:hover{background:var(--blue-50);transform:translateY(-1px)}
 .btn-banner:active{transform:scale(.96)}
 
-/* ─ MINI STATS ─ */
 .mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .mini-stat{border-radius:18px;padding:16px 18px;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease;animation:cardRise .5s cubic-bezier(.22,1,.36,1) both}
 .mini-stat:hover{transform:translateY(-3px);box-shadow:0 16px 36px rgba(15,23,42,.12)}
@@ -370,7 +337,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .ms-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate-900);letter-spacing:-.02em}
 .ms-label{font-size:12px;color:var(--slate-400);margin-top:2px}
 
-/* ─ CAT CHART ─ */
 .cat-bar-item{margin-bottom:14px}
 .cat-bar-item:last-child{margin-bottom:0}
 .cat-bar-label{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
@@ -379,15 +345,12 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .cat-bar-track{background:rgba(15,23,42,.06);border-radius:100px;height:7px;overflow:hidden}
 .cat-bar-fill{height:100%;border-radius:100px;width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}
 
-/* ─ TWO-COL ─ */
 .two-col-wide{display:grid;grid-template-columns:3fr 2fr;gap:20px;align-items:start;margin-bottom:20px}
 
-/* ─ BACK LINK ─ */
 .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--slate-400);font-size:13px;cursor:pointer;margin-bottom:20px;background:none;border:none;font-family:var(--font-ui);transition:color .15s ease,transform .15s ease}
 .back-link:hover{color:var(--blue-600);transform:translateX(-2px)}
 .back-link svg{width:14px;height:14px}
 
-/* ─ OCORR CARDS (morador) ─ */
 .ocorr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
 .ocorr-card{border-radius:18px;padding:18px 20px;cursor:pointer;transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s ease;animation:cardRise .45s cubic-bezier(.22,1,.36,1) both}
 .ocorr-grid .ocorr-card:nth-child(1){animation-delay:.02s}
@@ -404,7 +367,6 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .oc-proto{font-family:monospace;font-size:11px;color:var(--slate-400)}
 .oc-date{font-size:11px;color:var(--slate-400)}
 
-/* ─ SUCCESS ─ */
 @keyframes successPop{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
 @keyframes checkDraw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
 .success-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center}
@@ -412,18 +374,15 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .success-icon svg{width:36px;height:36px;color:var(--green-600);stroke-dasharray:24;stroke-dashoffset:24;animation:checkDraw .5s ease-out .3s both}
 .proto-box{background:linear-gradient(135deg,var(--slate-900),#1e293b);color:#60a5fa;font-family:monospace;font-size:22px;font-weight:700;padding:14px 32px;border-radius:14px;letter-spacing:.05em;margin-bottom:28px;animation:cardRise .5s cubic-bezier(.22,1,.36,1) .15s both;box-shadow:0 12px 30px rgba(15,23,42,.2)}
 
-/* ─ LOADING ─ */
 .loading{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--slate-400);font-size:14px;gap:10px}
 .spinner{width:20px;height:20px;border:2px solid var(--slate-200);border-top-color:var(--blue-500);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ─ EMPTY STATE ─ */
 @keyframes emptyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--slate-400)}
 .empty svg{width:48px;height:48px;margin-bottom:16px;opacity:.55;color:var(--blue-300);animation:emptyFloat 3.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(59,130,246,.18))}
 .empty p{font-size:14px}
 
-/* ─ TOAST ─ */
 .toast{position:fixed;bottom:24px;right:24px;background:rgba(15,23,42,.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);color:#f8fafc;padding:12px 20px;border-radius:100px;font-size:13.5px;font-weight:500;box-shadow:0 16px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.1);z-index:9999;display:flex;align-items:center;gap:10px;transform:translateY(80px) scale(.95);opacity:0;transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .3s ease;max-width:340px}
 .toast.show{transform:translateY(0) scale(1);opacity:1}
 .toast-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
@@ -431,12 +390,10 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .toast-dot.red{background:var(--red-500);box-shadow:0 0 8px rgba(239,68,68,.7)}
 .toast-dot.blue{background:var(--blue-500);box-shadow:0 0 8px rgba(59,130,246,.7)}
 
-/* ─ MOTION & POLISH (global) ─ */
 html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @keyframes viewFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .view.active{animation:viewFadeIn .4s cubic-bezier(.22,1,.36,1) both}
 
-/* ─ MOBILE MENU (hambúrguer fixo + gaveta lateral + fundo escurecido) ─ */
 .menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:260;width:38px;height:38px;border-radius:11px;background:rgba(17,24,44,.82);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s ease}
 .menu-toggle svg{width:18px;height:18px}
 .menu-toggle:active{transform:scale(.94)}
@@ -444,7 +401,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,20,.5);backdrop-filter:blur(2px);z-index:190;opacity:0;transition:opacity .25s ease}
 .sidebar-backdrop.show{display:block;opacity:1}
 
-/* ─ RESPONSIVE ─ */
 @media (max-width: 860px){
   .menu-toggle{display:flex}
   .layout{position:relative}
@@ -494,7 +450,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 </style>
 </head>
 <body>
-<!-- Botão de menu (só aparece no mobile) e fundo escurecido da gaveta lateral -->
 <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" hidden>
   <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.5 5.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1z"/></svg>
 </button>
@@ -502,7 +457,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 <div id="app">
 
-<!-- ══ TELA DE AUTH ══════════════════════════════════════════════════ -->
 <div id="v-auth" class="view active" style="display:flex!important">
   <div class="auth-stage">
     <video class="auth-video" autoplay muted loop playsinline preload="auto">
@@ -526,8 +480,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </div>
 
         <div class="auth-panels" id="auth-panels">
-          <!-- login -->
-          <div id="form-login" class="auth-panel active">
+                    <div id="form-login" class="auth-panel active">
             <div id="login-error" class="auth-error"></div>
             <div class="auth-form-group">
               <label class="auth-label">E-mail</label>
@@ -543,8 +496,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             </button>
           </div>
 
-          <!-- cadastro -->
-          <div id="form-cadastro" class="auth-panel">
+                    <div id="form-cadastro" class="auth-panel">
             <div id="cad-error" class="auth-error"></div>
             <div class="auth-form-group">
               <label class="auth-label">Nome completo</label>
@@ -579,7 +531,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ MORADOR: DASHBOARD ════════════════════════════════════════════ -->
 <div id="v-morador-dash" class="view">
   <div class="layout">
     <aside class="sidebar" id="sb-morador">
@@ -629,7 +580,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ MORADOR: LISTA ════════════════════════════════════════════════ -->
 <div id="v-morador-lista" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -661,7 +611,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ MORADOR: FORM ═════════════════════════════════════════════════ -->
 <div id="v-morador-form" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -697,8 +646,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
           <input type="hidden" id="f-categoria">
 
-          <!-- STEP 1 — categoria -->
-          <div class="wz-panel active" data-panel="1">
+                    <div class="wz-panel active" data-panel="1">
             <div class="wz-cat-grid">
               <button type="button" class="wz-cat-card" data-cat="Pavimentação" onclick="selectCategoria(this)"><span class="wz-cat-icon">🚧</span>Pavimentação</button>
               <button type="button" class="wz-cat-card" data-cat="Iluminação pública" onclick="selectCategoria(this)"><span class="wz-cat-icon">💡</span>Iluminação pública</button>
@@ -710,8 +658,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             </div>
           </div>
 
-          <!-- STEP 2 — local -->
-          <div class="wz-panel" data-panel="2">
+                    <div class="wz-panel" data-panel="2">
             <div class="form-grid">
               <div class="form-group"><label class="form-label">Bairro *</label>
                 <select class="form-select" id="f-bairro">
@@ -724,8 +671,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             </div>
           </div>
 
-          <!-- STEP 3 — detalhes -->
-          <div class="wz-panel" data-panel="3">
+                    <div class="wz-panel" data-panel="3">
             <div class="form-grid">
               <div class="form-group form-full"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
               <div class="form-group form-full"><label class="form-label">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
@@ -742,8 +688,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             </div>
           </div>
 
-          <!-- STEP 4 — revisão -->
-          <div class="wz-panel" data-panel="4">
+                    <div class="wz-panel" data-panel="4">
             <div id="wz-review"></div>
           </div>
 
@@ -757,7 +702,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ SUCESSO ═══════════════════════════════════════════════════════ -->
 <div id="v-sucesso" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -785,7 +729,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ MORADOR: DETALHE ══════════════════════════════════════════════ -->
 <div id="v-morador-det" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -806,7 +749,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ PREFEITURA: DASHBOARD ════════════════════════════════════════ -->
 <div id="v-pref-dash" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -841,7 +783,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ PREFEITURA: LISTA ════════════════════════════════════════════ -->
 <div id="v-pref-lista" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -874,7 +815,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-<!-- ══ PREFEITURA: DETALHE ═══════════════════════════════════════════ -->
 <div id="v-pref-det" class="view">
   <div class="layout">
     <aside class="sidebar">
@@ -894,17 +834,15 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
-</div><!-- #app -->
-
+</div>
 <div class="toast" id="toast"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span></div>
 
 <script>
-const API = '';  // mesmo host
-let SESSION = null;  // { token, role, nome, email, id }
+const API = '';
+let SESSION = null;
 let ocorrencias = [];
 let currentOcId = null;
 
-// ─── API helper ──────────────────────────────────────────────────────
 async function api(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (SESSION?.token) opts.headers['Authorization'] = 'Bearer ' + SESSION.token;
@@ -915,19 +853,14 @@ async function api(method, path, body) {
   return data;
 }
 
-// ─── VIEW ────────────────────────────────────────────────────────────
 function goView(id) {
   document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
   const el = document.getElementById(id);
   if (el) {
-    // reseta a animação de entrada: sem isso, o "transform" da animação
-    // continua ativo (fill-mode:both) e cria um containing-block para
-    // elementos position:fixed dentro da view (ex: sidebar mobile),
-    // fazendo eles "grudarem" na página em vez de ficarem fixos na tela
     el.style.animation = 'none';
     el.style.display = 'flex';
     el.classList.add('active');
-    void el.offsetWidth; // força reflow antes de reativar a animação
+    void el.offsetWidth;
     el.style.animation = '';
   }
   window.scrollTo(0, 0);
@@ -941,7 +874,6 @@ document.addEventListener('animationend', e => {
   }
 });
 
-// ─── MOBILE SIDEBAR ──────────────────────────────────────────────────
 function toggleSidebar() {
   const sidebar = document.querySelector('.view.active .sidebar');
   const backdrop = document.getElementById('sidebar-backdrop');
@@ -955,7 +887,6 @@ function closeSidebar() {
   if (backdrop) backdrop.classList.remove('show');
 }
 
-// ─── TOAST ───────────────────────────────────────────────────────────
 function toast(msg, type = 'green') {
   document.getElementById('toast-msg').textContent = msg;
   document.getElementById('toast-dot').className = 'toast-dot ' + type;
@@ -965,7 +896,6 @@ function toast(msg, type = 'green') {
   t._t = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ─── BADGE ───────────────────────────────────────────────────────────
 const BADGE_MAP = { 'Recebida': 'badge-recebida', 'Em análise': 'badge-analise', 'Encaminhada': 'badge-encaminhada', 'Em atendimento': 'badge-atendimento', 'Resolvida': 'badge-resolvida' };
 function badge(status) { return `<span class="badge ${BADGE_MAP[status] || 'badge-recebida'}">${status}</span>`; }
 
@@ -974,9 +904,6 @@ function catEmoji(cat) {
   return (m[cat] || '📋') + ' ' + cat;
 }
 
-// Barra de progresso horizontal (reaproveita o visual do stepper do
-// formulário) — dá pra ver o andamento de uma ocorrência num piscar de
-// olhos, em vez de ler uma lista vertical de datas de cima a baixo.
 function renderOcStepper(statusAtual) {
   const steps = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
   const idx = steps.indexOf(statusAtual);
@@ -987,9 +914,6 @@ function renderOcStepper(statusAtual) {
   }).join('')}</div>`;
 }
 
-// Fuso fixo em America/Sao_Paulo: sem isso, o horário exibido dependia do
-// fuso configurado no dispositivo de quem estava vendo a tela (podendo
-// mostrar a hora errada da ocorrência registrada).
 const TZ_BR = 'America/Sao_Paulo';
 function fmtDate(iso) {
   if (!iso) return '–';
@@ -1003,7 +927,6 @@ function initials(nome) {
   return (nome || '?').split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-// ─── AUTH ────────────────────────────────────────────────────────────
 function authTab(tab) {
   const toLogin = tab === 'login';
   document.getElementById('tab-login').classList.toggle('active', toLogin);
@@ -1088,7 +1011,6 @@ async function doLogout() {
 
 function afterLogin() {
   const ini = initials(SESSION.nome);
-  // atualizar sidebars
   ['sb-m-av','sb-m2-av','sb-m3-av','sb-s-av','sb-md-av'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = ini; });
   ['sb-m-nome','sb-m2-nome','sb-m3-nome','sb-s-nome','sb-md-nome'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = SESSION.nome; });
   document.getElementById('sb-a-av').textContent = ini;
@@ -1102,17 +1024,12 @@ function afterLogin() {
   }
 }
 
-// ─── MORADOR ─────────────────────────────────────────────────────────
 async function moradorNav(page) {
   if (page === 'dash') { await loadMoradorDash(); return; }
   if (page === 'lista') { goView('v-morador-lista'); await loadMoradorLista(); return; }
   if (page === 'form') { goView('v-morador-form'); wizardReset(); return; }
 }
 
-// ─── WIZARD "NOVA OCORRÊNCIA" ────────────────────────────────────────
-// Formulário em 4 passos (categoria → local → detalhes → revisão) em vez
-// de uma página longa só — reduz a sensação de "formulário burocrático"
-// e permite validar/guiar um passo de cada vez.
 let wizardStep = 1;
 const WZ_TOTAL_STEPS = 4;
 const WZ_TITLES = {
@@ -1246,8 +1163,6 @@ async function loadMoradorLista() {
     document.getElementById('m-lista-body').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg><p>Nenhuma ocorrência encontrada.</p></div>`;
     return;
   }
-  // grade de cartões em vez de tabela — mais visual e melhor pra quem
-  // acompanha só algumas ocorrências próprias (não é uma planilha de gestão)
   document.getElementById('m-lista-body').innerHTML = `<div class="ocorr-grid" style="margin-bottom:0">${filtrada.map(o => `
       <div class="ocorr-card" onclick="abrirMoradorDet('${o.id}')">
         <div class="oc-top"><div class="oc-cat">${catEmoji(o.categoria)}</div>${badge(o.status)}</div>
@@ -1330,8 +1245,6 @@ async function abrirMoradorDet(id) {
   }
 }
 
-// ─── ANIMAÇÕES AUXILIARES ────────────────────────────────────────────
-// Sobe os números dos cartões de métricas suavemente (efeito "odômetro").
 function countUp(el, to, duration = 700) {
   if (!el) return;
   to = Number(to) || 0;
@@ -1351,8 +1264,6 @@ function countUp(el, to, duration = 700) {
   requestAnimationFrame(tick);
 }
 
-// Anima as barras de categoria de 0% até a largura real (precisa de um
-// frame "em branco" antes, senão o navegador não anima a transição).
 function animateBars() {
   const bars = document.querySelectorAll('.cat-bar-fill[data-w]');
   bars.forEach(b => { b.style.width = '0%'; });
@@ -1361,7 +1272,6 @@ function animateBars() {
   }));
 }
 
-// ─── FOTO UPLOAD (clique ou arrastar-e-soltar) ───────────────────────
 function previewFoto(input) {
   const file = input.files[0];
   if (file) renderFotoPreview(file);
@@ -1400,7 +1310,6 @@ function uploadDrop(ev) {
   renderFotoPreview(file);
 }
 
-// ─── ENVIAR OCORRÊNCIA ───────────────────────────────────────────────
 async function enviarOcorrencia() {
   const btn = document.getElementById('wz-btn-next');
   const err = document.getElementById('form-error');
@@ -1442,7 +1351,6 @@ async function enviarOcorrencia() {
       foto: fotoUrl
     });
     document.getElementById('proto-gerado').textContent = result.protocolo;
-    // limpar form
     ['f-titulo','f-descricao','f-endereco','f-referencia'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f-categoria').value = '';
     document.getElementById('f-bairro').value = '';
@@ -1458,7 +1366,6 @@ async function enviarOcorrencia() {
   }
 }
 
-// ─── PREFEITURA ──────────────────────────────────────────────────────
 async function prefNav(page) {
   if (page === 'dash') { await loadPrefDash(); return; }
   if (page === 'lista') { goView('v-pref-lista'); await loadPrefLista(); return; }
@@ -1477,7 +1384,6 @@ async function loadPrefDash() {
     countUp(document.getElementById('pm-res'), stats.resolvida);
     document.getElementById('pm-res-s').textContent = stats.total ? Math.round(stats.resolvida / stats.total * 100) + '% do total' : '–';
 
-    // chart categorias
     const maxCat = stats.categorias[0]?.[1] || 1;
     const catColors = ['#2563eb','#0d9488','#d97706','#7c3aed','#0ea5e9','#16a34a','#64748b'];
     document.getElementById('pref-cat-chart').innerHTML = stats.categorias.slice(0, 6).map(([cat, n], i) =>
@@ -1485,7 +1391,6 @@ async function loadPrefDash() {
     ).join('') || '<p style="color:var(--slate-400);font-size:13px">Sem dados</p>';
     animateBars();
 
-    // chart bairros
     const maxB = stats.bairros[0]?.[1] || 1;
     document.getElementById('pref-bairro-chart').innerHTML = stats.bairros.map(([b, n]) =>
       `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -1497,7 +1402,6 @@ async function loadPrefDash() {
       </div>`
     ).join('') || '<p style="color:var(--slate-400);font-size:13px">Sem dados</p>';
 
-    // feed de atividade recente (mais enxuto que a tabela da página "Ocorrências")
     const recentes = lista.slice(0, 6);
     document.getElementById('pref-dash-table').innerHTML = recentes.length ? recentes.map(o => `
       <div class="feed-item" onclick="abrirPrefDet('${o.id}')">
@@ -1639,8 +1543,6 @@ async function abrirPrefDet(id) {
   }
 }
 
-// As 3 ações (status/encaminhar/mensagem) viviam em 3 cartões sempre
-// visíveis, empilhados — trocado por um único cartão com abas.
 function actionTab(tab) {
   document.querySelectorAll('.action-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.action-panel').forEach(p => p.classList.toggle('active', p.dataset.actionPanel === tab));
@@ -1686,9 +1588,6 @@ async function marcarResolvida() {
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
 }
 
-// ─── AUTH STATS (pública) ─────────────────────────────────────────────
-// A tela de login atual é só vídeo + card, sem mini-estatísticas visíveis;
-// função mantida (sem-op se os elementos não existirem) caso voltem no futuro.
 async function loadAuthStats() {
   try {
     const total = document.getElementById('stat-total');
@@ -1703,18 +1602,15 @@ async function loadAuthStats() {
   } catch {}
 }
 
-// ─── HELPER XSS ──────────────────────────────────────────────────────
 function esc(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────
 (function init() {
   const saved = localStorage.getItem('urbaniza+_session');
   if (saved) {
     try {
       SESSION = JSON.parse(saved);
-      // verifica se token ainda é válido
       api('GET', '/api/me').then(u => {
         SESSION.nome = u.nome;
         afterLogin();
@@ -1731,7 +1627,6 @@ function esc(str) {
   loadAuthStats();
 })();
 
-// Enter para login
 document.getElementById('login-senha').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 </script>
 </body>
