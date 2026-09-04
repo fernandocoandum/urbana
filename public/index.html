@@ -309,7 +309,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .mapa-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px}
 .mapa-leg-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--slate-600);font-weight:500}
 .mapa-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.mapa-leaflet{height:min(560px,calc(100vh - 260px));border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.08);border:1px solid var(--border)}
+.mapa-leaflet{height:min(560px,calc(100vh - 260px));border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.08);border:1px solid var(--border);position:relative;isolation:isolate}
 .mapa-popup{min-width:200px}
 .mapa-popup-cat{font-size:11px;font-weight:700;color:var(--blue-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 .mapa-popup-title{font-size:13.5px;font-weight:700;color:var(--slate-800);margin-bottom:4px}
@@ -504,19 +504,22 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .sb-nav a.sb-premium-link:hover{background:linear-gradient(135deg,rgba(245,213,118,.26),rgba(232,182,74,.14));border-color:rgba(245,213,118,.35);transform:translateX(2px)}
 
 .perfil-card{padding:0;overflow:hidden}
-.perfil-banner{height:84px;background:linear-gradient(120deg,var(--blue-700),var(--blue-500) 60%,var(--blue-400));position:relative}
+.perfil-card-full{max-width:none}
+.perfil-banner{height:120px;background:linear-gradient(120deg,var(--blue-700),var(--blue-500) 60%,var(--blue-400));position:relative}
 .perfil-banner::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% 0%,rgba(255,255,255,.25),transparent 55%)}
-.perfil-head{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;padding:0 26px 22px;margin-top:-38px;position:relative}
-.perfil-avatar-wrap{position:relative;width:84px;height:84px;flex-shrink:0}
-.perfil-avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--blue-500);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;font-family:var(--font-ui);border:4px solid #fff;box-shadow:0 6px 18px rgba(15,23,42,.2)}
-.perfil-avatar-edit{position:absolute;bottom:1px;right:1px;width:29px;height:29px;border-radius:50%;background:var(--blue-600);border:3px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.perfil-head{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:0 34px 24px;margin-top:-44px;position:relative}
+.perfil-avatar-wrap{position:relative;width:96px;height:96px;flex-shrink:0}
+.perfil-avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;background:var(--blue-500);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;font-family:var(--font-ui);border:4px solid #fff;box-shadow:0 6px 18px rgba(15,23,42,.2)}
+.perfil-avatar-edit{position:absolute;bottom:2px;right:2px;width:31px;height:31px;border-radius:50%;background:var(--blue-600);border:3px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,.25)}
 .perfil-avatar-edit:hover{transform:scale(1.12)}
 .perfil-avatar-edit svg{width:13px;height:13px}
 .perfil-nome-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:2px}
+.perfil-nome-display{font-family:var(--font-ui);font-size:23px;font-weight:800;color:var(--slate-900);letter-spacing:-.01em}
 .perfil-premium-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#f5d576,#e8b64a);color:#4a3400;font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
 .perfil-premium-badge svg{width:11px;height:11px}
-.perfil-body{padding:0 26px 26px}
-.perfil-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:22px 0}
+.perfil-body{padding:0 34px 32px}
+.perfil-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0;max-width:720px}
+.perfil-form-wrap{max-width:460px}
 .perfil-stat-card{background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--r-lg);padding:18px 14px;text-align:center;transition:transform .3s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
 .perfil-stat-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,23,42,.08)}
 .perfil-stat-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;background:linear-gradient(150deg,var(--blue-100),var(--blue-50));box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
@@ -584,6 +587,17 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .perfil-head{gap:14px;padding:0 18px 18px}
   .perfil-body{padding:0 18px 22px}
 }
+
+.chat-user-link{cursor:pointer;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color .2s}
+.chat-user-link:hover{text-decoration-color:currentColor}
+
+.perfil-publico-modal{position:fixed;inset:0;background:rgba(8,12,20,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:400;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.perfil-publico-modal.show{opacity:1;pointer-events:auto}
+.perfil-publico-inner{position:relative;max-width:420px;width:100%;transform:scale(.9) translateY(16px);opacity:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .3s ease}
+.perfil-publico-modal.show .perfil-publico-inner{transform:scale(1) translateY(0);opacity:1}
+.perfil-publico-close{position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:#fff;border:1px solid var(--slate-100);color:var(--slate-500);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18);transition:transform .25s cubic-bezier(.34,1.56,.64,1);z-index:2}
+.perfil-publico-close:hover{transform:scale(1.1) rotate(90deg)}
+.perfil-publico-inner .perfil-stats-grid{max-width:none}
 </style>
 </head>
 <body>
@@ -675,6 +689,17 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </ul>
         <button class="premium-plan-btn" onclick="assinarPlano('vitalicio')">Assinar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="perfil-publico-modal" class="perfil-publico-modal" onclick="if(event.target===this)fecharPerfilPublico()">
+  <div class="perfil-publico-inner">
+    <div class="perfil-publico-close" onclick="fecharPerfilPublico()">
+      <svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M2.146 2.146a.5.5 0 0 1 .708 0L8 7.293l5.146-5.147a.5.5 0 1 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854a.5.5 0 0 1 0-.708z"/></svg>
+    </div>
+    <div id="perfil-publico-content" class="card perfil-card" style="padding:0">
+      <div class="loading"><div class="spinner"></div>Carregando...</div>
     </div>
   </div>
 </div>
@@ -1354,7 +1379,7 @@ async function loadPerfil() {
     const p = await api('GET', '/api/perfil');
     const ini = initials(p.nome);
     content.innerHTML = `
-      <div class="card perfil-card" style="max-width:640px">
+      <div class="card perfil-card perfil-card-full">
         <div class="perfil-banner"></div>
         <div class="perfil-head">
           <div class="perfil-avatar-wrap">
@@ -1366,7 +1391,7 @@ async function loadPerfil() {
           </div>
           <div>
             <div class="perfil-nome-row">
-              <div style="font-family:var(--font-display);font-size:21px;font-weight:800" id="perfil-nome-display">${esc(p.nome)}</div>
+              <div class="perfil-nome-display" id="perfil-nome-display">${esc(p.nome)}</div>
               ${p.premium ? `<span class="perfil-premium-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 4l2.5 2L8 2l3.5 4L14 4l-1.3 7H3.3L2 4z"/></svg>Premium</span>` : ''}
             </div>
             <div style="font-size:13px;color:var(--slate-400);margin-top:2px">${esc(p.email)}</div>
@@ -1389,19 +1414,21 @@ async function loadPerfil() {
             </div>
           </div>
 
-          <div class="form-group perfil-form-row">
-            <label class="form-label">Nome de exibição</label>
-            <input class="form-input" id="perfil-nome-input" value="${esc(p.nome)}" maxlength="60">
-          </div>
-          <div style="display:flex;align-items:center">
-            <button class="btn-submit" onclick="salvarPerfil()" id="perfil-save-btn">Salvar alterações</button>
-            <span class="perfil-save-msg" id="perfil-save-msg">Salvo!</span>
-          </div>
+          <div class="perfil-form-wrap">
+            <div class="form-group perfil-form-row">
+              <label class="form-label">Nome de exibição</label>
+              <input class="form-input" id="perfil-nome-input" value="${esc(p.nome)}" maxlength="60">
+            </div>
+            <div style="display:flex;align-items:center">
+              <button class="btn-submit" onclick="salvarPerfil()" id="perfil-save-btn">Salvar alterações</button>
+              <span class="perfil-save-msg" id="perfil-save-msg">Salvo!</span>
+            </div>
 
-          ${!p.premium ? `<div class="card" style="margin-top:22px;background:var(--blue-50);border-color:var(--blue-100);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-            <div><div style="font-weight:700;color:var(--blue-700);margin-bottom:3px">Vire Premium ✨</div><div style="font-size:12.5px;color:var(--slate-500)">Denúncias ilimitadas, destaque e chat exclusivo.</div></div>
-            <button class="btn-submit" onclick="abrirPremium()">Ver planos</button>
-          </div>` : ''}
+            ${!p.premium ? `<div class="card" style="margin-top:22px;background:var(--blue-50);border-color:var(--blue-100);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+              <div><div style="font-weight:700;color:var(--blue-700);margin-bottom:3px">Vire Premium ✨</div><div style="font-size:12.5px;color:var(--slate-500)">Denúncias ilimitadas, destaque e chat exclusivo.</div></div>
+              <button class="btn-submit" onclick="abrirPremium()">Ver planos</button>
+            </div>` : ''}
+          </div>
         </div>
       </div>`;
   } catch (e) {
@@ -1466,6 +1493,51 @@ function assinarPlano(plano) {
   toast('Assinaturas indisponíveis no momento.');
 }
 
+async function abrirPerfilPublico(userId) {
+  const modal = document.getElementById('perfil-publico-modal');
+  const content = document.getElementById('perfil-publico-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+  modal.classList.add('show');
+  try {
+    const p = await api('GET', `/api/usuarios/${userId}/perfil`);
+    const ini = initials(p.nome);
+    content.innerHTML = `
+      <div class="perfil-banner"></div>
+      <div class="perfil-head">
+        <div class="perfil-avatar-wrap">
+          ${p.foto ? `<img src="${p.foto}" class="perfil-avatar">` : `<div class="perfil-avatar">${ini}</div>`}
+        </div>
+        <div>
+          <div class="perfil-nome-row">
+            <div class="perfil-nome-display">${esc(p.nome)}</div>
+            ${p.premium ? `<span class="perfil-premium-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 4l2.5 2L8 2l3.5 4L14 4l-1.3 7H3.3L2 4z"/></svg>Premium</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="perfil-body">
+        <div class="perfil-stats-grid">
+          <div class="perfil-stat-card">
+            <div class="perfil-stat-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg></div>
+            <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Denúncias feitas</div>
+          </div>
+          <div class="perfil-stat-card">
+            <div class="perfil-stat-icon green"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg></div>
+            <div class="perfil-stat-num">${p.stats.resolvidas}</div><div class="perfil-stat-label">Resolvidas</div>
+          </div>
+          <div class="perfil-stat-card">
+            <div class="perfil-stat-icon teal"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></div>
+            <div class="perfil-stat-num">${p.stats.apoiosDados}</div><div class="perfil-stat-label">Apoios dados</div>
+          </div>
+        </div>
+      </div>`;
+  } catch (e) {
+    content.innerHTML = `<div class="empty" style="padding:26px"><p>Erro ao carregar perfil.</p></div>`;
+  }
+}
+function fecharPerfilPublico() {
+  document.getElementById('perfil-publico-modal').classList.remove('show');
+}
+
 async function loadChatPremium() {
   goView('v-chat-premium');
   const container = document.getElementById('chat-premium-content');
@@ -1489,7 +1561,11 @@ async function renderChatMensagens() {
   try {
     const msgs = await api('GET', '/api/chat-premium');
     const wasAtBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 40;
-    box.innerHTML = msgs.length ? msgs.map(m => `<div class="chat-msg ${m.userId === SESSION.id ? 'mine' : ''}"><div class="chat-msg-meta">${m.userId === SESSION.id ? 'Você' : esc(m.nome)} · ${fmtDateTime(m.criadoEm)}</div>${esc(m.texto)}</div>`).join('') : '<div class="empty"><p>Nenhuma mensagem ainda. Comece a conversa!</p></div>';
+    box.innerHTML = msgs.length ? msgs.map(m => {
+      const mine = m.userId === SESSION.id;
+      const nomeHtml = mine ? 'Você' : `<span class="chat-user-link" onclick="abrirPerfilPublico('${m.userId}')">${esc(m.nome)}</span>`;
+      return `<div class="chat-msg ${mine ? 'mine' : ''}"><div class="chat-msg-meta">${nomeHtml} · ${fmtDateTime(m.criadoEm)}</div>${esc(m.texto)}</div>`;
+    }).join('') : '<div class="empty"><p>Nenhuma mensagem ainda. Comece a conversa!</p></div>';
     if (wasAtBottom) box.scrollTop = box.scrollHeight;
   } catch (e) {}
 }

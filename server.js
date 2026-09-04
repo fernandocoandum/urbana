@@ -531,6 +531,21 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok:true });
     }
 
+    const matchPerfilPublico = pathname.match(/^\/api\/usuarios\/([^/]+)\/perfil$/);
+    if (matchPerfilPublico && req.method === 'GET') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const alvo = await db.findUserById(matchPerfilPublico[1]);
+      if (!alvo) return json(res, 404, { erro:'Usuário não encontrado.' });
+      const dele = await db.listOcorrencias({ userId: alvo.id });
+      const resolvidas = dele.filter(o => o.status === 'Resolvida').length;
+      const apoiosDados = await db.contarApoiosDados(alvo.id);
+      return json(res, 200, {
+        nome:alvo.nome, foto:alvo.foto||null, premium: !!alvo.premium,
+        stats: { ocorrencias: dele.length, resolvidas, apoiosDados }
+      });
+    }
+
     if (pathname === '/api/chat-premium' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
