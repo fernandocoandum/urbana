@@ -534,14 +534,12 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/chat-premium' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
-      if (!user.premium) return json(res, 403, { erro:'Recurso exclusivo para assinantes premium.' });
       return json(res, 200, await db.listChatMensagens());
     }
 
     if (pathname === '/api/chat-premium' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
-      if (!user.premium) return json(res, 403, { erro:'Recurso exclusivo para assinantes premium.' });
       const { texto } = await parseBody(req);
       if (!texto?.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
       const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:texto.trim().slice(0,500), criadoEm:new Date().toISOString() };
