@@ -2145,13 +2145,8 @@ async function enviarOcorrencia() {
   const fotoInput = document.getElementById('f-foto');
   if (fotoInput.files[0]) {
     try {
-      const reader = new FileReader();
-      fotoUrl = await new Promise((res, rej) => {
-        reader.onload = e => res(e.target.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(fotoInput.files[0]);
-      });
-      const up = await api('POST', '/api/upload', { data: fotoUrl });
+      const dataUrl = await resizeImageFile(fotoInput.files[0], 1000, 0.85);
+      const up = await api('POST', '/api/upload', { data: dataUrl });
       fotoUrl = up.url;
     } catch { fotoUrl = null; }
   }

@@ -63,6 +63,12 @@ async function initDB() {
           texto TEXT NOT NULL,
           criado_em TIMESTAMPTZ DEFAULT NOW()
         );
+        CREATE TABLE IF NOT EXISTS arquivos (
+          id TEXT PRIMARY KEY,
+          mime TEXT NOT NULL,
+          dados TEXT NOT NULL,
+          criado_em TIMESTAMPTZ DEFAULT NOW()
+        );
         ALTER TABLE users ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS premium BOOLEAN DEFAULT false;
@@ -118,6 +124,7 @@ function initJsonDB() {
     try {
       jsonDB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
       if (!jsonDB.chatMensagens) jsonDB.chatMensagens = [];
+      if (!jsonDB.arquivos) jsonDB.arquivos = [];
       return;
     } catch {}
   }
@@ -130,7 +137,8 @@ function initJsonDB() {
     ],
     sessions: {},
     nextProtocolo: 4,
-    chatMensagens: []
+    chatMensagens: [],
+    arquivos: []
   };
   saveJsonDB();
 }
@@ -393,6 +401,23 @@ const db = {
     jsonDB.chatMensagens.push(msg);
     if (jsonDB.chatMensagens.length > 300) jsonDB.chatMensagens = jsonDB.chatMensagens.slice(-300);
     saveJsonDB();
+  },
+  async salvarArquivo(id, mime, dados) {
+    if (usePostgres) {
+      await pool.query('INSERT INTO arquivos (id,mime,dados) VALUES ($1,$2,$3)', [id, mime, dados]);
+      return;
+    }
+    jsonDB.arquivos.push({ id, mime, dados, criadoEm:new Date().toISOString() });
+    if (jsonDB.arquivos.length > 500) jsonDB.arquivos = jsonDB.arquivos.slice(-500);
+    saveJsonDB();
+  },
+  async buscarArquivo(id) {
+    if (usePostgres) {
+      const r = await pool.query('SELECT mime, dados FROM arquivos WHERE id=$1', [id]);
+      return r.rows[0] || null;
+    }
+    const a = jsonDB.arquivos.find(a => a.id === id);
+    return a ? { mime:a.mime, dados:a.dados } : null;
   }
 };
 
@@ -679,12 +704,21 @@ const server = http.createServer(async (req, res) => {
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
       const { data } = await parseBody(req);
       if (!data) return json(res, 400, { erro:'Sem dados.' });
-      const uploadDir = path.join(__dirname, 'public', 'uploads');
-      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive:true });
-      const nomeArq = `foto_${Date.now()}.jpg`;
-      const base64 = data.replace(/^data:image\/\w+;base64,/, '');
-      fs.writeFileSync(path.join(uploadDir, nomeArq), Buffer.from(base64, 'base64'));
-      return json(res, 200, { url:`/uploads/${nomeArq}` });
+      const match = /^data:(image\/\w+);base64,(.+)$/.exec(data);
+      const mime = match ? match[1] : 'image/jpeg';
+      const base64 = match ? match[2] : data;
+      const id = 'img' + Date.now() + Math.random().toString(36).slice(2, 8);
+      await db.salvarArquivo(id, mime, base64);
+      return json(res, 200, { url:`/api/arquivos/${id}` });
+    }
+
+    const matchArquivo = pathname.match(/^\/api\/arquivos\/([^/]+)$/);
+    if (matchArquivo && req.method === 'GET') {
+      const arq = await db.buscarArquivo(matchArquivo[1]);
+      if (!arq) return json(res, 404, { erro:'Arquivo não encontrado.' });
+      const buffer = Buffer.from(arq.dados, 'base64');
+      res.writeHead(200, { 'Content-Type': arq.mime, 'Cache-Control': 'public, max-age=31536000, immutable', 'Access-Control-Allow-Origin': '*' });
+      return res.end(buffer);
     }
 
     json(res, 404, { erro:'Rota não encontrada.' });
