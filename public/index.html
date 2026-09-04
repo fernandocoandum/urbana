@@ -56,7 +56,7 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 .auth-tab.active{color:#fff}
 .auth-tab:active{transform:scale(.97)}
 .auth-panels{position:relative;overflow:hidden;transition:height .4s cubic-bezier(.22,1,.36,1);animation:authFadeUp .55s cubic-bezier(.22,1,.36,1) .14s both}
-.auth-panel{top:0;left:0;right:0;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .3s ease,transform .35s cubic-bezier(.22,1,.36,1)}
+.auth-panel{position:absolute;top:0;left:0;right:0;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .3s ease,transform .35s cubic-bezier(.22,1,.36,1)}
 .auth-panel.active{position:relative;opacity:1;transform:translateY(0);pointer-events:auto}
 .auth-panel.leaving{position:absolute;opacity:0;transform:translateY(-8px);pointer-events:none}
 .auth-form-group{margin-bottom:10px}
