@@ -80,21 +80,27 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
   .auth-panel,.auth-tab-indicator,.auth-btn,.auth-input{transition-duration:.01ms!important}
 }
 
-/* ─ AMBIENT BACKDROP (behind every glass panel in the app) ─ */
-body{
-  background-color:var(--bg);
+/* ─ AMBIENT BACKDROP (behind every glass panel in the app) ─
+   Sem cor/contraste aqui atrás, o backdrop-filter dos cards não tem nada
+   pra "borrar" e o efeito de vidro fica invisível. O sidebar escuro ocupa
+   a esquerda da tela, então os blobs vão no próprio .content (a área
+   clara onde os cards ficam) em vez do body — senão ficam escondidos
+   atrás do sidebar ou fora da viewport. */
+body{background-color:var(--bg)}
+.content{
   background-image:
-    radial-gradient(1100px 700px at 8% -12%, rgba(59,130,246,.10), transparent 55%),
-    radial-gradient(900px 650px at 104% 0%, rgba(13,148,136,.08), transparent 55%),
-    radial-gradient(1000px 900px at 50% 115%, rgba(99,102,241,.06), transparent 60%);
-  background-attachment:fixed,fixed,fixed;
+    radial-gradient(950px 620px at 6% -10%, rgba(59,130,246,.26), transparent 55%),
+    radial-gradient(850px 620px at 98% -4%, rgba(13,148,136,.20), transparent 56%),
+    radial-gradient(950px 760px at 40% 108%, rgba(99,102,241,.20), transparent 58%),
+    radial-gradient(650px 520px at 78% 48%, rgba(236,72,153,.09), transparent 60%);
   background-repeat:no-repeat;
 }
 
 /* ─ LAYOUT ─ */
 .layout{display:flex;flex:1}
-.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);position:relative;background:linear-gradient(180deg,rgba(17,24,44,.94),rgba(9,13,26,.94));backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh;box-shadow:1px 0 0 rgba(255,255,255,.05)}
-.sidebar::before{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%);pointer-events:none}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);position:relative;background:linear-gradient(180deg,rgba(17,24,44,.94),rgba(9,13,26,.94));backdrop-filter:blur(28px) saturate(160%);-webkit-backdrop-filter:blur(28px) saturate(160%);display:flex;flex-direction:column;overflow-y:auto;min-height:100vh;box-shadow:1px 0 0 rgba(255,255,255,.05);overflow-x:hidden}
+.sidebar::before{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 45%);pointer-events:none;z-index:1}
+.sidebar::after{content:'';position:absolute;top:-80px;left:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.35),transparent 70%);pointer-events:none;filter:blur(10px)}
 .sb-logo{padding:20px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px}
 .sb-logo-mark{width:32px;height:32px;background:linear-gradient(145deg,var(--blue-400),var(--blue-700));border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(37,99,235,.4);transition:transform .3s cubic-bezier(.22,1,.36,1)}
 .sb-logo:hover .sb-logo-mark{transform:scale(1.06) rotate(-4deg)}
@@ -123,7 +129,7 @@ body{
 /* ─ MAIN ─ */
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
 .topbar{background:rgba(248,250,253,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(15,23,42,.06);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;flex-shrink:0}
-.topbar-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--slate-900);line-height:1.2}
+.topbar-title{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--slate-900);line-height:1.2;letter-spacing:-.015em}
 .topbar-sub{font-size:12px;color:var(--slate-400)}
 .topbar-right{display:flex;align-items:center;gap:12px}
 .btn-new{background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:#fff;border:none;padding:9px 20px;border-radius:100px;font-family:var(--font-ui);font-size:13px;font-weight:600;cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s ease;display:inline-flex;align-items:center;gap:7px;box-shadow:0 4px 14px rgba(37,99,235,.32)}
@@ -143,7 +149,9 @@ body{
 
 /* ─ GLASS SURFACE (shared) ─ */
 @keyframes cardRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-.metric-card,.card,.table-wrap,.mini-stat,.ocorr-card{background:rgba(255,255,255,.68);backdrop-filter:blur(18px) saturate(170%);-webkit-backdrop-filter:blur(18px) saturate(170%);border:1px solid rgba(255,255,255,.6);box-shadow:0 10px 28px rgba(15,23,42,.07)}
+.metric-card,.card,.table-wrap,.mini-stat,.ocorr-card{position:relative;background:rgba(255,255,255,.6);backdrop-filter:blur(26px) saturate(200%);-webkit-backdrop-filter:blur(26px) saturate(200%);border:1px solid rgba(255,255,255,.7);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 14px 34px rgba(15,23,42,.08)}
+/* borda superior "acesa" — luz pegando na borda do vidro, igual no card de login */
+.metric-card::before,.card::before,.table-wrap::before,.mini-stat::before,.ocorr-card::before{content:'';position:absolute;top:0;left:14px;right:14px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);pointer-events:none}
 
 /* ─ METRICS ─ */
 .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
@@ -155,19 +163,34 @@ body{
 .metric-grid .metric-card:nth-child(4){animation-delay:.2s}
 .mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .mc-label{font-size:12.5px;font-weight:500;color:var(--slate-500)}
-.mc-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.mc-icon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:transform .35s cubic-bezier(.22,1,.36,1);box-shadow:0 1px 0 rgba(255,255,255,.6) inset}
 .metric-card:hover .mc-icon{transform:scale(1.1) rotate(-4deg)}
 .mc-icon svg{width:16px;height:16px}
-.mc-num{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--slate-900);line-height:1}
+.mc-num{font-family:var(--font-display);font-size:29px;font-weight:700;color:var(--slate-900);line-height:1;letter-spacing:-.02em}
 .mc-footer{font-size:11.5px;color:var(--slate-400);margin-top:6px}
-.mc-blue .mc-icon{background:var(--blue-50)}.mc-blue .mc-icon svg{color:var(--blue-600)}
-.mc-amber .mc-icon{background:var(--amber-50)}.mc-amber .mc-icon svg{color:var(--amber-600)}
-.mc-teal .mc-icon{background:#f0fdfa}.mc-teal .mc-icon svg{color:var(--teal-600)}
-.mc-green .mc-icon{background:var(--green-50)}.mc-green .mc-icon svg{color:var(--green-600)}
+.mc-blue .mc-icon{background:linear-gradient(150deg,var(--blue-100),var(--blue-50));box-shadow:0 4px 14px rgba(37,99,235,.22),0 1px 0 rgba(255,255,255,.6) inset}.mc-blue .mc-icon svg{color:var(--blue-600)}
+.mc-amber .mc-icon{background:linear-gradient(150deg,var(--amber-100),var(--amber-50));box-shadow:0 4px 14px rgba(217,119,6,.2),0 1px 0 rgba(255,255,255,.6) inset}.mc-amber .mc-icon svg{color:var(--amber-600)}
+.mc-teal .mc-icon{background:linear-gradient(150deg,#ccfbf1,#f0fdfa);box-shadow:0 4px 14px rgba(13,148,136,.2),0 1px 0 rgba(255,255,255,.6) inset}.mc-teal .mc-icon svg{color:var(--teal-600)}
+.mc-green .mc-icon{background:linear-gradient(150deg,var(--green-100),var(--green-50));box-shadow:0 4px 14px rgba(22,163,74,.2),0 1px 0 rgba(255,255,255,.6) inset}.mc-green .mc-icon svg{color:var(--green-600)}
 
 /* ─ CARDS ─ */
 .card{border-radius:18px;padding:24px}
 .card-title{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--slate-800);margin-bottom:16px}
+
+/* ─ ACTIVITY FEED (dashboard da prefeitura — mais enxuto que a tabela
+   completa da página "Ocorrências", pra não duplicar a mesma visão) ─ */
+.feed-list{display:flex;flex-direction:column}
+.feed-item{display:flex;align-items:center;gap:14px;padding:13px 6px;border-bottom:1px solid rgba(15,23,42,.05);cursor:pointer;transition:background .15s ease,transform .1s ease;animation:rowIn .35s cubic-bezier(.22,1,.36,1) both}
+.feed-item:last-child{border-bottom:none}
+.feed-item:hover{background:rgba(37,99,235,.05);border-radius:10px}
+.feed-item:active{transform:scale(.994)}
+.feed-item:nth-child(1){animation-delay:.02s}.feed-item:nth-child(2){animation-delay:.06s}.feed-item:nth-child(3){animation-delay:.1s}.feed-item:nth-child(4){animation-delay:.14s}.feed-item:nth-child(5){animation-delay:.18s}.feed-item:nth-child(n+6){animation-delay:.22s}
+.feed-icon{width:38px;height:38px;border-radius:11px;background:var(--slate-50);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.feed-main{flex:1;min-width:0}
+.feed-title{font-size:13.5px;font-weight:600;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-meta{font-size:11.5px;color:var(--slate-400);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.feed-date{font-size:11px;color:var(--slate-400)}
 
 /* ─ TABLES ─ */
 @keyframes rowIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -202,6 +225,12 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .btn-detail{background:transparent;border:1px solid var(--border);color:var(--slate-600);padding:5px 12px;border-radius:100px;font-family:var(--font-ui);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
 .btn-detail:hover{background:var(--blue-50);border-color:var(--blue-200);color:var(--blue-700)}
 .btn-detail:active{transform:scale(.95)}
+.row-avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,var(--blue-200),var(--blue-400));color:var(--blue-900);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.cat-chip{display:inline-flex;align-items:center;background:var(--slate-50);border-radius:100px;padding:4px 11px;font-size:12px;color:var(--slate-600);white-space:nowrap}
+.btn-icon{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--slate-400);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.btn-icon svg{width:13px;height:13px}
+.btn-icon:hover{background:var(--blue-50);border-color:var(--blue-200);color:var(--blue-700)}
+.btn-icon:active{transform:scale(.92)}
 
 /* ─ FORM ─ */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -220,6 +249,35 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .upload-zone.has-image .uz-icon,.upload-zone.has-image .uz-hint,.upload-zone.has-image .uz-sub{display:none}
 .upload-preview{width:100%;max-height:200px;border-radius:12px;object-fit:cover;margin-top:0;display:none;animation:cardRise .4s cubic-bezier(.22,1,.36,1) both}
 .form-footer{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+
+/* ─ WIZARD (nova ocorrência) ─ */
+.wizard-head{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.wizard-title{font-family:var(--font-display);font-size:19px;font-weight:700;margin-bottom:4px;letter-spacing:-.015em;color:var(--slate-900)}
+.wizard-sub{font-size:13px;color:var(--slate-400);margin-bottom:20px}
+.wizard-steps{display:flex;align-items:center}
+.wz-step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--slate-400);white-space:nowrap;transition:color .3s ease}
+.wz-dot{width:24px;height:24px;border-radius:50%;background:var(--slate-100);color:var(--slate-400);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .35s cubic-bezier(.22,1,.36,1)}
+.wz-step.active{color:var(--blue-700)}
+.wz-step.active .wz-dot{background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.35);transform:scale(1.1)}
+.wz-step.done{color:var(--green-700)}
+.wz-step.done .wz-dot{background:var(--green-500);color:#fff}
+.wz-line{flex:1;height:2px;background:var(--slate-100);margin:0 8px;transition:background .4s ease}
+.wz-line.filled{background:var(--green-400)}
+.wz-panel{display:none;animation:cardRise .35s cubic-bezier(.22,1,.36,1) both}
+.wz-panel.active{display:block}
+.wz-cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.wz-cat-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 10px;border-radius:16px;border:1.5px solid var(--border);background:rgba(255,255,255,.5);cursor:pointer;font-family:var(--font-ui);font-size:12.5px;font-weight:600;color:var(--slate-600);transition:all .2s cubic-bezier(.22,1,.36,1);text-align:center}
+.wz-cat-card:hover{border-color:var(--blue-300);transform:translateY(-2px);box-shadow:0 10px 22px rgba(15,23,42,.09)}
+.wz-cat-card:active{transform:scale(.97)}
+.wz-cat-card.selected{border-color:var(--blue-500);background:var(--blue-50);color:var(--blue-700);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+.wz-cat-icon{font-size:27px}
+.wz-review-row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+.wz-review-row:last-of-type{border-bottom:none}
+.wz-review-label{font-size:11px;font-weight:600;color:var(--slate-400);text-transform:uppercase;letter-spacing:.05em;width:84px;flex-shrink:0;padding-top:2px}
+.wz-review-val{flex:1;font-size:13.5px;color:var(--slate-800);line-height:1.5}
+.wz-review-edit{background:none;border:none;color:var(--blue-600);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-ui);flex-shrink:0}
+.wz-review-edit:hover{text-decoration:underline}
+.wz-review-photo{width:100%;max-height:180px;object-fit:cover;border-radius:12px;margin-top:14px}
 .btn-submit{background:linear-gradient(135deg,var(--blue-500),var(--blue-700));color:#fff;border:none;padding:11px 28px;border-radius:100px;font-family:var(--font-ui);font-size:14px;font-weight:600;cursor:pointer;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s ease;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(37,99,235,.32)}
 .btn-submit:hover{box-shadow:0 10px 26px rgba(37,99,235,.42);transform:translateY(-1px)}
 .btn-submit:active{transform:translateY(0) scale(.97)}
@@ -245,7 +303,10 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .tl-desc{font-size:12px;color:var(--slate-400);margin-top:2px;line-height:1.5}
 
 /* ─ DETAIL ─ */
+.oc-stepper{display:flex;align-items:center;margin:16px 0 4px;overflow-x:auto;padding-bottom:2px;-webkit-mask-image:linear-gradient(90deg,#000 92%,transparent 100%);mask-image:linear-gradient(90deg,#000 92%,transparent 100%)}
+.oc-stepper .wz-step{flex-shrink:0}
 .detail-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.detail-layout>div{min-width:0}
 .df-label{font-size:11.5px;font-weight:600;color:var(--slate-400);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
 .df-val{font-size:14px;color:var(--slate-800);line-height:1.6}
 .detail-sep{height:1px;background:var(--border);margin:18px 0}
@@ -254,6 +315,12 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .detail-img-wrap img{width:100%;height:100%;object-fit:cover}
 
 /* ─ ACTION CARD ─ */
+.action-tabs{display:flex;gap:2px;background:var(--slate-100);border-radius:100px;padding:3px;margin-bottom:16px}
+.action-tab{flex:1;padding:7px 8px;border-radius:100px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate-500);transition:all .2s ease;border:none;background:transparent;font-family:var(--font-ui)}
+.action-tab.active{background:#fff;color:var(--blue-700);box-shadow:0 1px 4px rgba(15,23,42,.12)}
+.action-tab:active{transform:scale(.97)}
+.action-panel{display:none;animation:cardRise .3s cubic-bezier(.22,1,.36,1) both}
+.action-panel.active{display:block}
 .action-sel{border:1px solid var(--border);border-radius:12px;padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:rgba(255,255,255,.7);width:100%;outline:none;margin-bottom:10px;transition:border-color .2s ease}
 .action-ta{border:1px solid var(--border);border-radius:12px;padding:9px 12px;font-family:var(--font-ui);font-size:13px;color:var(--slate-700);background:rgba(255,255,255,.7);width:100%;outline:none;min-height:80px;resize:vertical;margin-bottom:10px;transition:border-color .2s ease}
 .action-sel:focus,.action-ta:focus{border-color:var(--blue-400);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
@@ -263,12 +330,30 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .ab-success{background:linear-gradient(135deg,var(--green-500),var(--green-700));color:#fff;border:none;box-shadow:0 4px 14px rgba(22,163,74,.3)}.ab-success:hover{box-shadow:0 8px 20px rgba(22,163,74,.4);transform:translateY(-1px)}
 .ab-outline{background:transparent;border:1px solid var(--border);color:var(--slate-600)}.ab-outline:hover{background:var(--slate-50)}
 
-/* ─ BANNER ─ */
+/* ─ HOME HERO (dashboard do morador) ─
+   Substitui banner + 4 caixas de estatística separadas por um único
+   bloco: CTA à esquerda, números agrupados à direita — menos peças
+   soltas na tela, mais parecido com um "hub" pessoal do que um
+   template de admin genérico. */
+.home-hero{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:26px;padding:34px 38px;margin-bottom:26px;position:relative;overflow:hidden;box-shadow:0 20px 48px rgba(37,99,235,.3);display:flex;align-items:center;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.home-hero::after{content:'';position:absolute;right:-70px;bottom:-90px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)}
+.home-hero::before{content:'';position:absolute;top:0;left:0;width:70px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);animation:bannerSheen 6s ease-in-out infinite;pointer-events:none}
+.home-hero-main{position:relative;z-index:1;flex:1;min-width:240px}
+.home-hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:10px}
+.home-hero-title{font-family:var(--font-display);font-size:25px;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:-.02em;line-height:1.28;max-width:380px}
+.home-hero-sub{font-size:13.5px;color:rgba(255,255,255,.72);margin-bottom:20px}
+.home-hero-stats{position:relative;z-index:1;display:flex;align-items:center;background:rgba(255,255,255,.08);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%);border-radius:18px;padding:16px 22px;border:1px solid rgba(255,255,255,.16);flex-shrink:0}
+.hh-stat{text-align:center;padding:0 16px}
+.hh-num{font-family:var(--font-display);font-size:25px;font-weight:700;color:#fff;letter-spacing:-.02em;line-height:1}
+.hh-label{font-size:10.5px;color:rgba(255,255,255,.68);margin-top:4px;white-space:nowrap}
+.hh-sep{width:1px;height:34px;background:rgba(255,255,255,.18);flex-shrink:0}
+
+/* ─ BANNER (mantido para outros usos) ─ */
 @keyframes bannerSheen{0%{transform:translateX(-120%) skewX(-15deg)}100%{transform:translateX(220%) skewX(-15deg)}}
 .cit-banner{background:linear-gradient(135deg,var(--blue-800),var(--blue-600));border-radius:22px;padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;box-shadow:0 16px 40px rgba(37,99,235,.28)}
 .cit-banner::after{content:'';position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.06)}
 .cit-banner::before{content:'';position:absolute;top:0;left:0;width:60px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);animation:bannerSheen 5s ease-in-out infinite;pointer-events:none}
-.cit-banner-t{font-family:var(--font-display);font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;position:relative;z-index:1}
+.cit-banner-t{font-family:var(--font-display);font-size:21px;font-weight:700;color:#fff;margin-bottom:4px;position:relative;z-index:1;letter-spacing:-.02em}
 .cit-banner-s{font-size:13.5px;color:rgba(255,255,255,.7);position:relative;z-index:1}
 .btn-banner{background:#fff;color:var(--blue-700);border:none;padding:11px 22px;border-radius:100px;font-family:var(--font-ui);font-size:13.5px;font-weight:700;cursor:pointer;flex-shrink:0;position:relative;z-index:1;transition:transform .15s ease,box-shadow .2s ease;box-shadow:0 4px 14px rgba(0,0,0,.15)}
 .btn-banner:hover{background:var(--blue-50);transform:translateY(-1px)}
@@ -282,7 +367,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .mini-stats .mini-stat:nth-child(2){animation-delay:.08s}
 .mini-stats .mini-stat:nth-child(3){animation-delay:.14s}
 .mini-stats .mini-stat:nth-child(4){animation-delay:.2s}
-.ms-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate-900)}
+.ms-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--slate-900);letter-spacing:-.02em}
 .ms-label{font-size:12px;color:var(--slate-400);margin-top:2px}
 
 /* ─ CAT CHART ─ */
@@ -335,7 +420,7 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 /* ─ EMPTY STATE ─ */
 @keyframes emptyFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;color:var(--slate-400)}
-.empty svg{width:48px;height:48px;margin-bottom:16px;opacity:.4;animation:emptyFloat 3.5s ease-in-out infinite}
+.empty svg{width:48px;height:48px;margin-bottom:16px;opacity:.55;color:var(--blue-300);animation:emptyFloat 3.5s ease-in-out infinite;filter:drop-shadow(0 6px 14px rgba(59,130,246,.18))}
 .empty p{font-size:14px}
 
 /* ─ TOAST ─ */
@@ -351,13 +436,69 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @keyframes viewFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .view.active{animation:viewFadeIn .4s cubic-bezier(.22,1,.36,1) both}
 
+/* ─ MOBILE MENU (hambúrguer fixo + gaveta lateral + fundo escurecido) ─ */
+.menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:260;width:38px;height:38px;border-radius:11px;background:rgba(17,24,44,.82);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);border:1px solid rgba(255,255,255,.14);color:#e2e8f0;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform .15s ease}
+.menu-toggle svg{width:18px;height:18px}
+.menu-toggle:active{transform:scale(.94)}
+.menu-toggle[hidden]{display:none!important}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,20,.5);backdrop-filter:blur(2px);z-index:190;opacity:0;transition:opacity .25s ease}
+.sidebar-backdrop.show{display:block;opacity:1}
+
+/* ─ RESPONSIVE ─ */
+@media (max-width: 860px){
+  .menu-toggle{display:flex}
+  .layout{position:relative}
+  .sidebar{position:fixed;top:0;left:0;height:100dvh;transform:translateX(-100%);transition:transform .3s cubic-bezier(.22,1,.36,1);z-index:200}
+  .sidebar.open{transform:translateX(0)}
+  .main{width:100%;min-width:0}
+  .topbar{padding:0 16px 0 60px;flex-wrap:wrap;height:auto;min-height:60px;gap:8px}
+  .topbar-right{flex-wrap:wrap;gap:8px}
+  .content{padding:16px}
+  .metric-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .mini-stats{grid-template-columns:repeat(2,1fr);gap:12px}
+  .ocorr-grid{grid-template-columns:1fr;gap:12px}
+  .form-grid{grid-template-columns:1fr;gap:14px}
+  .detail-layout{grid-template-columns:1fr}
+  .two-col-wide{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:640px}
+  .search-wrap{width:100%}
+  .input-search{width:100%}
+  .table-head{flex-direction:column;align-items:stretch}
+  .form-footer{flex-wrap:wrap}
+  .form-footer .btn-submit,.form-footer .btn-cancel{flex:1;justify-content:center;min-width:140px}
+  .auth-video{transform:scale(1.15)}
+  .home-hero{padding:26px}
+  .home-hero-stats{width:100%;justify-content:space-between}
+  .hh-stat{padding:0 8px}
+  .wz-cat-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width: 480px){
+  .metric-grid{grid-template-columns:1fr}
+  .mini-stats{grid-template-columns:1fr}
+  .cit-banner{flex-direction:column;align-items:flex-start;gap:16px;padding:22px}
+  .btn-banner{align-self:stretch;text-align:center}
+  .topbar-title{font-size:16px}
+  .home-hero-stats{flex-wrap:wrap;gap:10px 0}
+  .hh-sep{display:none}
+  .hh-stat{width:50%;padding:6px 0}
+  .wz-cat-grid{grid-template-columns:repeat(2,1fr)}
+  .wizard-steps{overflow-x:auto;padding-bottom:2px}
+}
+
 @media (prefers-reduced-motion: reduce){
   .view.active,.metric-card,.mini-stat,.ocorr-card,tbody tr,.tl-item,.success-icon,.proto-box,.empty svg,.badge::before,.cit-banner::before,.sb-logo-mark{animation:none!important;opacity:1!important;transform:none!important}
-  .cat-bar-fill,.toast,.metric-card,.mini-stat,.ocorr-card,tbody tr{transition-duration:.01ms!important}
+  .cat-bar-fill,.toast,.metric-card,.mini-stat,.ocorr-card,tbody tr,.sidebar,.sidebar-backdrop{transition-duration:.01ms!important}
 }
 </style>
 </head>
 <body>
+<!-- Botão de menu (só aparece no mobile) e fundo escurecido da gaveta lateral -->
+<button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" hidden>
+  <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.5 5.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1z"/></svg>
+</button>
+<div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
+
 <div id="app">
 
 <!-- ══ TELA DE AUTH ══════════════════════════════════════════════════ -->
@@ -460,15 +601,25 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <div class="topbar-right"><button class="btn-new" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova ocorrência</button></div>
       </header>
       <div class="content">
-        <div class="cit-banner"><div><div class="cit-banner-t">Encontrou um problema na cidade?</div><div class="cit-banner-s">Registre agora. Leva menos de 2 minutos.</div></div><button class="btn-banner" onclick="moradorNav('form')">Registrar →</button></div>
-        <div class="mini-stats" id="m-mini-stats">
-          <div class="mini-stat"><div class="ms-num" id="ms-total">-</div><div class="ms-label">Total</div></div>
-          <div class="mini-stat"><div class="ms-num" id="ms-analise" style="color:#b45309">-</div><div class="ms-label">Em análise</div></div>
-          <div class="mini-stat"><div class="ms-num" id="ms-atend" style="color:#1d4ed8">-</div><div class="ms-label">Em atendimento</div></div>
-          <div class="mini-stat"><div class="ms-num" id="ms-resolvida" style="color:#15803d">-</div><div class="ms-label">Resolvidas</div></div>
+        <div class="home-hero">
+          <div class="home-hero-main">
+            <div class="home-hero-eyebrow">Braço do Norte</div>
+            <div class="home-hero-title">Encontrou um problema na cidade?</div>
+            <div class="home-hero-sub">Registre agora. Leva menos de 2 minutos.</div>
+            <button class="btn-banner" onclick="moradorNav('form')">Registrar ocorrência →</button>
+          </div>
+          <div class="home-hero-stats">
+            <div class="hh-stat"><div class="hh-num" id="ms-total">-</div><div class="hh-label">Total</div></div>
+            <div class="hh-sep"></div>
+            <div class="hh-stat"><div class="hh-num" id="ms-analise">-</div><div class="hh-label">Em análise</div></div>
+            <div class="hh-sep"></div>
+            <div class="hh-stat"><div class="hh-num" id="ms-atend">-</div><div class="hh-label">Em atendimento</div></div>
+            <div class="hh-sep"></div>
+            <div class="hh-stat"><div class="hh-num" id="ms-resolvida">-</div><div class="hh-label">Resolvidas</div></div>
+          </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-          <div><div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--slate-900)">Ocorrências recentes</div></div>
+          <div><div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--slate-900);letter-spacing:-.015em">Suas ocorrências recentes</div></div>
           <button class="btn-detail" onclick="moradorNav('lista')">Ver todas →</button>
         </div>
         <div class="ocorr-grid" id="m-cards-recentes"></div>
@@ -524,46 +675,80 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-user"><div class="sb-avatar" id="sb-m3-av">?</div><div class="sb-user-info"><div class="name" id="sb-m3-nome">–</div><div class="role">Morador</div></div></div>
     </aside>
     <div class="main">
-      <header class="topbar"><div><div class="topbar-title">Nova Ocorrência</div><div class="topbar-sub">Preencha os dados do problema</div></div></header>
+      <header class="topbar"><div><div class="topbar-title">Nova Ocorrência</div><div class="topbar-sub">Passo a passo, leva menos de 2 minutos</div></div></header>
       <div class="content">
         <button class="back-link" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar</button>
-        <div class="card" style="max-width:760px">
-          <div style="margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)">
-            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:4px">Registrar nova ocorrência</div>
-            <div style="font-size:13px;color:var(--slate-400)">Preencha com o máximo de detalhes possível</div>
+        <div class="card" style="max-width:720px">
+          <div class="wizard-head">
+            <div class="wizard-title" id="wz-title">O que você quer relatar?</div>
+            <div class="wizard-sub" id="wz-sub">Escolha a categoria que melhor descreve o problema</div>
+            <div class="wizard-steps">
+              <div class="wz-step active" data-step="1"><span class="wz-dot">1</span>Categoria</div>
+              <div class="wz-line"></div>
+              <div class="wz-step" data-step="2"><span class="wz-dot">2</span>Local</div>
+              <div class="wz-line"></div>
+              <div class="wz-step" data-step="3"><span class="wz-dot">3</span>Detalhes</div>
+              <div class="wz-line"></div>
+              <div class="wz-step" data-step="4"><span class="wz-dot">4</span>Revisão</div>
+            </div>
           </div>
           <div id="form-error" class="auth-error" style="background:var(--red-50);border-color:var(--red-100);color:var(--red-600)"></div>
-          <div class="form-grid">
-            <div class="form-group form-full"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
-            <div class="form-group form-full"><label class="form-label">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
-            <div class="form-group"><label class="form-label">Categoria *</label>
-              <select class="form-select" id="f-categoria">
-                <option value="">Selecione...</option>
-                <option>Pavimentação</option><option>Iluminação pública</option><option>Limpeza urbana</option><option>Sinalização</option><option>Drenagem / Bueiro</option><option>Parques e jardins</option><option>Outros</option>
-              </select>
+
+          <input type="hidden" id="f-categoria">
+
+          <!-- STEP 1 — categoria -->
+          <div class="wz-panel active" data-panel="1">
+            <div class="wz-cat-grid">
+              <button type="button" class="wz-cat-card" data-cat="Pavimentação" onclick="selectCategoria(this)"><span class="wz-cat-icon">🚧</span>Pavimentação</button>
+              <button type="button" class="wz-cat-card" data-cat="Iluminação pública" onclick="selectCategoria(this)"><span class="wz-cat-icon">💡</span>Iluminação pública</button>
+              <button type="button" class="wz-cat-card" data-cat="Limpeza urbana" onclick="selectCategoria(this)"><span class="wz-cat-icon">🗑️</span>Limpeza urbana</button>
+              <button type="button" class="wz-cat-card" data-cat="Sinalização" onclick="selectCategoria(this)"><span class="wz-cat-icon">🚦</span>Sinalização</button>
+              <button type="button" class="wz-cat-card" data-cat="Drenagem / Bueiro" onclick="selectCategoria(this)"><span class="wz-cat-icon">💧</span>Drenagem / Bueiro</button>
+              <button type="button" class="wz-cat-card" data-cat="Parques e jardins" onclick="selectCategoria(this)"><span class="wz-cat-icon">🌳</span>Parques e jardins</button>
+              <button type="button" class="wz-cat-card" data-cat="Outros" onclick="selectCategoria(this)"><span class="wz-cat-icon">📋</span>Outros</button>
             </div>
-            <div class="form-group"><label class="form-label">Bairro *</label>
-              <select class="form-select" id="f-bairro">
-                <option value="">Selecione...</option>
-                <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
-              </select>
+          </div>
+
+          <!-- STEP 2 — local -->
+          <div class="wz-panel" data-panel="2">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Bairro *</label>
+                <select class="form-select" id="f-bairro">
+                  <option value="">Selecione...</option>
+                  <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
+                </select>
+              </div>
+              <div class="form-group"><label class="form-label">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
+              <div class="form-group form-full"><label class="form-label">Ponto de referência</label><input class="form-input" id="f-referencia" placeholder="Em frente ao mercado, próximo à escola..."></div>
             </div>
-            <div class="form-group form-full"><label class="form-label">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
-            <div class="form-group form-full"><label class="form-label">Ponto de referência</label><input class="form-input" id="f-referencia" placeholder="Em frente ao mercado, próximo à escola..."></div>
-            <div class="form-group form-full">
-              <label class="form-label">Foto do problema</label>
-              <div class="upload-zone" id="upload-zone" ondragover="uploadDragOver(event)" ondragleave="uploadDragLeave()" ondrop="uploadDrop(event)">
-                <input type="file" accept="image/*" id="f-foto" onchange="previewFoto(this)">
-                <div class="uz-icon">📷</div>
-                <div class="uz-hint" style="font-size:13px;font-weight:500;color:var(--slate-600)">Clique ou arraste uma foto aqui</div>
-                <div class="uz-sub" style="font-size:11.5px;color:var(--slate-400);margin-top:3px">JPG, PNG · Até 5 MB</div>
-                <img id="foto-preview" class="upload-preview">
+          </div>
+
+          <!-- STEP 3 — detalhes -->
+          <div class="wz-panel" data-panel="3">
+            <div class="form-grid">
+              <div class="form-group form-full"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
+              <div class="form-group form-full"><label class="form-label">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
+              <div class="form-group form-full">
+                <label class="form-label">Foto do problema</label>
+                <div class="upload-zone" id="upload-zone" ondragover="uploadDragOver(event)" ondragleave="uploadDragLeave()" ondrop="uploadDrop(event)">
+                  <input type="file" accept="image/*" id="f-foto" onchange="previewFoto(this)">
+                  <div class="uz-icon">📷</div>
+                  <div class="uz-hint" style="font-size:13px;font-weight:500;color:var(--slate-600)">Clique ou arraste uma foto aqui</div>
+                  <div class="uz-sub" style="font-size:11.5px;color:var(--slate-400);margin-top:3px">JPG, PNG · Até 5 MB</div>
+                  <img id="foto-preview" class="upload-preview">
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- STEP 4 — revisão -->
+          <div class="wz-panel" data-panel="4">
+            <div id="wz-review"></div>
+          </div>
+
           <div class="form-footer">
-            <button class="btn-submit" id="btn-enviar" onclick="enviarOcorrencia()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência</button>
-            <button class="btn-cancel" onclick="moradorNav('dash')">Cancelar</button>
+            <button class="btn-cancel" id="wz-btn-back" onclick="wizardBack()">Voltar</button>
+            <button class="btn-submit" id="wz-btn-next" onclick="wizardNext()">Próximo<svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/></svg></button>
           </div>
         </div>
       </div>
@@ -646,9 +831,9 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           <div class="card"><div class="card-title">Ocorrências por categoria</div><div id="pref-cat-chart"></div></div>
           <div class="card"><div class="card-title">Bairros com mais registros</div><div id="pref-bairro-chart"></div></div>
         </div>
-        <div class="table-wrap">
-          <div class="table-head"><span class="table-head-title">Recentes</span><button class="btn-detail" onclick="prefNav('lista')">Ver todas →</button></div>
-          <div id="pref-dash-table"></div>
+        <div class="card">
+          <div class="table-head" style="padding:0 0 14px;margin-bottom:6px"><span class="table-head-title">Atividade recente</span><button class="btn-detail" onclick="prefNav('lista')">Ver todas →</button></div>
+          <div id="pref-dash-table" class="feed-list"></div>
         </div>
       </div>
     </div>
@@ -733,8 +918,40 @@ async function api(method, path, body) {
 function goView(id) {
   document.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
   const el = document.getElementById(id);
-  if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+  if (el) {
+    // reseta a animação de entrada: sem isso, o "transform" da animação
+    // continua ativo (fill-mode:both) e cria um containing-block para
+    // elementos position:fixed dentro da view (ex: sidebar mobile),
+    // fazendo eles "grudarem" na página em vez de ficarem fixos na tela
+    el.style.animation = 'none';
+    el.style.display = 'flex';
+    el.classList.add('active');
+    void el.offsetWidth; // força reflow antes de reativar a animação
+    el.style.animation = '';
+  }
   window.scrollTo(0, 0);
+  closeSidebar();
+  const menuBtn = document.getElementById('menu-toggle');
+  if (menuBtn) menuBtn.hidden = (id === 'v-auth');
+}
+document.addEventListener('animationend', e => {
+  if (e.target.classList.contains('view') && e.animationName === 'viewFadeIn') {
+    e.target.style.animation = 'none';
+  }
+});
+
+// ─── MOBILE SIDEBAR ──────────────────────────────────────────────────
+function toggleSidebar() {
+  const sidebar = document.querySelector('.view.active .sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('open');
+  if (backdrop) backdrop.classList.toggle('show', isOpen);
+}
+function closeSidebar() {
+  document.querySelectorAll('.sidebar.open').forEach(s => s.classList.remove('open'));
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (backdrop) backdrop.classList.remove('show');
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────
@@ -754,6 +971,19 @@ function badge(status) { return `<span class="badge ${BADGE_MAP[status] || 'badg
 function catEmoji(cat) {
   const m = { 'Pavimentação': '🚧', 'Iluminação pública': '💡', 'Limpeza urbana': '🗑️', 'Sinalização': '🚦', 'Drenagem / Bueiro': '💧', 'Parques e jardins': '🌳', 'Outros': '📋' };
   return (m[cat] || '📋') + ' ' + cat;
+}
+
+// Barra de progresso horizontal (reaproveita o visual do stepper do
+// formulário) — dá pra ver o andamento de uma ocorrência num piscar de
+// olhos, em vez de ler uma lista vertical de datas de cima a baixo.
+function renderOcStepper(statusAtual) {
+  const steps = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
+  const idx = steps.indexOf(statusAtual);
+  return `<div class="oc-stepper">${steps.map((s, i) => {
+    const cls = i < idx ? 'done' : i === idx ? 'active' : '';
+    const line = i < steps.length - 1 ? `<div class="wz-line ${i < idx ? 'filled' : ''}"></div>` : '';
+    return `<div class="wz-step ${cls}"><span class="wz-dot">${i < idx ? '✓' : i + 1}</span>${s}</div>${line}`;
+  }).join('')}</div>`;
 }
 
 // Fuso fixo em America/Sao_Paulo: sem isso, o horário exibido dependia do
@@ -875,7 +1105,99 @@ function afterLogin() {
 async function moradorNav(page) {
   if (page === 'dash') { await loadMoradorDash(); return; }
   if (page === 'lista') { goView('v-morador-lista'); await loadMoradorLista(); return; }
-  if (page === 'form') { goView('v-morador-form'); return; }
+  if (page === 'form') { goView('v-morador-form'); wizardReset(); return; }
+}
+
+// ─── WIZARD "NOVA OCORRÊNCIA" ────────────────────────────────────────
+// Formulário em 4 passos (categoria → local → detalhes → revisão) em vez
+// de uma página longa só — reduz a sensação de "formulário burocrático"
+// e permite validar/guiar um passo de cada vez.
+let wizardStep = 1;
+const WZ_TOTAL_STEPS = 4;
+const WZ_TITLES = {
+  1: ['O que você quer relatar?', 'Escolha a categoria que melhor descreve o problema'],
+  2: ['Onde fica o problema?', 'Informe o bairro e o endereço mais próximo'],
+  3: ['Conte os detalhes', 'Um título claro e, se puder, uma foto ajudam muito'],
+  4: ['Revise antes de enviar', 'Confira as informações — dá pra editar qualquer parte'],
+};
+
+function selectCategoria(btn) {
+  document.querySelectorAll('.wz-cat-card').forEach(c => c.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('f-categoria').value = btn.dataset.cat;
+  setTimeout(() => wizardNext(), 200);
+}
+
+function wizardValidateStep(step) {
+  const err = document.getElementById('form-error');
+  err.classList.remove('show');
+  if (step === 1 && !document.getElementById('f-categoria').value) {
+    toast('Escolha uma categoria para continuar.', 'red'); return false;
+  }
+  if (step === 2) {
+    const bairro = document.getElementById('f-bairro').value;
+    const endereco = document.getElementById('f-endereco').value.trim();
+    if (!bairro || !endereco) { toast('Preencha bairro e endereço.', 'red'); return false; }
+  }
+  if (step === 3 && !document.getElementById('f-titulo').value.trim()) {
+    toast('Dê um título curto para a ocorrência.', 'red'); return false;
+  }
+  return true;
+}
+
+function wizardRenderReview() {
+  const cat = document.getElementById('f-categoria').value;
+  const bairro = document.getElementById('f-bairro').value;
+  const endereco = document.getElementById('f-endereco').value.trim();
+  const referencia = document.getElementById('f-referencia').value.trim();
+  const titulo = document.getElementById('f-titulo').value.trim();
+  const descricao = document.getElementById('f-descricao').value.trim();
+  const fotoImg = document.getElementById('foto-preview');
+  const temFoto = fotoImg && fotoImg.style.display !== 'none' && fotoImg.src;
+  document.getElementById('wz-review').innerHTML = `
+    <div class="wz-review-row"><span class="wz-review-label">Categoria</span><span class="wz-review-val">${catEmoji(cat)}</span><button type="button" class="wz-review-edit" onclick="wizardGoTo(1)">Editar</button></div>
+    <div class="wz-review-row"><span class="wz-review-label">Local</span><span class="wz-review-val">${esc(bairro)} — ${esc(endereco)}${referencia ? ' (' + esc(referencia) + ')' : ''}</span><button type="button" class="wz-review-edit" onclick="wizardGoTo(2)">Editar</button></div>
+    <div class="wz-review-row"><span class="wz-review-label">Título</span><span class="wz-review-val">${esc(titulo)}${descricao ? '<br><span style="color:var(--slate-400);font-size:12.5px">' + esc(descricao) + '</span>' : ''}</span><button type="button" class="wz-review-edit" onclick="wizardGoTo(3)">Editar</button></div>
+    ${temFoto ? `<img src="${fotoImg.src}" class="wz-review-photo">` : ''}
+  `;
+}
+
+function wizardGoTo(step) {
+  wizardStep = step;
+  document.getElementById('wz-title').textContent = WZ_TITLES[step][0];
+  document.getElementById('wz-sub').textContent = WZ_TITLES[step][1];
+  document.querySelectorAll('.wz-panel').forEach(p => p.classList.toggle('active', +p.dataset.panel === step));
+  document.querySelectorAll('.wz-step').forEach(s => {
+    const n = +s.dataset.step;
+    s.classList.toggle('active', n === step);
+    s.classList.toggle('done', n < step);
+  });
+  document.querySelectorAll('.wz-line').forEach((l, i) => l.classList.toggle('filled', i < step - 1));
+  const backBtn = document.getElementById('wz-btn-back');
+  const nextBtn = document.getElementById('wz-btn-next');
+  backBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
+  if (step === WZ_TOTAL_STEPS) {
+    wizardRenderReview();
+    nextBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+    nextBtn.setAttribute('onclick', 'enviarOcorrencia()');
+  } else {
+    nextBtn.innerHTML = 'Próximo<svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/></svg>';
+    nextBtn.setAttribute('onclick', 'wizardNext()');
+  }
+}
+
+function wizardNext() {
+  if (!wizardValidateStep(wizardStep)) return;
+  if (wizardStep < WZ_TOTAL_STEPS) wizardGoTo(wizardStep + 1);
+}
+function wizardBack() {
+  if (wizardStep > 1) wizardGoTo(wizardStep - 1);
+}
+function wizardReset() {
+  document.querySelectorAll('.wz-cat-card').forEach(c => c.classList.remove('selected'));
+  const catInput = document.getElementById('f-categoria');
+  if (catInput) catInput.value = '';
+  wizardGoTo(1);
 }
 
 async function loadMoradorDash() {
@@ -923,21 +1245,15 @@ async function loadMoradorLista() {
     document.getElementById('m-lista-body').innerHTML = `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/></svg><p>Nenhuma ocorrência encontrada.</p></div>`;
     return;
   }
-  document.getElementById('m-lista-body').innerHTML = `
-    <table>
-      <thead><tr><th>Protocolo</th><th>Título</th><th>Categoria</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
-      <tbody>
-        ${filtrada.map(o => `
-          <tr onclick="abrirMoradorDet('${o.id}')">
-            <td class="td-mono">${o.protocolo}</td>
-            <td class="td-bold">${esc(o.titulo)}</td>
-            <td>${catEmoji(o.categoria)}</td>
-            <td>${fmtDate(o.criadoEm)}</td>
-            <td>${badge(o.status)}</td>
-            <td><button class="btn-detail" onclick="event.stopPropagation();abrirMoradorDet('${o.id}')">Ver</button></td>
-          </tr>`).join('')}
-      </tbody>
-    </table>`;
+  // grade de cartões em vez de tabela — mais visual e melhor pra quem
+  // acompanha só algumas ocorrências próprias (não é uma planilha de gestão)
+  document.getElementById('m-lista-body').innerHTML = `<div class="ocorr-grid" style="margin-bottom:0">${filtrada.map(o => `
+      <div class="ocorr-card" onclick="abrirMoradorDet('${o.id}')">
+        <div class="oc-top"><div class="oc-cat">${catEmoji(o.categoria)}</div>${badge(o.status)}</div>
+        <div class="oc-title">${esc(o.titulo)}</div>
+        <div class="oc-addr">${esc(o.endereco || '')}</div>
+        <div class="oc-foot"><span class="oc-proto">${o.protocolo}</span><span class="oc-date">${fmtDate(o.criadoEm)}</span></div>
+      </div>`).join('')}</div>`;
 }
 
 function renderMoradorLista() { loadMoradorLista(); }
@@ -971,7 +1287,8 @@ async function abrirMoradorDet(id) {
               <span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo} · ${fmtDateTime(o.criadoEm)}</span></div>
               ${badge(o.status)}
             </div>
-            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
+            ${renderOcStepper(o.status)}
+            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
             <div class="form-grid" style="gap:14px">
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
               <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
@@ -1084,7 +1401,7 @@ function uploadDrop(ev) {
 
 // ─── ENVIAR OCORRÊNCIA ───────────────────────────────────────────────
 async function enviarOcorrencia() {
-  const btn = document.getElementById('btn-enviar');
+  const btn = document.getElementById('wz-btn-next');
   const err = document.getElementById('form-error');
   err.classList.remove('show');
   const titulo = document.getElementById('f-titulo').value.trim();
@@ -1179,23 +1496,17 @@ async function loadPrefDash() {
       </div>`
     ).join('') || '<p style="color:var(--slate-400);font-size:13px">Sem dados</p>';
 
-    // tabela recentes
+    // feed de atividade recente (mais enxuto que a tabela da página "Ocorrências")
     const recentes = lista.slice(0, 6);
-    document.getElementById('pref-dash-table').innerHTML = recentes.length ? `
-      <table>
-        <thead><tr><th>Protocolo</th><th>Cidadão</th><th>Categoria</th><th>Bairro</th><th>Data</th><th>Status</th><th></th></tr></thead>
-        <tbody>
-          ${recentes.map(o => `<tr onclick="abrirPrefDet('${o.id}')">
-            <td class="td-mono">${o.protocolo}</td>
-            <td class="td-bold">${esc(o.nomeUsuario)}</td>
-            <td>${catEmoji(o.categoria)}</td>
-            <td>${esc(o.bairro)}</td>
-            <td>${fmtDate(o.criadoEm)}</td>
-            <td>${badge(o.status)}</td>
-            <td><button class="btn-detail" onclick="event.stopPropagation();abrirPrefDet('${o.id}')">Ver</button></td>
-          </tr>`).join('')}
-        </tbody>
-      </table>` : '<div class="empty"><p>Nenhuma ocorrência ainda.</p></div>';
+    document.getElementById('pref-dash-table').innerHTML = recentes.length ? recentes.map(o => `
+      <div class="feed-item" onclick="abrirPrefDet('${o.id}')">
+        <div class="feed-icon">${catEmoji(o.categoria).split(' ')[0]}</div>
+        <div class="feed-main">
+          <div class="feed-title">${esc(o.titulo)}</div>
+          <div class="feed-meta">${o.protocolo} · ${esc(o.nomeUsuario)} · ${esc(o.bairro)}</div>
+        </div>
+        <div class="feed-right">${badge(o.status)}<div class="feed-date">${fmtDate(o.criadoEm)}</div></div>
+      </div>`).join('') : '<div class="empty"><p>Nenhuma ocorrência ainda.</p></div>';
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
 }
 
@@ -1216,16 +1527,16 @@ async function loadPrefLista() {
     document.getElementById('pl-sub').textContent = `${lista.length} resultado(s)`;
     body.innerHTML = lista.length ? `
       <table>
-        <thead><tr><th>Protocolo</th><th>Cidadão</th><th>Categoria</th><th>Bairro</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Protocolo</th><th>Cidadão</th><th>Categoria</th><th>Bairro</th><th>Data</th><th>Status</th><th></th></tr></thead>
         <tbody>
           ${lista.map(o => `<tr onclick="abrirPrefDet('${o.id}')">
             <td class="td-mono">${o.protocolo}</td>
-            <td class="td-bold">${esc(o.nomeUsuario)}</td>
-            <td>${catEmoji(o.categoria)}</td>
+            <td><div style="display:flex;align-items:center;gap:9px"><div class="row-avatar">${initials(o.nomeUsuario)}</div><span class="td-bold">${esc(o.nomeUsuario)}</span></div></td>
+            <td><span class="cat-chip">${catEmoji(o.categoria)}</span></td>
             <td>${esc(o.bairro)}</td>
             <td>${fmtDate(o.criadoEm)}</td>
             <td>${badge(o.status)}</td>
-            <td><button class="btn-detail" onclick="event.stopPropagation();abrirPrefDet('${o.id}')">Ver</button></td>
+            <td><button class="btn-icon" title="Ver detalhes" onclick="event.stopPropagation();abrirPrefDet('${o.id}')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/></svg></button></td>
           </tr>`).join('')}
         </tbody>
       </table>` : '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:16px;opacity:.4"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/></svg><p>Nenhuma ocorrência encontrada.</p></div>';
@@ -1261,7 +1572,8 @@ async function abrirPrefDet(id) {
                 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${badge(o.status)}<span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo}</span></div>
               </div>
             </div>
-            <div class="detail-img-wrap">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
+            ${renderOcStepper(o.status)}
+            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
             <div class="form-grid" style="gap:14px">
               <div><div class="df-label">Cidadão</div><div class="df-val">${esc(o.nomeUsuario)}</div></div>
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
@@ -1295,31 +1607,42 @@ async function abrirPrefDet(id) {
             <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
           </div>
           <div class="card">
-            <div class="card-title">Alterar status</div>
-            <select class="action-sel" id="det-status">
-              ${todosStatus.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
-            </select>
-            <textarea class="action-ta" id="det-obs" placeholder="Observação sobre a mudança de status..."></textarea>
-            <button class="action-btn ab-primary" onclick="aplicarStatus()">Aplicar status</button>
-          </div>
-          <div class="card">
-            <div class="card-title">Encaminhar para setor</div>
-            <select class="action-sel" id="det-setor">
-              <option>Secretaria de Obras</option><option>Secretaria de Limpeza</option><option>Iluminação Pública</option><option>Trânsito e Mobilidade</option><option>Parques e Jardins</option>
-            </select>
-            <textarea class="action-ta" id="det-obs-setor" placeholder="Observações para o setor..."></textarea>
-            <button class="action-btn ab-outline" onclick="encaminharSetor()">Encaminhar</button>
-          </div>
-          <div class="card">
-            <div class="card-title">Mensagem ao cidadão</div>
-            <textarea class="action-ta" id="det-msg" placeholder="Escreva uma mensagem de retorno..."></textarea>
-            <button class="action-btn ab-outline" onclick="enviarMensagem()">Enviar mensagem</button>
+            <div class="action-tabs">
+              <button type="button" class="action-tab active" data-tab="status" onclick="actionTab('status')">Status</button>
+              <button type="button" class="action-tab" data-tab="encaminhar" onclick="actionTab('encaminhar')">Encaminhar</button>
+              <button type="button" class="action-tab" data-tab="mensagem" onclick="actionTab('mensagem')">Mensagem</button>
+            </div>
+            <div class="action-panel active" data-action-panel="status">
+              <select class="action-sel" id="det-status">
+                ${todosStatus.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+              <textarea class="action-ta" id="det-obs" placeholder="Observação sobre a mudança de status..."></textarea>
+              <button class="action-btn ab-primary" onclick="aplicarStatus()">Aplicar status</button>
+            </div>
+            <div class="action-panel" data-action-panel="encaminhar">
+              <select class="action-sel" id="det-setor">
+                <option>Secretaria de Obras</option><option>Secretaria de Limpeza</option><option>Iluminação Pública</option><option>Trânsito e Mobilidade</option><option>Parques e Jardins</option>
+              </select>
+              <textarea class="action-ta" id="det-obs-setor" placeholder="Observações para o setor..."></textarea>
+              <button class="action-btn ab-outline" onclick="encaminharSetor()">Encaminhar</button>
+            </div>
+            <div class="action-panel" data-action-panel="mensagem">
+              <textarea class="action-ta" id="det-msg" placeholder="Escreva uma mensagem de retorno..."></textarea>
+              <button class="action-btn ab-outline" onclick="enviarMensagem()">Enviar mensagem</button>
+            </div>
           </div>
         </div>
       </div>`;
   } catch (e) {
     content.innerHTML = `<div class="empty"><p>Erro: ${e.message}</p></div>`;
   }
+}
+
+// As 3 ações (status/encaminhar/mensagem) viviam em 3 cartões sempre
+// visíveis, empilhados — trocado por um único cartão com abas.
+function actionTab(tab) {
+  document.querySelectorAll('.action-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.action-panel').forEach(p => p.classList.toggle('active', p.dataset.actionPanel === tab));
 }
 
 async function aplicarStatus() {
