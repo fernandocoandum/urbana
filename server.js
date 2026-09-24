@@ -1,12 +1,20 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 
+// Presença de DATABASE_URL é tratada como "ambiente de produção": nesse modo, uma falha do
+// Postgres NUNCA deve cair silenciosamente para o banco JSON local (que em hospedagem
+// serverless sequer persiste entre execuções). Em vez disso, a API responde 503 até o banco
+// voltar a ficar saudável.
+const isProdIntent = !!process.env.DATABASE_URL;
+
 let usePostgres = false;
 let pool = null;
+let dbReady = false; // true assim que o modo de persistência ativo (Postgres OU JSON local) está pronto para uso
 
 async function initDB() {
   if (process.env.DATABASE_URL) {
@@ -44,7 +52,15 @@ async function initDB() {
           lat DOUBLE PRECISION,
           lng DOUBLE PRECISION,
           apoios JSONB DEFAULT '[]',
-          avaliacao JSONB
+          avaliacao JSONB,
+          precisao_local TEXT DEFAULT 'manual',
+          responsavel TEXT,
+          setor TEXT,
+          prazo TIMESTAMPTZ,
+          evidencia_resolucao TEXT,
+          pedidos_reabertura JSONB DEFAULT '[]',
+          admin_nao_lido BOOLEAN DEFAULT false,
+          cidadao_nao_lido BOOLEAN DEFAULT false
         );
         CREATE TABLE IF NOT EXISTS sessions (
           token TEXT PRIMARY KEY,
@@ -71,30 +87,113 @@ async function initDB() {
         );
         ALTER TABLE users ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expira_em TIMESTAMPTZ;
         ALTER TABLE sessions ADD COLUMN IF NOT EXISTS expira_em TIMESTAMPTZ;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS apoios JSONB DEFAULT '[]';
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS avaliacao JSONB;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS precisao_local TEXT DEFAULT 'manual';
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS responsavel TEXT;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS setor TEXT;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS prazo TIMESTAMPTZ;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS evidencia_resolucao TEXT;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS pedidos_reabertura JSONB DEFAULT '[]';
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS admin_nao_lido BOOLEAN DEFAULT false;
+        ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS cidadao_nao_lido BOOLEAN DEFAULT false;
       `);
-      const adminHash = hashPassword('admin');
-      await pool.query(`
-        INSERT INTO users (id, nome, email, senha, role, termos_aceitos_em)
-        VALUES ('u1','Admin Prefeitura','admin@prefeitura.gov.br',$1,'admin',NOW())
-        ON CONFLICT (email) DO NOTHING
-      `, [adminHash]);
+      usePostgres = true;
+      await ensureApoiosTable();
+      await ensureAdminAccount();
       await pool.query(`INSERT INTO config (key,value) VALUES ('next_protocolo','4') ON CONFLICT (key) DO NOTHING`);
       await seedExamples();
-      usePostgres = true;
+      dbReady = true;
       console.log('Banco PostgreSQL conectado');
     } catch (e) {
-      console.log('PostgreSQL falhou, usando JSON local:', e.message);
-      usePostgres = false;
-      initJsonDB();
+      // Em produção (DATABASE_URL configurado), uma falha do Postgres NÃO deve fazer o
+      // servidor cair silenciosamente para persistência JSON local — em hospedagem serverless
+      // o disco não é confiável entre execuções, e o operador precisa saber que o banco está
+      // fora do ar em vez de o sistema "funcionar" perdendo dados sem avisar.
+      usePostgres = true; // mantém a intenção de produção
+      dbReady = false;
+      console.error('ERRO CRÍTICO: falha ao conectar/inicializar o PostgreSQL:', e.message);
+      console.error('O servidor está de pé, mas a API responderá 503 até o banco voltar a ficar saudável.');
     }
   } else {
-    console.log('Usando banco JSON local (db.json)');
+    console.log('Usando banco JSON local (db.json) — modo de desenvolvimento, não recomendado em produção.');
     initJsonDB();
+    await ensureAdminAccount();
+    dbReady = true;
+  }
+}
+
+// Cria a conta administrativa inicial sem depender de uma credencial fixa e conhecida.
+// - ADMIN_EMAIL / ADMIN_SENHA (variáveis de ambiente) definem a credencial desejada.
+// - Se ADMIN_SENHA for definida, ela é aplicada mesmo que a conta já exista — permite
+//   girar a senha em produção só trocando a variável de ambiente e reiniciando/reimplantando.
+// - Se não houver ADMIN_SENHA e a conta ainda não existir: em produção gera uma senha
+//   aleatória forte (mostrada uma única vez no log); em desenvolvimento local (JSON) usa
+//   "admin" por conveniência, deixando claro que é só para uso local.
+async function ensureAdminAccount() {
+  const email = (process.env.ADMIN_EMAIL || 'admin@prefeitura.gov.br').trim().toLowerCase();
+  const nome = process.env.ADMIN_NOME || 'Admin Prefeitura';
+  const senhaEnv = process.env.ADMIN_SENHA;
+  let existente = usePostgres
+    ? (await pool.query('SELECT id FROM users WHERE email=$1', [email])).rows[0]
+    : jsonDB.users.find(u => u.email === email);
+
+  if (senhaEnv) {
+    const hash = hashPassword(senhaEnv);
+    if (existente) {
+      if (usePostgres) await pool.query('UPDATE users SET senha=$1 WHERE email=$2', [hash, email]);
+      else { existente.senha = hash; saveJsonDB(); }
+      console.log(`Senha da conta administrativa (${email}) sincronizada com ADMIN_SENHA.`);
+    } else {
+      const novo = { id:'u1', nome, email, senha:hash, role:'admin', bairro:'', foto:null };
+      if (usePostgres) await pool.query('INSERT INTO users (id,nome,email,senha,role,termos_aceitos_em) VALUES ($1,$2,$3,$4,$5,NOW())', [novo.id, novo.nome, novo.email, novo.senha, novo.role]);
+      else { novo.criadoEm = new Date().toISOString(); novo.termosAceitosEm = novo.criadoEm; jsonDB.users.push(novo); saveJsonDB(); }
+      console.log(`Conta administrativa criada: ${email} (senha definida por ADMIN_SENHA).`);
+    }
+    return;
+  }
+
+  if (existente) return; // conta já existe e nenhuma senha nova foi solicitada — não mexe nela
+
+  const senhaGerada = isProdIntent ? crypto.randomBytes(9).toString('base64url') : 'admin';
+  const hash = hashPassword(senhaGerada);
+  const novo = { id:'u1', nome, email, senha:hash, role:'admin', bairro:'', foto:null };
+  if (usePostgres) await pool.query('INSERT INTO users (id,nome,email,senha,role,termos_aceitos_em) VALUES ($1,$2,$3,$4,$5,NOW())', [novo.id, novo.nome, novo.email, novo.senha, novo.role]);
+  else { novo.criadoEm = new Date().toISOString(); novo.termosAceitosEm = novo.criadoEm; jsonDB.users.push(novo); saveJsonDB(); }
+
+  if (isProdIntent) {
+    console.log('========================================================');
+    console.log(`Conta administrativa criada automaticamente: ${email}`);
+    console.log(`Senha temporária gerada (defina ADMIN_SENHA para fixar uma própria): ${senhaGerada}`);
+    console.log('Troque essa senha assim que possível (ou defina ADMIN_SENHA e reimplante).');
+    console.log('========================================================');
+  } else {
+    console.log(`Modo de desenvolvimento: conta administrativa ${email} / senha "admin" (apenas local).`);
+  }
+}
+
+async function ensureApoiosTable() {
+  // Tabela normalizada de apoios com unicidade (ocorrencia,usuário) — evita leitura+gravação
+  // do array inteiro de apoios sob concorrência, que pode perder incrementos simultâneos.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS apoios_registro (
+      ocorrencia_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      criado_em TIMESTAMPTZ DEFAULT NOW(),
+      PRIMARY KEY (ocorrencia_id, user_id)
+    );
+  `);
+  // Migra apoios já armazenados no array JSONB legado, se houver, para a tabela normalizada.
+  const r = await pool.query(`SELECT id, apoios FROM ocorrencias WHERE apoios IS NOT NULL AND jsonb_array_length(apoios) > 0`);
+  for (const row of r.rows) {
+    for (const uid of row.apoios) {
+      await pool.query('INSERT INTO apoios_registro (ocorrencia_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [row.id, uid]);
+    }
   }
 }
 
@@ -125,11 +224,12 @@ function initJsonDB() {
       jsonDB = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
       if (!jsonDB.chatMensagens) jsonDB.chatMensagens = [];
       if (!jsonDB.arquivos) jsonDB.arquivos = [];
+      if (!jsonDB.users) jsonDB.users = [];
       return;
     } catch {}
   }
   jsonDB = {
-    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hashPassword('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null }],
+    users: [],
     ocorrencias: [
       { id:'oc1', protocolo:'PROT-2026-0001', userId:'u1', titulo:'Buraco na Rua João Machado', descricao:'Buraco de aproximadamente 80cm de diâmetro na pista principal.', categoria:'Pavimentação', endereco:'Rua João Machado, 450', bairro:'Centro', referencia:'Em frente à padaria Pão de Mel', foto:null, status:'Em atendimento', criadoEm:'2026-01-02T14:32:00.000Z', atualizadoEm:'2026-01-05T08:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-02T14:32:00.000Z',obs:'Registrada pelo cidadão'},{status:'Em análise',data:'2026-01-03T09:15:00.000Z',obs:'Avaliação técnica iniciada'},{status:'Encaminhada',data:'2026-01-03T16:48:00.000Z',obs:'Encaminhada para Secretaria de Obras'},{status:'Em atendimento',data:'2026-01-05T08:00:00.000Z',obs:'Equipe de campo em ação'}], mensagens:[], lat:-28.2761, lng:-49.1712, apoios:[], avaliacao:null },
       { id:'oc2', protocolo:'PROT-2026-0002', userId:'u1', titulo:'Poste sem iluminação — Av. Principal', descricao:'Poste apagado há mais de uma semana.', categoria:'Iluminação pública', endereco:'Av. Principal, 1200', bairro:'Centro', referencia:'Próximo ao Banco do Brasil', foto:null, status:'Em análise', criadoEm:'2026-01-05T10:00:00.000Z', atualizadoEm:'2026-01-06T09:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-05T10:00:00.000Z',obs:'Registrada'},{status:'Em análise',data:'2026-01-06T09:00:00.000Z',obs:'Verificação agendada'}], mensagens:[], lat:-28.2745, lng:-49.1698, apoios:[], avaliacao:null },
@@ -144,7 +244,10 @@ function initJsonDB() {
 }
 
 function saveJsonDB() {
-  try { fs.writeFileSync(DB_FILE, JSON.stringify(jsonDB, null, 2)); } catch {}
+  // Propositalmente sem try/catch: uma falha de gravação (disco cheio, permissão, etc.) deve
+  // estourar e ser tratada como erro pelo handler da rota (500), nunca ser engolida em
+  // silêncio fingindo que o dado foi persistido.
+  fs.writeFileSync(DB_FILE, JSON.stringify(jsonDB, null, 2));
 }
 
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
@@ -198,12 +301,71 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
 // --- Validação de arquivos enviados pelo usuário (fotos) ---
 const ALLOWED_IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+// Confere os bytes mágicos reais do arquivo contra o MIME declarado — um base64 arbitrário
+// rotulado "image/png" não passa mais por causa de um Content-Type de confiança.
+function assinaturaImagemValida(mime, buffer) {
+  if (buffer.length < 12) return false;
+  const b = buffer;
+  if (mime === 'image/png') {
+    return b[0]===0x89 && b[1]===0x50 && b[2]===0x4E && b[3]===0x47 && b[4]===0x0D && b[5]===0x0A && b[6]===0x1A && b[7]===0x0A;
+  }
+  if (mime === 'image/jpeg') {
+    return b[0]===0xFF && b[1]===0xD8 && b[2]===0xFF;
+  }
+  if (mime === 'image/gif') {
+    const header = b.slice(0,6).toString('ascii');
+    return header === 'GIF87a' || header === 'GIF89a';
+  }
+  if (mime === 'image/webp') {
+    return b.slice(0,4).toString('ascii') === 'RIFF' && b.slice(8,12).toString('ascii') === 'WEBP';
+  }
+  return false;
+}
+// Proxy simples para o Nominatim (geocodificação, direta e reversa): evita que o cliente
+// chame o serviço diretamente, o que violaria a CSP (connect-src 'self') e exporia a chave
+// de referer do site.
+function nominatimRequest(pathAndQuery) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'nominatim.openstreetmap.org',
+      path: pathAndQuery,
+      method: 'GET',
+      headers: { 'User-Agent': 'UrbanaBracoDoNorte/1.0 (contato: prefeitura)', 'Accept-Language': 'pt-BR' },
+      timeout: 8000
+    };
+    const req = https.request(options, (resp) => {
+      let dataStr = '';
+      resp.on('data', (chunk) => { dataStr += chunk; if (dataStr.length > 1_000_000) req.destroy(); });
+      resp.on('end', () => {
+        try { resolve(JSON.parse(dataStr)); } catch { reject(new Error('Resposta inválida do serviço de geocodificação.')); }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error('Tempo esgotado ao consultar geocodificação.')));
+    req.on('error', reject);
+    req.end();
+  });
+}
+function geocodeNominatim(query) {
+  const qs = new URLSearchParams({ q: query, format: 'json', limit: '5', countrycodes: 'br' });
+  return nominatimRequest('/search?' + qs.toString());
+}
+function reverseGeocodeNominatim(lat, lng) {
+  const qs = new URLSearchParams({ format: 'json', lat: String(lat), lon: String(lng), zoom: '18', addressdetails: '1' });
+  return nominatimRequest('/reverse?' + qs.toString());
+}
 function isOwnUploadUrl(v) { return v === null || v === undefined || /^\/api\/arquivos\/[A-Za-z0-9]+$/.test(v); }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function cap(str, max) { return typeof str === 'string' ? str.trim().slice(0, max) : str; }
 const CATEGORIAS_VALIDAS = new Set(['Pavimentação','Iluminação pública','Limpeza urbana','Sinalização','Drenagem / Bueiro','Parques e jardins','Outros']);
 const BAIRROS_VALIDOS = new Set(['Centro','Pinheiral','Baixo Pinheiral','São Maurício','Rio Glória','Santa Clara','Outro']);
 const STATUS_VALIDOS = new Set(['Recebida','Em análise','Encaminhada','Em atendimento','Resolvida']);
+const STATUS_ORDEM = ['Recebida','Em análise','Encaminhada','Em atendimento','Resolvida'];
+
+function isCoordenadaValida(lat, lng) {
+  return typeof lat === 'number' && typeof lng === 'number' &&
+    Number.isFinite(lat) && Number.isFinite(lng) &&
+    lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
 
 function anoAtualBR() {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', year: 'numeric' }).format(new Date());
@@ -220,6 +382,44 @@ async function gerarProtocolo() {
   jsonDB.nextProtocolo++;
   saveJsonDB();
   return `PROT-${ano}-${n}`;
+}
+
+// Campos derivados (não armazenados): atraso e uma pontuação simples de criticidade, usados
+// pela fila de atendimento administrativa para ordenar além da contagem de apoios.
+function computeDerivedFields(o) {
+  const agora = Date.now();
+  const prazoTs = o.prazo ? new Date(o.prazo).getTime() : null;
+  const atrasada = !!(prazoTs && o.status !== 'Resolvida' && agora > prazoTs);
+  const diasAberto = Math.max(0, Math.floor((agora - new Date(o.criadoEm).getTime()) / 86400000));
+  const apoiosCount = (o.apoios || []).length;
+  const criticidade = apoiosCount * 3 + Math.min(diasAberto, 30) + (atrasada ? 15 : 0);
+  return { ...o, atrasada, diasAberto, criticidade };
+}
+
+function mapOcorrenciaPg(o, apoios) {
+  return computeDerivedFields({
+    id:o.id, protocolo:o.protocolo, userId:o.user_id, titulo:o.titulo, descricao:o.descricao,
+    categoria:o.categoria, endereco:o.endereco, bairro:o.bairro, referencia:o.referencia,
+    foto:o.foto, status:o.status, criadoEm:o.criado_em, atualizadoEm:o.atualizado_em,
+    historico:o.historico||[], mensagens:o.mensagens||[], nomeUsuario:o.nome_usuario||'–',
+    lat:o.lat, lng:o.lng, apoios, avaliacao:o.avaliacao||null,
+    precisaoLocal: o.precisao_local || 'manual',
+    responsavel: o.responsavel || null,
+    setor: o.setor || null,
+    prazo: o.prazo || null,
+    evidenciaResolucao: o.evidencia_resolucao || null,
+    pedidosReabertura: o.pedidos_reabertura || [],
+    naoLidoAdmin: !!o.admin_nao_lido,
+    naoLidoCidadao: !!o.cidadao_nao_lido
+  });
+}
+
+async function getApoiosMap(ids) {
+  if (!ids.length) return {};
+  const r = await pool.query('SELECT ocorrencia_id, user_id FROM apoios_registro WHERE ocorrencia_id = ANY($1)', [ids]);
+  const map = {};
+  for (const row of r.rows) { (map[row.ocorrencia_id] = map[row.ocorrencia_id] || []).push(row.user_id); }
+  return map;
 }
 
 const db = {
@@ -241,6 +441,44 @@ const db = {
     }
     return jsonDB.users.find(u => u.id === id) || null;
   },
+  async setResetToken(email, tokenHash, expiraEm) {
+    if (usePostgres) {
+      await pool.query('UPDATE users SET reset_token=$1, reset_expira_em=$2 WHERE email=$3', [tokenHash, expiraEm, email]);
+      return;
+    }
+    const u = jsonDB.users.find(u => u.email === email);
+    if (u) { u.resetToken = tokenHash; u.resetExpiraEm = expiraEm; saveJsonDB(); }
+  },
+  async findUserByResetTokenHash(tokenHash) {
+    const agora = Date.now();
+    if (usePostgres) {
+      const r = await pool.query('SELECT * FROM users WHERE reset_token=$1', [tokenHash]);
+      const u = r.rows[0];
+      if (!u || !u.reset_expira_em || new Date(u.reset_expira_em).getTime() < agora) return null;
+      return { id:u.id, nome:u.nome, email:u.email };
+    }
+    const u = jsonDB.users.find(u => u.resetToken === tokenHash);
+    if (!u || !u.resetExpiraEm || new Date(u.resetExpiraEm).getTime() < agora) return null;
+    return { id:u.id, nome:u.nome, email:u.email };
+  },
+  async clearResetToken(userId) {
+    if (usePostgres) {
+      await pool.query('UPDATE users SET reset_token=NULL, reset_expira_em=NULL WHERE id=$1', [userId]);
+      return;
+    }
+    const u = jsonDB.users.find(u => u.id === userId);
+    if (u) { u.resetToken = null; u.resetExpiraEm = null; saveJsonDB(); }
+  },
+  async deleteAllSessionsForUser(userId) {
+    if (usePostgres) {
+      await pool.query('DELETE FROM sessions WHERE user_id=$1', [userId]);
+      return;
+    }
+    for (const t of Object.keys(jsonDB.sessions)) {
+      if (jsonDB.sessions[t].userId === userId) delete jsonDB.sessions[t];
+    }
+    saveJsonDB();
+  },
   async updatePerfil(userId, { nome, foto }) {
     if (usePostgres) {
       if (nome !== undefined && foto !== undefined) {
@@ -260,7 +498,7 @@ const db = {
   },
   async contarApoiosDados(userId) {
     if (usePostgres) {
-      const r = await pool.query(`SELECT COUNT(*) FROM ocorrencias WHERE apoios @> $1::jsonb`, [JSON.stringify([userId])]);
+      const r = await pool.query('SELECT COUNT(*) FROM apoios_registro WHERE user_id=$1', [userId]);
       return parseInt(r.rows[0].count);
     }
     return jsonDB.ocorrencias.filter(o => (o.apoios||[]).includes(userId)).length;
@@ -339,13 +577,8 @@ const db = {
       if (filters.busca) { params.push(`%${filters.busca}%`); q += ` AND (o.protocolo ILIKE $${params.length} OR o.titulo ILIKE $${params.length} OR o.bairro ILIKE $${params.length})`; }
       q += ' ORDER BY o.criado_em DESC';
       const r = await pool.query(q, params);
-      return r.rows.map(o => ({
-        id:o.id, protocolo:o.protocolo, userId:o.user_id, titulo:o.titulo, descricao:o.descricao,
-        categoria:o.categoria, endereco:o.endereco, bairro:o.bairro, referencia:o.referencia,
-        foto:o.foto, status:o.status, criadoEm:o.criado_em, atualizadoEm:o.atualizado_em,
-        historico:o.historico||[], mensagens:o.mensagens||[], nomeUsuario:o.nome_usuario||'–',
-        lat:o.lat, lng:o.lng, apoios:o.apoios||[], avaliacao:o.avaliacao||null
-      }));
+      const apoiosPorOc = await getApoiosMap(r.rows.map(o => o.id));
+      return r.rows.map(o => mapOcorrenciaPg(o, apoiosPorOc[o.id] || []));
     }
     let lista = jsonDB.ocorrencias.map(o => {
       const u = jsonDB.users.find(u => u.id === o.userId);
@@ -356,37 +589,37 @@ const db = {
     if (filters.categoria && filters.categoria !== 'todas') lista = lista.filter(o => o.categoria === filters.categoria);
     if (filters.bairro && filters.bairro !== 'todos') lista = lista.filter(o => o.bairro === filters.bairro);
     if (filters.busca) { const b = filters.busca.toLowerCase(); lista = lista.filter(o => o.protocolo.toLowerCase().includes(b)||o.titulo.toLowerCase().includes(b)||o.bairro.toLowerCase().includes(b)); }
-    return lista.sort((a,b) => new Date(b.criadoEm)-new Date(a.criadoEm));
+    return lista.sort((a,b) => new Date(b.criadoEm)-new Date(a.criadoEm)).map(computeDerivedFields);
   },
   async getOcorrencia(id) {
     if (usePostgres) {
       const r = await pool.query(`SELECT o.*, u.nome as nome_usuario FROM ocorrencias o LEFT JOIN users u ON o.user_id=u.id WHERE o.id=$1`, [id]);
       if (!r.rows[0]) return null;
-      const o = r.rows[0];
-      return { id:o.id, protocolo:o.protocolo, userId:o.user_id, titulo:o.titulo, descricao:o.descricao, categoria:o.categoria, endereco:o.endereco, bairro:o.bairro, referencia:o.referencia, foto:o.foto, status:o.status, criadoEm:o.criado_em, atualizadoEm:o.atualizado_em, historico:o.historico||[], mensagens:o.mensagens||[], nomeUsuario:o.nome_usuario||'–', lat:o.lat, lng:o.lng, apoios:o.apoios||[], avaliacao:o.avaliacao||null };
+      const apoios = (await pool.query('SELECT user_id FROM apoios_registro WHERE ocorrencia_id=$1', [id])).rows.map(x => x.user_id);
+      return mapOcorrenciaPg(r.rows[0], apoios);
     }
     const o = jsonDB.ocorrencias.find(o => o.id === id);
     if (!o) return null;
     const u = jsonDB.users.find(u => u.id === o.userId);
-    return { ...o, nomeUsuario: u?.nome || '–' };
+    return computeDerivedFields({ ...o, nomeUsuario: u?.nome || '–' });
   },
   async createOcorrencia(oc) {
     if (usePostgres) {
-      await pool.query(`INSERT INTO ocorrencias (id,protocolo,user_id,titulo,descricao,categoria,endereco,bairro,referencia,foto,status,criado_em,atualizado_em,historico,mensagens,lat,lng,apoios) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13,$14,$15,$16,$17)`,
-        [oc.id, oc.protocolo, oc.userId, oc.titulo, oc.descricao, oc.categoria, oc.endereco, oc.bairro, oc.referencia, oc.foto, oc.status, oc.criadoEm, JSON.stringify(oc.historico), JSON.stringify(oc.mensagens), oc.lat ?? null, oc.lng ?? null, JSON.stringify(oc.apoios || [])]);
+      await pool.query(`INSERT INTO ocorrencias (id,protocolo,user_id,titulo,descricao,categoria,endereco,bairro,referencia,foto,status,criado_em,atualizado_em,historico,mensagens,lat,lng,precisao_local,responsavel,setor,prazo,evidencia_resolucao,pedidos_reabertura) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)`,
+        [oc.id, oc.protocolo, oc.userId, oc.titulo, oc.descricao, oc.categoria, oc.endereco, oc.bairro, oc.referencia, oc.foto, oc.status, oc.criadoEm, JSON.stringify(oc.historico), JSON.stringify(oc.mensagens), oc.lat ?? null, oc.lng ?? null, oc.precisaoLocal || 'manual', oc.responsavel || null, oc.setor || null, oc.prazo || null, oc.evidenciaResolucao || null, JSON.stringify(oc.pedidosReabertura || [])]);
       return;
     }
     jsonDB.ocorrencias.push(oc); saveJsonDB();
   },
   async toggleApoio(id, userId) {
     if (usePostgres) {
-      const r = await pool.query('SELECT apoios FROM ocorrencias WHERE id=$1', [id]);
-      if (!r.rows[0]) return null;
-      let apoios = r.rows[0].apoios || [];
-      const already = apoios.includes(userId);
-      apoios = already ? apoios.filter(u => u !== userId) : [...apoios, userId];
-      await pool.query('UPDATE ocorrencias SET apoios=$1 WHERE id=$2', [JSON.stringify(apoios), id]);
-      return { apoiado: !already, total: apoios.length };
+      // Constraint de unicidade (ocorrencia_id,user_id) evita duplicar apoio mesmo sob concorrência.
+      const existing = await pool.query('SELECT 1 FROM apoios_registro WHERE ocorrencia_id=$1 AND user_id=$2', [id, userId]);
+      const jaApoiava = existing.rows.length > 0;
+      if (jaApoiava) await pool.query('DELETE FROM apoios_registro WHERE ocorrencia_id=$1 AND user_id=$2', [id, userId]);
+      else await pool.query('INSERT INTO apoios_registro (ocorrencia_id, user_id) VALUES ($1,$2) ON CONFLICT DO NOTHING', [id, userId]);
+      const total = await pool.query('SELECT COUNT(*) FROM apoios_registro WHERE ocorrencia_id=$1', [id]);
+      return { apoiado: !jaApoiava, total: parseInt(total.rows[0].count) };
     }
     const oc = jsonDB.ocorrencias.find(o => o.id === id);
     if (!oc) return null;
@@ -409,27 +642,102 @@ const db = {
     saveJsonDB();
     return avaliacao;
   },
-  async updateStatus(id, status, obs, setor, mensagem) {
+  // opts: { obs, setor, responsavel, prazo, evidencia, tipoEvento }. Mensagens não passam
+  // mais por aqui — ver addMensagem(), que é uma rota própria e nunca mexe em status.
+  async updateStatus(id, status, opts = {}) {
+    const { obs, setor, responsavel, prazo, evidencia, tipoEvento } = opts;
     const agora = new Date().toISOString();
+    const histEntry = { status, data: agora, obs: obs || `Status alterado para ${status}`, setor: setor || null };
+    if (tipoEvento) histEntry.tipo = tipoEvento; // ex.: 'reabertura', para diferenciar na linha do tempo
     if (usePostgres) {
-      const r = await pool.query('SELECT historico, mensagens FROM ocorrencias WHERE id=$1', [id]);
+      const r = await pool.query('SELECT historico, status, evidencia_resolucao FROM ocorrencias WHERE id=$1', [id]);
       if (!r.rows[0]) return false;
       const hist = r.rows[0].historico || [];
-      hist.push({ status, data: agora, obs: obs || `Status alterado para ${status}`, setor: setor || null });
-      const msgs = r.rows[0].mensagens || [];
-      if (mensagem) msgs.push({ de:'prefeitura', texto:mensagem, data:agora });
-      await pool.query('UPDATE ocorrencias SET status=$1, atualizado_em=$2, historico=$3, mensagens=$4 WHERE id=$5',
-        [status, agora, JSON.stringify(hist), JSON.stringify(msgs), id]);
+      hist.push(histEntry);
+      const sets = ['status=$1', 'atualizado_em=$2', 'historico=$3'];
+      const params = [status, agora, JSON.stringify(hist)];
+      if (setor !== undefined) { params.push(setor); sets.push(`setor=$${params.length}`); }
+      if (responsavel !== undefined) { params.push(responsavel); sets.push(`responsavel=$${params.length}`); }
+      if (prazo !== undefined) { params.push(prazo); sets.push(`prazo=$${params.length}`); }
+      if (status === 'Resolvida' && evidencia !== undefined) { params.push(evidencia); sets.push(`evidencia_resolucao=$${params.length}`); }
+      params.push(id);
+      await pool.query(`UPDATE ocorrencias SET ${sets.join(', ')} WHERE id=$${params.length}`, params);
       return true;
     }
     const idx = jsonDB.ocorrencias.findIndex(o => o.id === id);
     if (idx === -1) return false;
-    jsonDB.ocorrencias[idx].status = status;
-    jsonDB.ocorrencias[idx].atualizadoEm = agora;
-    jsonDB.ocorrencias[idx].historico.push({ status, data:agora, obs:obs||`Status alterado para ${status}`, setor:setor||null });
-    if (mensagem) jsonDB.ocorrencias[idx].mensagens.push({ de:'prefeitura', texto:mensagem, data:agora });
+    const oc = jsonDB.ocorrencias[idx];
+    oc.status = status;
+    oc.atualizadoEm = agora;
+    oc.historico.push(histEntry);
+    if (setor !== undefined) oc.setor = setor;
+    if (responsavel !== undefined) oc.responsavel = responsavel;
+    if (prazo !== undefined) oc.prazo = prazo;
+    if (status === 'Resolvida' && evidencia !== undefined) oc.evidenciaResolucao = evidencia;
     saveJsonDB();
     return true;
+  },
+  // Mensagens de acompanhamento, em uma conversa única por ocorrência. `de` é 'prefeitura' ou
+  // 'cidadao'. Marca a ocorrência como não lida para o outro lado da conversa.
+  async addMensagem(id, de, texto) {
+    const agora = new Date().toISOString();
+    const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), de, texto, data:agora };
+    if (usePostgres) {
+      const r = await pool.query('SELECT mensagens FROM ocorrencias WHERE id=$1', [id]);
+      if (!r.rows[0]) return null;
+      const msgs = r.rows[0].mensagens || [];
+      msgs.push(msg);
+      const flagCol = de === 'prefeitura' ? 'cidadao_nao_lido' : 'admin_nao_lido';
+      await pool.query(`UPDATE ocorrencias SET mensagens=$1, ${flagCol}=true WHERE id=$2`, [JSON.stringify(msgs), id]);
+      return msg;
+    }
+    const oc = jsonDB.ocorrencias.find(o => o.id === id);
+    if (!oc) return null;
+    if (!oc.mensagens) oc.mensagens = [];
+    oc.mensagens.push(msg);
+    if (de === 'prefeitura') oc.naoLidoCidadao = true; else oc.naoLidoAdmin = true;
+    saveJsonDB();
+    return msg;
+  },
+  // `lado` é 'admin' ou 'cidadao': zera a flag de não-lido correspondente ao abrir o detalhe.
+  async marcarLida(id, lado) {
+    const col = lado === 'admin' ? 'admin_nao_lido' : 'cidadao_nao_lido';
+    if (usePostgres) {
+      await pool.query(`UPDATE ocorrencias SET ${col}=false WHERE id=$1`, [id]);
+      return;
+    }
+    const oc = jsonDB.ocorrencias.find(o => o.id === id);
+    if (!oc) return;
+    if (lado === 'admin') oc.naoLidoAdmin = false; else oc.naoLidoCidadao = false;
+    saveJsonDB();
+  },
+  async contarNaoLidasAdmin() {
+    if (usePostgres) {
+      const r = await pool.query('SELECT COUNT(*) FROM ocorrencias WHERE admin_nao_lido=true');
+      return parseInt(r.rows[0].count);
+    }
+    return jsonDB.ocorrencias.filter(o => o.naoLidoAdmin).length;
+  },
+  // Pedido de reabertura feito pelo cidadão após a ocorrência ser marcada como resolvida.
+  // Não muda o status sozinho — fica registrado para o operador decidir e agir via updateStatus.
+  async pedirReabertura(id, motivo) {
+    const agora = new Date().toISOString();
+    const pedido = { motivo, data: agora, atendido: false };
+    if (usePostgres) {
+      const r = await pool.query('SELECT pedidos_reabertura FROM ocorrencias WHERE id=$1', [id]);
+      if (!r.rows[0]) return null;
+      const pedidos = r.rows[0].pedidos_reabertura || [];
+      pedidos.push(pedido);
+      await pool.query('UPDATE ocorrencias SET pedidos_reabertura=$1, admin_nao_lido=true WHERE id=$2', [JSON.stringify(pedidos), id]);
+      return pedido;
+    }
+    const oc = jsonDB.ocorrencias.find(o => o.id === id);
+    if (!oc) return null;
+    if (!oc.pedidosReabertura) oc.pedidosReabertura = [];
+    oc.pedidosReabertura.push(pedido);
+    oc.naoLidoAdmin = true;
+    saveJsonDB();
+    return pedido;
   },
   async getStats() {
     if (usePostgres) {
@@ -438,17 +746,22 @@ const db = {
       const byCat = await pool.query(`SELECT categoria, COUNT(*) as n FROM ocorrencias GROUP BY categoria ORDER BY n DESC`);
       const byBairro = await pool.query(`SELECT bairro, COUNT(*) as n FROM ocorrencias GROUP BY bairro ORDER BY n DESC LIMIT 5`);
       const sm = {}; byStatus.rows.forEach(r => sm[r.status] = parseInt(r.n));
+      const naoLidas = await pool.query('SELECT COUNT(*) FROM ocorrencias WHERE admin_nao_lido=true');
+      const atrasadas = await pool.query(`SELECT COUNT(*) FROM ocorrencias WHERE prazo IS NOT NULL AND prazo < NOW() AND status <> 'Resolvida'`);
       return {
         total: parseInt(total.rows[0].count),
         recebida: sm['Recebida']||0, analise: sm['Em análise']||0,
         encaminhada: sm['Encaminhada']||0, atendimento: sm['Em atendimento']||0, resolvida: sm['Resolvida']||0,
         categorias: byCat.rows.map(r => [r.categoria, parseInt(r.n)]),
-        bairros: byBairro.rows.map(r => [r.bairro, parseInt(r.n)])
+        bairros: byBairro.rows.map(r => [r.bairro, parseInt(r.n)]),
+        naoLidas: parseInt(naoLidas.rows[0].count),
+        atrasadas: parseInt(atrasadas.rows[0].count)
       };
     }
     const ocs = jsonDB.ocorrencias;
     const catMap = {}, bairroMap = {};
     ocs.forEach(o => { catMap[o.categoria]=(catMap[o.categoria]||0)+1; bairroMap[o.bairro]=(bairroMap[o.bairro]||0)+1; });
+    const agora = Date.now();
     return {
       total: ocs.length,
       recebida: ocs.filter(o=>o.status==='Recebida').length,
@@ -457,7 +770,9 @@ const db = {
       atendimento: ocs.filter(o=>o.status==='Em atendimento').length,
       resolvida: ocs.filter(o=>o.status==='Resolvida').length,
       categorias: Object.entries(catMap).sort((a,b)=>b[1]-a[1]),
-      bairros: Object.entries(bairroMap).sort((a,b)=>b[1]-a[1]).slice(0,5)
+      bairros: Object.entries(bairroMap).sort((a,b)=>b[1]-a[1]).slice(0,5),
+      naoLidas: ocs.filter(o => o.naoLidoAdmin).length,
+      atrasadas: ocs.filter(o => o.prazo && o.status !== 'Resolvida' && new Date(o.prazo).getTime() < agora).length
     };
   },
   async listChatMensagens(limit = 60) {
@@ -481,8 +796,10 @@ const db = {
       await pool.query('INSERT INTO arquivos (id,mime,dados) VALUES ($1,$2,$3)', [id, mime, dados]);
       return;
     }
+    // Nunca poda arquivos automaticamente aqui: um arquivo antigo pode ainda estar referenciado
+    // como foto de uma ocorrência ou de um perfil, e apagá-lo silenciosamente quebraria essa
+    // referência sem qualquer aviso.
     jsonDB.arquivos.push({ id, mime, dados, criadoEm:new Date().toISOString() });
-    if (jsonDB.arquivos.length > 500) jsonDB.arquivos = jsonDB.arquivos.slice(-500);
     saveJsonDB();
   },
   async buscarArquivo(id) {
@@ -607,11 +924,15 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
+    if (!dbReady) {
+      return json(res, 503, { erro: 'Serviço temporariamente indisponível (banco de dados fora do ar). Tente novamente em instantes.' });
+    }
+
     if (pathname === '/api/cadastro' && req.method === 'POST') {
       const rl = rateLimit('cadastro:' + clientIp(req), 8, 60 * 60 * 1000);
       if (rl.limited) return json(res, 429, { erro: `Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { nome, email, senha, bairro } = await parseBody(req);
-      if (!nome?.trim() || !email?.trim() || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
+      if (typeof nome !== 'string' || !nome.trim() || typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
       const emailNorm = email.trim().toLowerCase();
       if (!EMAIL_RE.test(emailNorm)) return json(res, 400, { erro:'E-mail inválido.' });
       if (senha.length < 6) return json(res, 400, { erro:'Senha deve ter no mínimo 6 caracteres.' });
@@ -625,7 +946,7 @@ const server = http.createServer(async (req, res) => {
       const rl = rateLimit('login:' + clientIp(req), 10, 15 * 60 * 1000);
       if (rl.limited) return json(res, 429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { email, senha } = await parseBody(req);
-      if (!email?.trim() || !senha) return json(res, 400, { erro:'Preencha e-mail e senha.' });
+      if (typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return json(res, 400, { erro:'Preencha e-mail e senha.' });
       const user = await db.findUser(email.trim().toLowerCase());
       if (!user || !verifyPassword(senha, user.senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
       if (isLegacyHash(user.senha)) await db.updateSenha(user.id, hashPassword(senha)); // reforça o hash de contas antigas de forma transparente
@@ -720,7 +1041,7 @@ const server = http.createServer(async (req, res) => {
       const rl = rateLimit('chat:' + user.id, 30, 60 * 1000);
       if (rl.limited) return json(res, 429, { erro: 'Você está enviando mensagens rápido demais. Espere um pouco.' });
       const { texto } = await parseBody(req);
-      if (!texto?.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
+      if (typeof texto !== 'string' || !texto.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
       const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:cap(texto,500), criadoEm:new Date().toISOString() };
       await db.addChatMensagem(msg);
       return json(res, 201, { ok:true, id: msg.id });
@@ -747,18 +1068,22 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/ocorrencias' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      if (!user.termosAceitosEm) return json(res, 403, { erro:'É preciso aceitar os termos de uso antes de registrar uma ocorrência.' });
       const rl = rateLimit('ocorrencia:' + user.id, 20, 60 * 60 * 1000);
       if (rl.limited) return json(res, 429, { erro: 'Muitas denúncias em pouco tempo. Tente novamente mais tarde.' });
-      const { titulo, descricao, categoria, endereco, bairro, referencia, foto, lat, lng } = await parseBody(req);
-      if (!titulo?.trim() || !categoria || !endereco?.trim() || !bairro) return json(res, 400, { erro:'Preencha os campos obrigatórios.' });
+      const { titulo, descricao, categoria, endereco, bairro, referencia, foto, lat, lng, precisao } = await parseBody(req);
+      if (typeof titulo !== 'string' || !titulo.trim() || !categoria || typeof endereco !== 'string' || !endereco.trim() || !bairro) return json(res, 400, { erro:'Preencha os campos obrigatórios.' });
       if (!CATEGORIAS_VALIDAS.has(categoria)) return json(res, 400, { erro:'Categoria inválida.' });
       if (!BAIRROS_VALIDOS.has(bairro)) return json(res, 400, { erro:'Bairro inválido.' });
       if (!isOwnUploadUrl(foto)) return json(res, 400, { erro:'Foto inválida.' });
-      if (lat !== undefined && lat !== null && typeof lat !== 'number') return json(res, 400, { erro:'Localização inválida.' });
-      if (lng !== undefined && lng !== null && typeof lng !== 'number') return json(res, 400, { erro:'Localização inválida.' });
+      const temLat = lat !== undefined && lat !== null;
+      const temLng = lng !== undefined && lng !== null;
+      if (temLat !== temLng) return json(res, 400, { erro:'Localização incompleta.' });
+      if (temLat && !isCoordenadaValida(lat, lng)) return json(res, 400, { erro:'Localização inválida.' });
+      const precisaoLocal = temLat ? (precisao === 'gps' ? 'gps' : 'manual') : 'aproximado';
       const protocolo = await gerarProtocolo();
       const agora = new Date().toISOString();
-      const oc = { id:'oc'+Date.now()+Math.random().toString(36).slice(2,7), protocolo, userId:user.id, titulo:cap(titulo,150), descricao:cap(descricao,3000)||'', categoria, endereco:cap(endereco,200), bairro, referencia:cap(referencia,200)||'', foto:foto||null, status:'Recebida', criadoEm:agora, atualizadoEm:agora, historico:[{status:'Recebida',data:agora,obs:'Ocorrência registrada pelo cidadão'}], mensagens:[], lat: typeof lat === 'number' ? lat : null, lng: typeof lng === 'number' ? lng : null, apoios:[], avaliacao:null };
+      const oc = { id:'oc'+Date.now()+Math.random().toString(36).slice(2,7), protocolo, userId:user.id, titulo:cap(titulo,150), descricao:cap(descricao,3000)||'', categoria, endereco:cap(endereco,200), bairro, referencia:cap(referencia,200)||'', foto:foto||null, status:'Recebida', criadoEm:agora, atualizadoEm:agora, historico:[{status:'Recebida',data:agora,obs:'Ocorrência registrada pelo cidadão'}], mensagens:[], lat: temLat ? lat : null, lng: temLat ? lng : null, apoios:[], avaliacao:null, precisaoLocal, responsavel:null, setor:null, prazo:null, evidenciaResolucao:null, pedidosReabertura:[], naoLidoAdmin:false, naoLidoCidadao:false };
       await db.createOcorrencia(oc);
       return json(res, 201, { ok:true, protocolo, id:oc.id });
     }
@@ -777,11 +1102,80 @@ const server = http.createServer(async (req, res) => {
     if (matchUpd && req.method === 'PUT') {
       const user = await authUser(req);
       if (!user || user.role !== 'admin') return json(res, 403, { erro:'Acesso negado.' });
-      const { status, obs, setor, mensagem } = await parseBody(req);
+      const { status, obs, setor, responsavel, prazo, evidencia } = await parseBody(req);
       if (!STATUS_VALIDOS.has(status)) return json(res, 400, { erro:'Status inválido.' });
-      const ok = await db.updateStatus(matchUpd[1], status, cap(obs,500), cap(setor,100), cap(mensagem,1000));
+      const atual = await db.getOcorrencia(matchUpd[1]);
+      if (!atual) return json(res, 404, { erro:'Não encontrada.' });
+      const idxAtual = STATUS_ORDEM.indexOf(atual.status);
+      const idxNovo = STATUS_ORDEM.indexOf(status);
+      const isRegressao = idxAtual !== -1 && idxNovo !== -1 && idxNovo < idxAtual;
+      const obsLimpa = cap(obs, 500);
+      if (isRegressao && (!obsLimpa || !obsLimpa.trim())) {
+        return json(res, 400, { erro:'Para retroceder o status é preciso informar uma justificativa.' });
+      }
+      if (status === 'Resolvida' && atual.pedidosReabertura && atual.pedidosReabertura.length) {
+        const pendente = atual.pedidosReabertura[atual.pedidosReabertura.length - 1];
+        if (pendente && !pendente.atendido && !obsLimpa) {
+          return json(res, 400, { erro:'Há um pedido de reabertura pendente — informe uma justificativa ao resolver novamente.' });
+        }
+      }
+      const opts = {
+        obs: obsLimpa,
+        setor: setor !== undefined ? cap(setor, 100) : undefined,
+        responsavel: responsavel !== undefined ? cap(responsavel, 100) : undefined,
+        prazo: prazo !== undefined ? (prazo || null) : undefined,
+        evidencia: evidencia !== undefined ? cap(evidencia, 500) : undefined,
+        tipoEvento: isRegressao ? 'reabertura' : undefined
+      };
+      const ok = await db.updateStatus(matchUpd[1], status, opts);
       if (!ok) return json(res, 404, { erro:'Não encontrada.' });
+      await db.marcarLida(matchUpd[1], 'admin');
       return json(res, 200, { ok:true });
+    }
+
+    const matchMsg = pathname.match(/^\/api\/ocorrencias\/([^/]+)\/mensagens$/);
+    if (matchMsg && req.method === 'POST') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const oc = await db.getOcorrencia(matchMsg[1]);
+      if (!oc) return json(res, 404, { erro:'Não encontrada.' });
+      if (user.role !== 'admin' && oc.userId !== user.id) return json(res, 403, { erro:'Sem permissão.' });
+      const rl = rateLimit('mensagem:' + user.id, 60, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: 'Muitas mensagens em pouco tempo. Tente novamente mais tarde.' });
+      const { texto } = await parseBody(req);
+      const textoLimpo = cap(texto, 1000);
+      if (!textoLimpo || !textoLimpo.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
+      const de = user.role === 'admin' ? 'prefeitura' : 'cidadao';
+      const msg = await db.addMensagem(matchMsg[1], de, textoLimpo);
+      if (!msg) return json(res, 404, { erro:'Não encontrada.' });
+      return json(res, 201, { ok:true, mensagem: msg });
+    }
+
+    const matchLida = pathname.match(/^\/api\/ocorrencias\/([^/]+)\/marcar-lida$/);
+    if (matchLida && req.method === 'POST') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const oc = await db.getOcorrencia(matchLida[1]);
+      if (!oc) return json(res, 404, { erro:'Não encontrada.' });
+      if (user.role !== 'admin' && oc.userId !== user.id) return json(res, 403, { erro:'Sem permissão.' });
+      await db.marcarLida(matchLida[1], user.role === 'admin' ? 'admin' : 'cidadao');
+      return json(res, 200, { ok:true });
+    }
+
+    const matchReabrir = pathname.match(/^\/api\/ocorrencias\/([^/]+)\/reabrir$/);
+    if (matchReabrir && req.method === 'POST') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const oc = await db.getOcorrencia(matchReabrir[1]);
+      if (!oc) return json(res, 404, { erro:'Não encontrada.' });
+      if (oc.userId !== user.id) return json(res, 403, { erro:'Sem permissão.' });
+      if (oc.status !== 'Resolvida') return json(res, 400, { erro:'Só é possível pedir reabertura de ocorrências resolvidas.' });
+      const { motivo } = await parseBody(req);
+      const motivoLimpo = cap(motivo, 500);
+      if (!motivoLimpo || !motivoLimpo.trim()) return json(res, 400, { erro:'Descreva o motivo do pedido de reabertura.' });
+      const pedido = await db.pedirReabertura(matchReabrir[1], motivoLimpo);
+      if (!pedido) return json(res, 404, { erro:'Não encontrada.' });
+      return json(res, 201, { ok:true, pedido });
     }
 
     const matchApoio = pathname.match(/^\/api\/ocorrencias\/([^/]+)\/apoiar$/);
@@ -819,9 +1213,88 @@ const server = http.createServer(async (req, res) => {
         id:o.id, protocolo:o.protocolo, titulo:o.titulo, categoria:o.categoria, status:o.status,
         bairro:o.bairro, lat:o.lat, lng:o.lng, apoios:(o.apoios||[]).length,
         apoiado: (o.apoios||[]).includes(user.id), isMine: o.userId === user.id,
-        nomeUsuario: user.role === 'admin' ? o.nomeUsuario : null
+        nomeUsuario: user.role === 'admin' ? o.nomeUsuario : null,
+        precisaoLocal: o.precisaoLocal || 'manual'
       }));
       return json(res, 200, pontos);
+    }
+
+    if (pathname === '/api/geocode' && req.method === 'GET') {
+      const user = await authUser(req);
+      if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const rl = rateLimit('geocode:' + user.id, 30, 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro:'Muitas buscas de endereço em pouco tempo. Aguarde um instante.' });
+      const latParam = url.searchParams.get('lat');
+      const lngParam = url.searchParams.get('lng');
+      if (latParam !== null && lngParam !== null) {
+        const lat = parseFloat(latParam), lng = parseFloat(lngParam);
+        if (!isCoordenadaValida(lat, lng)) return json(res, 400, { erro:'Coordenadas inválidas.' });
+        try {
+          const r = await reverseGeocodeNominatim(lat, lng);
+          const addr = (r && r.address) || {};
+          return json(res, 200, {
+            enderecoSugerido: r?.display_name || null,
+            rua: addr.road || addr.pedestrian || addr.residential || null,
+            numero: addr.house_number || null,
+            bairroDetectado: addr.suburb || addr.neighbourhood || addr.village || null
+          });
+        } catch (e) {
+          console.error('Erro na geocodificação reversa:', e.message);
+          return json(res, 502, { erro:'Não foi possível identificar o endereço agora. Tente novamente.' });
+        }
+      }
+      const q = (url.searchParams.get('q') || '').trim();
+      if (!q || q.length < 3) return json(res, 400, { erro:'Digite ao menos 3 caracteres para buscar o endereço.' });
+      try {
+        const resultados = await geocodeNominatim(q + ', Braço do Norte, SC, Brasil');
+        const pontos = (Array.isArray(resultados) ? resultados : []).slice(0,5).map(r => ({
+          lat: parseFloat(r.lat), lng: parseFloat(r.lon), nome: r.display_name
+        })).filter(p => isCoordenadaValida(p.lat, p.lng));
+        return json(res, 200, pontos);
+      } catch (e) {
+        console.error('Erro na geocodificação:', e.message);
+        return json(res, 502, { erro:'Não foi possível consultar o serviço de endereços agora. Tente novamente.' });
+      }
+    }
+
+    if (pathname === '/api/recuperar-senha' && req.method === 'POST') {
+      const rl = rateLimit('recuperar:' + clientIp(req), 6, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro:'Muitas solicitações. Tente novamente mais tarde.' });
+      const { email } = await parseBody(req);
+      const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
+      const resposta = { ok:true, mensagem:'Se o e-mail existir em nossa base, enviaremos as instruções de redefinição.' };
+      if (!emailNorm) return json(res, 200, resposta);
+      const user = await db.findUser(emailNorm);
+      if (!user) return json(res, 200, resposta);
+      const tokenBruto = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(tokenBruto).digest('hex');
+      const expiraEm = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+      await db.setResetToken(emailNorm, tokenHash, expiraEm);
+      // Não há serviço de e-mail configurado neste projeto. Para não vazar o token de redefinição
+      // em produção, ele só é devolvido na resposta em modo de desenvolvimento (JSON local) ou se
+      // DEBUG_EXPOSE_RESET_TOKEN estiver explicitamente definido (uso educacional/demonstração).
+      if (!usePostgres || process.env.DEBUG_EXPOSE_RESET_TOKEN) {
+        resposta.tokenDemo = tokenBruto;
+        resposta.mensagem += ' (modo demonstração: token incluído na resposta pois não há serviço de e-mail configurado.)';
+      } else {
+        console.log(`Token de redefinição de senha gerado para ${emailNorm} (envio de e-mail não configurado): ${tokenBruto}`);
+      }
+      return json(res, 200, resposta);
+    }
+
+    if (pathname === '/api/redefinir-senha' && req.method === 'POST') {
+      const rl = rateLimit('redefinir:' + clientIp(req), 10, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro:'Muitas tentativas. Tente novamente mais tarde.' });
+      const { token, senha } = await parseBody(req);
+      if (typeof token !== 'string' || !token.trim()) return json(res, 400, { erro:'Token inválido.' });
+      if (typeof senha !== 'string' || senha.length < 6) return json(res, 400, { erro:'A nova senha precisa ter ao menos 6 caracteres.' });
+      const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');
+      const user = await db.findUserByResetTokenHash(tokenHash);
+      if (!user) return json(res, 400, { erro:'Token inválido ou expirado. Solicite uma nova recuperação de senha.' });
+      await db.updateSenha(user.id, hashPassword(senha));
+      await db.clearResetToken(user.id);
+      await db.deleteAllSessionsForUser(user.id);
+      return json(res, 200, { ok:true, mensagem:'Senha redefinida com sucesso. Faça login com a nova senha.' });
     }
 
     if (pathname === '/api/upload' && req.method === 'POST') {
@@ -840,6 +1313,7 @@ const server = http.createServer(async (req, res) => {
       try { buffer = Buffer.from(base64, 'base64'); } catch { return json(res, 400, { erro:'Imagem corrompida.' }); }
       if (!buffer.length) return json(res, 400, { erro:'Imagem vazia.' });
       if (buffer.length > MAX_IMAGE_BYTES) return json(res, 400, { erro:'Imagem muito grande (máx. 8MB).' });
+      if (!assinaturaImagemValida(mime, buffer)) return json(res, 400, { erro:'O arquivo não é uma imagem válida do tipo declarado.' });
       const id = 'img' + Date.now() + Math.random().toString(36).slice(2, 8);
       await db.salvarArquivo(id, mime, base64);
       return json(res, 200, { url:`/api/arquivos/${id}` });

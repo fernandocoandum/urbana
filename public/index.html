@@ -35,7 +35,27 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 @keyframes authSheenMove{0%{transform:translate(-30%,-30%) rotate(0deg)}100%{transform:translate(-30%,-30%) rotate(360deg)}}
 
 .auth-stage{position:relative;min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;overflow:clip;background:#02040a}
-.auth-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;transform:scale(1.02)}
+/* Fundo estrelado leve em CSS puro — substitui um vídeo decorativo de ~10MB (stars.mp4) que
+   era carregado com preload="auto" só para dar um efeito de fundo no login. */
+.auth-bg{
+  position:absolute;inset:0;width:100%;height:100%;z-index:0;
+  background-color:#050814;
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,.9) 0, transparent 50%),
+    radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.7) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 50% 62%, rgba(255,255,255,.85) 0, transparent 50%),
+    radial-gradient(1px 1px at 28% 78%, rgba(255,255,255,.6) 0, transparent 50%),
+    radial-gradient(1px 1px at 92% 68%, rgba(255,255,255,.7) 0, transparent 50%),
+    radial-gradient(1px 1px at 15% 52%, rgba(255,255,255,.5) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 70% 38%, rgba(255,255,255,.8) 0, transparent 50%),
+    radial-gradient(1px 1px at 45% 22%, rgba(255,255,255,.6) 0, transparent 50%),
+    radial-gradient(1px 1px at 62% 85%, rgba(255,255,255,.55) 0, transparent 50%),
+    radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.5) 0, transparent 50%),
+    linear-gradient(180deg,#050814 0%,#0a1128 55%,#0d1a3a 100%);
+  animation:auth-bg-twinkle 8s ease-in-out infinite;
+}
+@keyframes auth-bg-twinkle{0%,100%{opacity:1}50%{opacity:.82}}
+@media (prefers-reduced-motion: reduce){.auth-bg{animation:none}}
 .auth-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 38%,rgba(10,14,30,.1) 0%,rgba(4,8,22,.4) 55%,rgba(2,4,14,.68) 100%)}
 .auth-shell{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;padding:20px}
 
@@ -314,6 +334,8 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .mapa-popup-cat{font-size:11px;font-weight:700;color:var(--blue-600);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
 .mapa-popup-title{font-size:13.5px;font-weight:700;color:var(--slate-800);margin-bottom:4px}
 .mapa-popup-meta{font-size:12px;color:var(--slate-400);margin-bottom:10px}
+.notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:100px;background:#ef4444;color:#fff;font-size:10.5px;font-weight:700;vertical-align:middle}
+.mapa-popup-aprox{font-size:11px;color:var(--amber-600,#b45309);background:var(--amber-50,#fffbeb);border-radius:6px;padding:4px 8px;margin-bottom:10px}
 .mapa-popup-actions{display:flex;gap:8px;align-items:center}
 .mapa-btn-apoiar{flex:1;padding:7px 10px;border-radius:9px;border:1px solid var(--blue-200);background:var(--blue-50);color:var(--blue-700);font-size:12px;font-weight:600;cursor:pointer}
 .mapa-btn-apoiar.apoiado{background:var(--blue-600);color:#fff;border-color:var(--blue-600)}
@@ -482,7 +504,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .table-head{flex-direction:column;align-items:stretch}
   .form-footer{flex-wrap:wrap}
   .form-footer .btn-submit,.form-footer .btn-cancel{flex:1;justify-content:center;min-width:140px}
-  .auth-video{transform:scale(1.15)}
   .auth-input,.form-input,.form-select,.form-textarea,.input-search{font-size:16px}
   .home-hero{padding:26px}
   .home-hero-stats{width:100%;justify-content:space-between}
@@ -613,13 +634,18 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 </div>
 
+<div id="senha-modal" class="termos-modal" role="dialog" aria-modal="true" aria-labelledby="senha-modal-titulo" onclick="if(event.target===this) fecharModalSenha()">
+  <div class="card" style="max-width:420px;width:100%;padding:28px;position:relative">
+    <button type="button" onclick="fecharModalSenha()" aria-label="Fechar" style="position:absolute;top:14px;right:14px;background:none;border:none;cursor:pointer;color:var(--slate-400);font-size:20px;line-height:1">×</button>
+    <div id="senha-modal-content"></div>
+  </div>
+</div>
+
 <div id="app">
 
 <div id="v-auth" class="view active" style="display:flex!important">
   <div class="auth-stage">
-    <video class="auth-video" autoplay muted loop playsinline preload="auto">
-      <source src="/stars.mp4" type="video/mp4">
-    </video>
+    <div class="auth-bg" aria-hidden="true"></div>
     <div class="auth-scrim"></div>
 
     <div class="auth-shell">
@@ -639,37 +665,38 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
         <div class="auth-panels" id="auth-panels">
                     <div id="form-login" class="auth-panel active">
-            <div id="login-error" class="auth-error"></div>
+            <div id="login-error" class="auth-error" role="alert"></div>
             <div class="auth-form-group">
-              <label class="auth-label">E-mail</label>
-              <input id="login-email" class="auth-input" type="email" placeholder="seu@email.com">
+              <label class="auth-label" for="login-email">E-mail</label>
+              <input id="login-email" class="auth-input" type="email" placeholder="seu@email.com" autocomplete="username">
             </div>
             <div class="auth-form-group">
-              <label class="auth-label">Senha</label>
-              <input id="login-senha" class="auth-input" type="password" placeholder="••••••••">
+              <label class="auth-label" for="login-senha">Senha</label>
+              <input id="login-senha" class="auth-input" type="password" placeholder="••••••••" autocomplete="current-password">
             </div>
             <button class="auth-btn" id="btn-login" onclick="doLogin()">
               <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
               Entrar no sistema
             </button>
+            <button type="button" class="auth-link-btn" onclick="abrirRecuperarSenha()" style="background:none;border:none;color:var(--blue-600);font-size:12.5px;margin-top:12px;cursor:pointer;text-decoration:underline;padding:4px">Esqueceu sua senha?</button>
           </div>
 
                     <div id="form-cadastro" class="auth-panel">
-            <div id="cad-error" class="auth-error"></div>
+            <div id="cad-error" class="auth-error" role="alert"></div>
             <div class="auth-form-group">
-              <label class="auth-label">Nome completo</label>
-              <input id="cad-nome" class="auth-input" type="text" placeholder="Seu nome">
+              <label class="auth-label" for="cad-nome">Nome completo</label>
+              <input id="cad-nome" class="auth-input" type="text" placeholder="Seu nome" autocomplete="name">
             </div>
             <div class="auth-form-group">
-              <label class="auth-label">E-mail</label>
-              <input id="cad-email" class="auth-input" type="email" placeholder="seu@email.com">
+              <label class="auth-label" for="cad-email">E-mail</label>
+              <input id="cad-email" class="auth-input" type="email" placeholder="seu@email.com" autocomplete="username">
             </div>
             <div class="auth-form-group">
-              <label class="auth-label">Senha (mínimo 6 caracteres)</label>
-              <input id="cad-senha" class="auth-input" type="password" placeholder="••••••••">
+              <label class="auth-label" for="cad-senha">Senha (mínimo 6 caracteres)</label>
+              <input id="cad-senha" class="auth-input" type="password" placeholder="••••••••" autocomplete="new-password">
             </div>
             <div class="auth-form-group">
-              <label class="auth-label">Bairro</label>
+              <label class="auth-label" for="cad-bairro">Bairro</label>
               <select id="cad-bairro" class="auth-input">
                 <option value="">Selecione seu bairro</option>
                 <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
@@ -684,7 +711,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </div>
       </div>
 
-      <p class="auth-footnote">Sistema de Denúncias Urbanas · Braço do Norte · 2026</p>
+      <p class="auth-footnote">Sistema de Ocorrências Urbanas · Braço do Norte · 2026</p>
     </div>
   </div>
 </div>
@@ -695,12 +722,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a id="mn-dash" class="active" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a id="mn-lista" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a id="mn-form" onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" id="mn-dash" class="active" onclick="moradorNav('dash');return false;" aria-current="page"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" id="mn-lista" onclick="moradorNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" id="mn-form" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()">
         <svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
@@ -747,12 +774,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-m2-av">?</div><div class="sb-user-info"><div class="name" id="sb-m2-nome">–</div><div class="role">Morador</div></div></div>
@@ -781,12 +808,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" onclick="moradorNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-m3-av">?</div><div class="sb-user-info"><div class="name" id="sb-m3-nome">–</div><div class="role">Morador</div></div></div>
@@ -826,30 +853,30 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           </div>
 
                     <div class="wz-panel" data-panel="2">
-            <input type="hidden" id="f-lat"><input type="hidden" id="f-lng">
+            <input type="hidden" id="f-lat"><input type="hidden" id="f-lng"><input type="hidden" id="f-precisao">
             <button type="button" class="btn-geo" id="btn-geo" onclick="usarLocalizacao()">
               <svg viewBox="0 0 20 20" fill="currentColor" style="width:15px;height:15px"><path d="M10 2a6 6 0 0 0-6 6c0 4.5 6 10 6 10s6-5.5 6-10a6 6 0 0 0-6-6zm0 8.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z"/></svg>
               Usar minha localização atual
             </button>
             <p class="geo-status" id="geo-status"></p>
             <div class="form-grid">
-              <div class="form-group"><label class="form-label">Bairro *</label>
+              <div class="form-group"><label class="form-label" for="f-bairro">Bairro *</label>
                 <select class="form-select" id="f-bairro">
                   <option value="">Selecione...</option>
                   <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
                 </select>
               </div>
-              <div class="form-group"><label class="form-label">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
-              <div class="form-group form-full"><label class="form-label">Ponto de referência</label><input class="form-input" id="f-referencia" placeholder="Em frente ao mercado, próximo à escola..."></div>
+              <div class="form-group"><label class="form-label" for="f-endereco">Endereço *</label><input class="form-input" id="f-endereco" placeholder="Rua, número"></div>
+              <div class="form-group form-full"><label class="form-label" for="f-referencia">Ponto de referência</label><input class="form-input" id="f-referencia" placeholder="Em frente ao mercado, próximo à escola..."></div>
             </div>
           </div>
 
                     <div class="wz-panel" data-panel="3">
             <div class="form-grid">
-              <div class="form-group form-full"><label class="form-label">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
-              <div class="form-group form-full"><label class="form-label">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
+              <div class="form-group form-full"><label class="form-label" for="f-titulo">Título *</label><input class="form-input" id="f-titulo" placeholder="Descreva brevemente o problema"></div>
+              <div class="form-group form-full"><label class="form-label" for="f-descricao">Descrição detalhada</label><textarea class="form-textarea" id="f-descricao" placeholder="Tamanho, localização exata, há quanto tempo existe, riscos..."></textarea></div>
               <div class="form-group form-full">
-                <label class="form-label">Foto do problema</label>
+                <label class="form-label" for="f-foto">Foto do problema</label>
                 <div class="upload-zone" id="upload-zone" ondragover="uploadDragOver(event)" ondragleave="uploadDragLeave()" ondrop="uploadDrop(event)">
                   <input type="file" accept="image/*" id="f-foto" onchange="previewFoto(this)">
                   <div class="uz-icon">📷</div>
@@ -908,12 +935,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a class="active" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" class="active" onclick="moradorNav('lista');return false;" aria-current="page"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-md-av">?</div><div class="sb-user-info"><div class="name" id="sb-md-nome">–</div><div class="role">Morador</div></div></div>
@@ -931,9 +958,9 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
-        <li><a class="active" onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
-        <li><a onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" class="active" onclick="prefNav('dash');return false;" aria-current="page"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a href="#" onclick="prefNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências<span class="notif-badge" style="display:none"></span></a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f" id="sb-a-av">A</div><div class="sb-user-info"><div class="name" id="sb-a-nome">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -966,9 +993,9 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
-        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="prefNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências<span class="notif-badge" style="display:none"></span></a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name" id="sb-al-nome">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -999,9 +1026,9 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
-        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
-        <li><a class="active" onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="prefNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a href="#" class="active" onclick="prefNav('lista');return false;" aria-current="page"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências<span class="notif-badge" style="display:none"></span></a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f">A</div><div class="sb-user-info"><div class="name">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -1019,12 +1046,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" onclick="moradorNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-mapa-m-av">?</div><div class="sb-user-info"><div class="name" id="sb-mapa-m-nome">–</div><div class="role">Morador</div></div></div>
@@ -1033,9 +1060,9 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Prefeitura</div>
       <ul class="sb-nav">
-        <li><a onclick="prefNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
-        <li><a onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="prefNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Dashboard</a></li>
+        <li><a href="#" onclick="prefNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Ocorrências<span class="notif-badge" style="display:none"></span></a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" style="background:#1e3a5f" id="sb-mapa-a-av">A</div><div class="sb-user-info"><div class="name" id="sb-mapa-a-nome">Admin</div><div class="role">Prefeitura</div></div></div>
@@ -1062,12 +1089,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a onclick="loadChat()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" onclick="moradorNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a href="#" onclick="loadChat();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-pf-av">?</div><div class="sb-user-info"><div class="name" id="sb-pf-nome">–</div><div class="role">Morador</div></div></div>
@@ -1085,12 +1112,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="sb-logo"><div class="sb-logo-mark"><svg viewBox="0 0 20 20" fill="white"><path d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 11 7 11s7-5.75 7-11c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5z"/></svg></div><span class="sb-brand">Urb<span>ana</span></span></div>
       <div class="sb-section">Menu</div>
       <ul class="sb-nav">
-        <li><a onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
-        <li><a onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
-        <li><a onclick="moradorNav('form')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
-        <li><a onclick="loadMapa()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
-        <li><a onclick="loadPerfil()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
-        <li><a class="active"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
+        <li><a href="#" onclick="moradorNav('dash');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9zm6-6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3zm0 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V9z"/></svg>Início</a></li>
+        <li><a href="#" onclick="moradorNav('lista');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg>Minhas Ocorrências</a></li>
+        <li><a href="#" onclick="moradorNav('form');return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>Nova Ocorrência</a></li>
+        <li><a href="#" onclick="loadMapa();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>Mapa da Cidade</a></li>
+        <li><a href="#" onclick="loadPerfil();return false;"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1c-2.67 0-8 1.34-8 4v1h16v-1c0-2.66-5.33-4-8-4z"/></svg>Meu Perfil</a></li>
+        <li><a class="active" aria-current="page" tabindex="-1"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6.5l-2.8 2.1a.5.5 0 0 1-.8-.4V11H3a1 1 0 0 1-1-1V3z"/></svg>Chat</a></li>
       </ul>
       <button class="sb-logout" onclick="doLogout()"><svg viewBox="0 0 16 16" fill="currentColor" style="width:14px;height:14px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>Sair</button>
       <div class="sb-user"><div class="sb-avatar" id="sb-chat-av">?</div><div class="sb-user-info"><div class="name" id="sb-chat-nome">–</div><div class="role">Morador</div></div></div>
@@ -1115,6 +1142,8 @@ let ocorrencias = [];
 let currentOcId = null;
 let chatPollInterval = null;
 let chatLastMsgId = null;
+let notifPollInterval = null;
+let notifUltimaContagem = 0;
 
 /* ---- Sound: synthesized UI feedback (Web Audio API, no external files) ---- */
 const ICON_SOUND_ON = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5 2.3a.6.6 0 0 0-.98-.46L4.06 4.6H2a1 1 0 0 0-1 1v4.8a1 1 0 0 0 1 1h2.06l3.46 2.76a.6.6 0 0 0 .98-.46V2.3z"/><path d="M11.1 4.9a.6.6 0 0 1 .85 0 4.6 4.6 0 0 1 0 6.2.6.6 0 1 1-.87-.83 3.4 3.4 0 0 0 0-4.54.6.6 0 0 1 .02-.83z"/><path d="M12.7 3.2a.6.6 0 0 1 .85-.02 7.2 7.2 0 0 1 0 9.64.6.6 0 1 1-.88-.82 6 6 0 0 0 0-8 .6.6 0 0 1 .03-.8z"/></svg>';
@@ -1280,6 +1309,10 @@ async function loadMapa() {
     const pontos = await api('GET', '/api/mapa');
     pontos.forEach(p => {
       let lat = p.lat, lng = p.lng;
+      // Sem coordenada real registrada: mostramos um ponto de referência no centro do bairro,
+      // deixando claro (ícone, opacidade e texto) que é uma posição aproximada — nunca fingimos
+      // uma precisão de GPS que não existe.
+      const aproximado = (lat == null || lng == null) || p.precisaoLocal === 'aproximado';
       if (lat == null || lng == null) {
         const centro = BAIRRO_CENTROS[p.bairro] || BAIRRO_CENTROS['Outro'];
         const [ja, jb] = jitterFromId(p.id, 0.006);
@@ -1287,7 +1320,10 @@ async function loadMapa() {
       }
       const cor = MAPA_COR_STATUS[p.status] || '#94a3b8';
       const icon = L.divIcon({
-        className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:${cor};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
+        className: '',
+        html: aproximado
+          ? `<div style="width:16px;height:16px;border-radius:50%;background:${cor};opacity:.55;border:2px dashed #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>`
+          : `<div style="width:16px;height:16px;border-radius:50%;background:${cor};border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35)"></div>`,
         iconSize: [16, 16], iconAnchor: [8, 8]
       });
       const marker = L.marker([lat, lng], { icon }).addTo(mapaLeaflet);
@@ -1295,11 +1331,13 @@ async function loadMapa() {
         ? `<a class="mapa-popup-link" href="#" onclick="fecharPopupEAbrir('${p.id}');return false;">Ver detalhes →</a>`
         : `<button class="mapa-btn-apoiar ${p.apoiado ? 'apoiado' : ''}" id="apoiar-${p.id}" onclick="apoiarNoMapa('${p.id}')">${p.apoiado ? '✓ Você apoia' : 'Eu também tenho esse problema'}</button>`;
       const quem = SESSION.role === 'admin' && p.nomeUsuario ? `${esc(p.nomeUsuario)} · ` : '';
+      const precisaoAviso = aproximado ? `<div class="mapa-popup-aprox">📍 Localização aproximada (centro do bairro)</div>` : '';
       marker.bindPopup(`
         <div class="mapa-popup">
           <div class="mapa-popup-cat">${esc(p.categoria)}</div>
           <div class="mapa-popup-title">${esc(p.titulo)}</div>
           <div class="mapa-popup-meta">${quem}${esc(p.bairro)} · ${p.protocolo} · ${p.apoios} apoio${p.apoios === 1 ? '' : 's'}</div>
+          ${precisaoAviso}
           <div class="mapa-popup-actions">${acao}</div>
         </div>
       `);
@@ -1362,7 +1400,7 @@ async function loadPerfil() {
           <div class="perfil-stats-grid">
             <div class="perfil-stat-card">
               <div class="perfil-stat-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg></div>
-              <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Denúncias feitas</div>
+              <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Ocorrências registradas</div>
             </div>
             <div class="perfil-stat-card">
               <div class="perfil-stat-icon green"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg></div>
@@ -1376,7 +1414,7 @@ async function loadPerfil() {
 
           <div class="perfil-form-wrap">
             <div class="form-group perfil-form-row">
-              <label class="form-label">Nome de exibição</label>
+              <label class="form-label" for="perfil-nome-input">Nome de exibição</label>
               <input class="form-input" id="perfil-nome-input" value="${esc(p.nome)}" maxlength="60">
             </div>
             <div style="display:flex;align-items:center">
@@ -1481,7 +1519,7 @@ async function abrirPerfilPublico(userId) {
         <div class="perfil-stats-grid">
           <div class="perfil-stat-card">
             <div class="perfil-stat-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg></div>
-            <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Denúncias feitas</div>
+            <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Ocorrências registradas</div>
           </div>
           <div class="perfil-stat-card">
             <div class="perfil-stat-icon green"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg></div>
@@ -1657,8 +1695,22 @@ async function doCadastro() {
 
 async function doLogout() {
   try { await api('POST', '/api/logout'); } catch {}
+  // Limpa todo o estado em memória do usuário anterior — importante em computadores
+  // compartilhados, para que o próximo login não veja resquícios de dados de quem saiu.
   SESSION = null;
   localStorage.removeItem('urbaniza+_session');
+  ocorrencias = [];
+  currentOcId = null;
+  avaliacaoNotaSelecionada = 0;
+  if (chatPollInterval) { clearInterval(chatPollInterval); chatPollInterval = null; }
+  chatLastMsgId = null;
+  if (notifPollInterval) { clearInterval(notifPollInterval); notifPollInterval = null; }
+  mapaMarkers.forEach(m => { try { mapaLeaflet && mapaLeaflet.removeLayer(m); } catch {} });
+  mapaMarkers = [];
+  wizardReset();
+  ['login-email','login-senha','cad-nome','cad-email','cad-senha','cad-bairro'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const loginErr = document.getElementById('login-error'); if (loginErr) loginErr.classList.remove('show');
+  const cadErr = document.getElementById('cad-error'); if (cadErr) cadErr.classList.remove('show');
   goView('v-auth');
   loadAuthStats();
 }
@@ -1674,6 +1726,9 @@ function afterLogin() {
 
   if (SESSION.role === 'admin') {
     loadPrefDash();
+    atualizarNotifAdmin();
+    clearInterval(notifPollInterval);
+    notifPollInterval = setInterval(atualizarNotifAdmin, 20000);
   } else {
     loadMoradorDash();
   }
@@ -1703,6 +1758,87 @@ function recusarTermos() {
   document.getElementById('termos-modal').classList.remove('show');
   doLogout();
   toast('É preciso aceitar os termos de uso para continuar.');
+}
+
+/* ---- Recuperação de senha (não há envio de e-mail configurado neste projeto: em modo de
+   desenvolvimento o link/token aparece na tela; em produção real seria enviado por e-mail) ---- */
+function fecharModalSenha() {
+  document.getElementById('senha-modal').classList.remove('show');
+}
+
+function abrirRecuperarSenha() {
+  document.getElementById('senha-modal-content').innerHTML = `
+    <h2 id="senha-modal-titulo" style="font-family:var(--font-display);font-size:19px;margin-bottom:6px">Recuperar senha</h2>
+    <p style="font-size:13px;color:var(--slate-500);margin-bottom:16px">Informe seu e-mail de cadastro. Enviaremos instruções para redefinir sua senha.</p>
+    <div class="auth-form-group">
+      <label class="auth-label" for="rec-email">E-mail</label>
+      <input id="rec-email" class="auth-input" type="email" placeholder="seu@email.com" autocomplete="username">
+    </div>
+    <div id="rec-msg" style="font-size:12.5px;margin-bottom:10px"></div>
+    <button class="auth-btn" id="rec-btn" onclick="enviarRecuperarSenha()">Enviar instruções</button>
+  `;
+  document.getElementById('senha-modal').classList.add('show');
+  setTimeout(() => document.getElementById('rec-email')?.focus(), 50);
+}
+
+async function enviarRecuperarSenha() {
+  const email = document.getElementById('rec-email').value.trim();
+  const msgEl = document.getElementById('rec-msg');
+  const btn = document.getElementById('rec-btn');
+  if (!email) { msgEl.textContent = 'Informe um e-mail.'; msgEl.style.color = 'var(--red-600,#dc2626)'; return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await api('POST', '/api/recuperar-senha', { email });
+    msgEl.style.color = 'var(--green-600,#16a34a)';
+    msgEl.textContent = r.mensagem;
+    if (r.tokenDemo) {
+      msgEl.innerHTML += `<br><button type="button" style="margin-top:10px;background:none;border:none;color:var(--blue-600);text-decoration:underline;cursor:pointer;font-size:12.5px" onclick="abrirRedefinirSenha('${r.tokenDemo}')">Continuar para redefinir a senha →</button>`;
+    }
+    btn.style.display = 'none';
+  } catch (e) {
+    msgEl.style.color = 'var(--red-600,#dc2626)';
+    msgEl.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Enviar instruções';
+  }
+}
+
+function abrirRedefinirSenha(token) {
+  document.getElementById('senha-modal-content').innerHTML = `
+    <h2 id="senha-modal-titulo" style="font-family:var(--font-display);font-size:19px;margin-bottom:6px">Definir nova senha</h2>
+    <div class="auth-form-group">
+      <label class="auth-label" for="redef-token">Token de redefinição</label>
+      <input id="redef-token" class="auth-input" type="text" value="${esc(token || '')}" placeholder="Cole aqui o token recebido">
+    </div>
+    <div class="auth-form-group">
+      <label class="auth-label" for="redef-senha">Nova senha (mínimo 6 caracteres)</label>
+      <input id="redef-senha" class="auth-input" type="password" autocomplete="new-password">
+    </div>
+    <div id="redef-msg" style="font-size:12.5px;margin-bottom:10px"></div>
+    <button class="auth-btn" id="redef-btn" onclick="enviarRedefinirSenha()">Redefinir senha</button>
+  `;
+  document.getElementById('senha-modal').classList.add('show');
+}
+
+async function enviarRedefinirSenha() {
+  const token = document.getElementById('redef-token').value.trim();
+  const senha = document.getElementById('redef-senha').value;
+  const msgEl = document.getElementById('redef-msg');
+  const btn = document.getElementById('redef-btn');
+  if (!token) { msgEl.textContent = 'Cole o token recebido.'; msgEl.style.color = 'var(--red-600,#dc2626)'; return; }
+  if (senha.length < 6) { msgEl.textContent = 'A senha precisa ter ao menos 6 caracteres.'; msgEl.style.color = 'var(--red-600,#dc2626)'; return; }
+  btn.disabled = true; btn.textContent = 'Redefinindo...';
+  try {
+    await api('POST', '/api/redefinir-senha', { token, senha });
+    toast('Senha redefinida! Faça login com a nova senha.');
+    fecharModalSenha();
+    authTab('login');
+  } catch (e) {
+    msgEl.style.color = 'var(--red-600,#dc2626)';
+    msgEl.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Redefinir senha';
+  }
 }
 
 async function moradorNav(page) {
@@ -1797,8 +1933,20 @@ function wizardReset() {
   const catInput = document.getElementById('f-categoria');
   if (catInput) catInput.value = '';
   document.getElementById('f-lat').value = ''; document.getElementById('f-lng').value = '';
+  document.getElementById('f-precisao').value = '';
   const gs = document.getElementById('geo-status');
   if (gs) { gs.textContent = ''; gs.classList.remove('show'); }
+  // Limpa todos os campos de texto e a foto para não vazar dados de um relato anterior
+  // (importante em computadores/dispositivos compartilhados).
+  ['f-titulo','f-descricao','f-endereco','f-referencia','f-bairro'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const fotoInput = document.getElementById('f-foto');
+  if (fotoInput) fotoInput.value = '';
+  const fotoPreview = document.getElementById('foto-preview');
+  if (fotoPreview) { fotoPreview.style.display = 'none'; fotoPreview.src = ''; }
+  const zone = document.getElementById('upload-zone');
+  if (zone) zone.classList.remove('has-image');
+  const err = document.getElementById('form-error');
+  if (err) err.classList.remove('show');
   wizardGoTo(1);
 }
 
@@ -1813,20 +1961,21 @@ async function usarLocalizacao() {
     const { latitude, longitude } = pos.coords;
     document.getElementById('f-lat').value = latitude;
     document.getElementById('f-lng').value = longitude;
+    document.getElementById('f-precisao').value = 'gps';
     status.textContent = 'Identificando o endereço...';
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`, { headers: { 'Accept-Language': 'pt-BR' } });
-      const data = await r.json();
-      const addr = data.address || {};
-      const rua = addr.road || addr.pedestrian || addr.residential || '';
-      const numero = addr.house_number ? `, ${addr.house_number}` : '';
-      document.getElementById('f-endereco').value = rua ? (rua + numero) : (data.display_name ? data.display_name.split(',').slice(0, 2).join(',').trim() : `Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`);
-      const bairroDetectado = (addr.suburb || addr.neighbourhood || addr.village || '').toLowerCase();
+      // Consulta feita pelo próprio servidor (proxy), nunca diretamente ao Nominatim pelo
+      // navegador — isso respeita a política de segurança de conteúdo (CSP) da página.
+      const data = await api('GET', `/api/geocode?lat=${latitude}&lng=${longitude}`);
+      const rua = data.rua || '';
+      const numero = data.numero ? `, ${data.numero}` : '';
+      document.getElementById('f-endereco').value = rua ? (rua + numero) : (data.enderecoSugerido ? data.enderecoSugerido.split(',').slice(0, 2).join(',').trim() : `Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`);
+      const bairroDetectado = (data.bairroDetectado || '').toLowerCase();
       const bairroSelect = document.getElementById('f-bairro');
       const opcoes = Array.from(bairroSelect.options).map(o => o.value).filter(Boolean);
       const match = bairroDetectado && opcoes.find(o => o.toLowerCase().includes(bairroDetectado) || bairroDetectado.includes(o.toLowerCase()));
       if (match) bairroSelect.value = match;
-      status.textContent = '📍 Endereço preenchido pela sua localização — confira antes de continuar.';
+      status.textContent = '📍 Endereço preenchido pela sua localização (GPS) — confira antes de continuar.';
       toast('Localização aplicada!');
     } catch (e) {
       document.getElementById('f-endereco').value = `Lat ${latitude.toFixed(5)}, Lng ${longitude.toFixed(5)}`;
@@ -1870,13 +2019,17 @@ async function loadMoradorDash() {
 }
 
 async function loadMoradorLista() {
+  // Busca sempre do servidor ao entrar na tela — a lista em memória pode estar desatualizada
+  // (por exemplo, depois que a prefeitura mudou o status de uma ocorrência). Filtros de busca
+  // digitados depois usam renderMoradorLista(), que só refiltra o que já foi carregado.
+  try { ocorrencias = await api('GET', '/api/ocorrencias'); } catch (e) { toast('Erro ao atualizar lista: ' + e.message, 'red'); }
+  renderMoradorLista();
+}
+
+function renderMoradorLista() {
   const busca = (document.getElementById('m-busca')?.value || '').toLowerCase();
   const filtroStatus = document.getElementById('m-filtro-status')?.value || '';
-  let lista = ocorrencias;
-  if (!lista.length) {
-    try { lista = await api('GET', '/api/ocorrencias'); ocorrencias = lista; } catch {}
-  }
-  let filtrada = lista;
+  let filtrada = ocorrencias;
   if (busca) filtrada = filtrada.filter(o => o.titulo.toLowerCase().includes(busca) || o.protocolo.toLowerCase().includes(busca));
   if (filtroStatus) filtrada = filtrada.filter(o => o.status === filtroStatus);
 
@@ -1895,7 +2048,11 @@ async function loadMoradorLista() {
       </div>`).join('')}</div>`;
 }
 
-function renderMoradorLista() { loadMoradorLista(); }
+function proximaAcaoTexto(o) {
+  if (o.status === 'Resolvida') return o.avaliacao ? 'Nenhuma — obrigado por avaliar!' : 'Avalie como foi a resolução, logo abaixo.';
+  if (o.prazo) return `Previsão de retorno até ${fmtDate(o.prazo)}${o.atrasada ? ' (em atraso)' : ''}.`;
+  return 'Aguardando análise da equipe responsável.';
+}
 
 async function abrirMoradorDet(id) {
   currentOcId = id;
@@ -1906,67 +2063,116 @@ async function abrirMoradorDet(id) {
     const o = await api('GET', `/api/ocorrencias/${id}`);
     document.getElementById('mdet-topbar-t').textContent = o.titulo;
     document.getElementById('mdet-topbar-s').textContent = `${o.protocolo} · ${o.categoria}`;
+    try { await api('POST', `/api/ocorrencias/${id}/marcar-lida`); } catch {}
 
-    const todosStatus = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
-    const idxAtual = todosStatus.indexOf(o.status);
+    const pedidoPendente = (o.pedidosReabertura || []).length && !o.pedidosReabertura[o.pedidosReabertura.length - 1].atendido
+      ? o.pedidosReabertura[o.pedidosReabertura.length - 1] : null;
 
-    const mensagensHTML = o.mensagens && o.mensagens.length
-      ? `<div class="detail-sep"></div>
-         <div class="df-label" style="margin-bottom:10px">Mensagens da prefeitura</div>
-         ${o.mensagens.map(m => `<div style="background:var(--blue-50);border:1px solid var(--blue-100);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px"><div style="font-size:12px;color:var(--blue-600);margin-bottom:4px">Prefeitura · ${fmtDateTime(m.data)}</div><div style="font-size:13.5px;color:var(--slate-700)">${esc(m.texto)}</div></div>`).join('')}`
-      : '';
+    // Linha do tempo completa e em ordem cronológica: cada evento registrado é exibido, sem
+    // esconder reaberturas ou repetições de status (antes, o histórico era "adivinhado" a partir
+    // dos status possíveis, o que escondia eventos repetidos).
+    const historicoHTML = (o.historico || []).map((h, i) => {
+      const isLast = i === o.historico.length - 1;
+      const reaberta = h.tipo === 'reabertura';
+      return `<div class="tl-item ${!isLast ? 'done' : 'current'}">
+        <div class="tl-dot" style="${reaberta ? 'background:var(--amber-500,#f59e0b)' : ''}"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
+        <div class="tl-body">
+          <div class="tl-title">${esc(h.status)}${reaberta ? ' <span style="font-weight:600;color:var(--amber-600,#b45309)">(reaberta)</span>' : ''}</div>
+          <div class="tl-desc">${fmtDateTime(h.data)}${h.obs ? ' · ' + esc(h.obs) : ''}${h.setor ? ' · Setor: ' + esc(h.setor) : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
 
     content.innerHTML = `
       <button class="back-link" onclick="moradorNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar</button>
       <div class="detail-layout">
         <div>
-          <div class="card" style="margin-bottom:16px">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px">
+          <div class="card" style="margin-bottom:16px;background:var(--blue-50);border-color:var(--blue-100)">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px">
               <div><div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px">${esc(o.titulo)}</div>
-              <span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo} · ${fmtDateTime(o.criadoEm)}</span></div>
+              <span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo} · aberta em ${fmtDateTime(o.criadoEm)}</span></div>
               ${badge(o.status)}
             </div>
+            <div class="form-grid" style="gap:12px">
+              <div><div class="df-label">Responsável</div><div class="df-val">${o.responsavel ? esc(o.responsavel) : (o.setor ? esc(o.setor) : 'A definir')}</div></div>
+              <div><div class="df-label">Última atualização</div><div class="df-val">${fmtDateTime(o.atualizadoEm)}</div></div>
+              <div style="grid-column:1/-1"><div class="df-label">Próxima ação</div><div class="df-val">${esc(proximaAcaoTexto(o))}</div></div>
+            </div>
+            ${pedidoPendente ? `<div style="margin-top:12px;background:var(--amber-50,#fffbeb);border:1px solid var(--amber-100,#fde68a);border-radius:var(--r-md);padding:10px 14px;font-size:12.5px;color:var(--amber-700,#92400e)">Você pediu a reabertura em ${fmtDateTime(pedidoPendente.data)}: "${esc(pedidoPendente.motivo)}" — aguardando retorno da equipe.</div>` : ''}
             ${renderOcStepper(o.status)}
-            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
-            <div class="form-grid" style="gap:14px">
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Local e foto</div>
+            <div class="detail-img-wrap" style="margin-top:4px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
+            <div class="form-grid" style="gap:14px;margin-top:16px">
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
               <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
-              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}</div></div>
+              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}${o.precisaoLocal === 'aproximado' ? ' <span style="color:var(--slate-400);font-weight:400">(sem localização exata informada)</span>' : ''}</div></div>
               ${o.descricao ? `<div style="grid-column:1/-1"><div class="df-label">Descrição</div><div class="df-val">${esc(o.descricao)}</div></div>` : ''}
+              ${o.evidenciaResolucao ? `<div style="grid-column:1/-1"><div class="df-label">Evidência da resolução</div><div class="df-val">${esc(o.evidenciaResolucao)}</div></div>` : ''}
             </div>
-            ${mensagensHTML}
           </div>
           <div class="card">
-            <div class="card-title">Acompanhamento</div>
-            <div>
-              ${todosStatus.map((s, i) => {
-                const entry = o.historico.find(h => h.status === s);
-                const isDone = entry && i <= idxAtual;
-                const isCurrent = s === o.status;
-                const isLast = i === todosStatus.length - 1;
-                return `<div class="tl-item ${isDone && !isCurrent ? 'done' : ''} ${isCurrent ? 'current' : ''}" style="${!isLast ? 'margin-bottom:0' : ''}">
-                  <div class="tl-dot"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
-                  <div class="tl-body">
-                    <div class="tl-title">${s}</div>
-                    <div class="tl-desc">${entry ? fmtDateTime(entry.data) + (entry.obs ? ' · ' + esc(entry.obs) : '') : 'Aguardando'}</div>
-                  </div>
-                </div>`;
-              }).join('')}
-            </div>
+            <div class="card-title">Histórico completo</div>
+            <div>${historicoHTML}</div>
           </div>
         </div>
         <div>
-          <div class="card" style="background:var(--blue-50);border-color:var(--blue-100)">
-            <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Status atual</div>
-            ${badge(o.status)}
-            <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
-          </div>
           ${renderAvaliacaoCard(o)}
+          ${o.status === 'Resolvida' && !pedidoPendente ? `<div class="card" style="margin-top:16px">
+            <div class="card-title">Não foi resolvido de verdade?</div>
+            <textarea class="form-textarea" id="reabrir-motivo" placeholder="Explique o que ainda está errado..." style="min-height:70px"></textarea>
+            <button class="action-btn ab-outline" style="width:100%;margin-top:10px" onclick="pedirReaberturaUI('${o.id}')">Pedir reabertura</button>
+          </div>` : ''}
+          <div class="card" style="margin-top:16px">
+            <div class="card-title">Conversa com a prefeitura</div>
+            <div id="mdet-conversa" style="max-height:340px;overflow-y:auto;margin-bottom:12px">${renderConversa(o.mensagens, 'cidadao')}</div>
+            <textarea class="action-ta" id="mdet-msg-input" placeholder="Escreva uma mensagem..." style="min-height:56px"></textarea>
+            <button class="action-btn ab-primary" style="width:100%;margin-top:8px" onclick="enviarMensagemMorador('${o.id}')">Enviar</button>
+          </div>
         </div>
       </div>`;
   } catch (e) {
     content.innerHTML = `<div class="empty"><p>Erro ao carregar: ${e.message}</p></div>`;
   }
+}
+
+// `ladoProprio` é 'cidadao' ou 'prefeitura': define de que lado a bolha de mensagem própria
+// aparece (à direita), já que a mesma conversa é vista pelos dois lados.
+function renderConversa(mensagens, ladoProprio) {
+  if (!mensagens || !mensagens.length) return '<p style="color:var(--slate-400);font-size:13px">Nenhuma mensagem ainda.</p>';
+  return mensagens.map(m => {
+    const propria = m.de === ladoProprio;
+    const quem = m.de === 'prefeitura' ? 'Prefeitura' : 'Cidadão';
+    return `<div style="display:flex;justify-content:${propria ? 'flex-end' : 'flex-start'};margin-bottom:8px">
+      <div style="max-width:80%;background:${propria ? 'var(--blue-600)' : 'var(--slate-100)'};color:${propria ? '#fff' : 'var(--slate-700)'};border-radius:var(--r-md);padding:10px 14px">
+        <div style="font-size:11px;opacity:.75;margin-bottom:3px">${quem} · ${fmtDateTime(m.data)}</div>
+        <div style="font-size:13.5px">${esc(m.texto)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function enviarMensagemMorador(id) {
+  const input = document.getElementById('mdet-msg-input');
+  const texto = input.value.trim();
+  if (!texto) { toast('Escreva uma mensagem.', 'red'); return; }
+  try {
+    await api('POST', `/api/ocorrencias/${id}/mensagens`, { texto });
+    input.value = '';
+    Sound.play('send');
+    abrirMoradorDet(id);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+async function pedirReaberturaUI(id) {
+  const motivo = document.getElementById('reabrir-motivo').value.trim();
+  if (!motivo) { toast('Explique o motivo do pedido de reabertura.', 'red'); return; }
+  try {
+    await api('POST', `/api/ocorrencias/${id}/reabrir`, { motivo });
+    toast('Pedido de reabertura enviado à prefeitura.');
+    abrirMoradorDet(id);
+  } catch (e) { toast('Erro: ' + e.message, 'red'); }
 }
 
 let avaliacaoNotaSelecionada = 0;
@@ -2092,12 +2298,24 @@ async function enviarOcorrencia() {
       const dataUrl = await resizeImageFile(fotoInput.files[0], 1000, 0.85);
       const up = await api('POST', '/api/upload', { data: dataUrl });
       fotoUrl = up.url;
-    } catch { fotoUrl = null; }
+    } catch (upErr) {
+      // Antes, uma falha no envio da foto era ignorada silenciosamente e a ocorrência seguia
+      // sem foto como se nada tivesse acontecido. Agora avisamos e deixamos o cidadão decidir
+      // se quer continuar sem a foto ou corrigir/tentar de novo.
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+      const continuar = confirm('Não foi possível enviar a foto (' + upErr.message + ').\n\nDeseja enviar a ocorrência mesmo assim, sem foto?');
+      if (!continuar) { return; }
+      fotoUrl = null;
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:16px;height:16px"></div>Enviando...';
+    }
   }
 
   try {
     const latVal = document.getElementById('f-lat').value;
     const lngVal = document.getElementById('f-lng').value;
+    const precisaoVal = document.getElementById('f-precisao').value;
     const result = await api('POST', '/api/ocorrencias', {
       titulo,
       descricao: document.getElementById('f-descricao').value.trim(),
@@ -2107,16 +2325,11 @@ async function enviarOcorrencia() {
       referencia: document.getElementById('f-referencia').value.trim(),
       foto: fotoUrl,
       lat: latVal ? parseFloat(latVal) : undefined,
-      lng: lngVal ? parseFloat(lngVal) : undefined
+      lng: lngVal ? parseFloat(lngVal) : undefined,
+      precisao: precisaoVal || undefined
     });
     document.getElementById('proto-gerado').textContent = result.protocolo;
-    ['f-titulo','f-descricao','f-endereco','f-referencia'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f-lat').value = ''; document.getElementById('f-lng').value = '';
-    document.getElementById('geo-status').textContent = ''; document.getElementById('geo-status').classList.remove('show');
-    document.getElementById('f-categoria').value = '';
-    document.getElementById('f-bairro').value = '';
-    document.getElementById('foto-preview').style.display = 'none';
-    fotoInput.value = '';
+    wizardReset();
     ocorrencias = [];
     Sound.play('success');
     goView('v-sucesso');
@@ -2224,42 +2437,53 @@ async function abrirPrefDet(id) {
     const btnRes = document.getElementById('btn-resolver');
     if (o.status === 'Resolvida') { btnRes.style.display = 'none'; }
     else { btnRes.style.display = ''; }
+    try { await api('POST', `/api/ocorrencias/${id}/marcar-lida`); atualizarNotifAdmin(); } catch {}
 
-    const todosStatus = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
-    const idxAtual = todosStatus.indexOf(o.status);
+    const pedidoPendente = (o.pedidosReabertura || []).length && !o.pedidosReabertura[o.pedidosReabertura.length - 1].atendido
+      ? o.pedidosReabertura[o.pedidosReabertura.length - 1] : null;
 
     content.innerHTML = `
       <button class="back-link" onclick="prefNav('lista')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar para ocorrências</button>
       <div class="detail-layout">
         <div>
-          <div class="card" style="margin-bottom:16px">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px">
+          <div class="card" style="margin-bottom:16px;background:var(--blue-50);border-color:var(--blue-100)">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px">
               <div>
                 <div style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px">${esc(o.titulo)}</div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${badge(o.status)}<span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo}</span></div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${badge(o.status)}${o.atrasada ? '<span class="badge badge-encaminhada" style="background:#fee2e2;color:#b91c1c">Atrasada</span>' : ''}<span style="font-family:monospace;font-size:12px;color:var(--slate-400)">${o.protocolo}</span></div>
               </div>
             </div>
+            <div class="form-grid" style="gap:12px">
+              <div><div class="df-label">Responsável</div><div class="df-val">${o.responsavel ? esc(o.responsavel) : '–'}</div></div>
+              <div><div class="df-label">Setor</div><div class="df-val">${o.setor ? esc(o.setor) : '–'}</div></div>
+              <div><div class="df-label">Prazo</div><div class="df-val">${o.prazo ? fmtDate(o.prazo) : '–'}</div></div>
+              <div><div class="df-label">Última atualização</div><div class="df-val">${fmtDateTime(o.atualizadoEm)}</div></div>
+            </div>
+            ${pedidoPendente ? `<div style="margin-top:12px;background:var(--amber-50,#fffbeb);border:1px solid var(--amber-100,#fde68a);border-radius:var(--r-md);padding:10px 14px;font-size:12.5px;color:var(--amber-700,#92400e)">Pedido de reabertura em ${fmtDateTime(pedidoPendente.data)}: "${esc(pedidoPendente.motivo)}"</div>` : ''}
             ${renderOcStepper(o.status)}
-            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
-            <div class="form-grid" style="gap:14px">
-              <div><div class="df-label">Cidadão</div><div class="df-val">${esc(o.nomeUsuario)}</div></div>
+          </div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title">Detalhes e local</div>
+            <div class="detail-img-wrap" style="margin-top:4px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
+            <div class="form-grid" style="gap:14px;margin-top:16px">
+              <div><div class="df-label">Cidadão</div><div class="df-val"><a href="#" onclick="abrirPerfilPublico('${o.userId}');return false;">${esc(o.nomeUsuario)}</a></div></div>
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
               <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
               <div><div class="df-label">Registrado em</div><div class="df-val">${fmtDateTime(o.criadoEm)}</div></div>
-              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}</div></div>
+              <div style="grid-column:1/-1"><div class="df-label">Endereço</div><div class="df-val">${esc(o.endereco)}${o.referencia ? ' — ' + esc(o.referencia) : ''}${o.precisaoLocal === 'aproximado' ? ' <span style="color:var(--slate-400);font-weight:400">(sem localização exata informada)</span>' : ''}</div></div>
               ${o.descricao ? `<div style="grid-column:1/-1"><div class="df-label">Descrição</div><div class="df-val">${esc(o.descricao)}</div></div>` : ''}
             </div>
           </div>
           <div class="card">
-            <div class="card-title">Histórico de atualizações</div>
+            <div class="card-title">Histórico completo</div>
             <div>
               ${o.historico.map((h, i) => {
                 const isLast = i === o.historico.length - 1;
-                const isCurrent = isLast;
-                return `<div class="tl-item ${!isCurrent ? 'done' : 'current'}">
-                  <div class="tl-dot"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
+                const reaberta = h.tipo === 'reabertura';
+                return `<div class="tl-item ${!isLast ? 'done' : 'current'}">
+                  <div class="tl-dot" style="${reaberta ? 'background:var(--amber-500,#f59e0b)' : ''}"><svg viewBox="0 0 12 12" fill="currentColor"><path d="M10 3L5 8.5 2 5.5l-1 1 4 4 6-7z"/></svg></div>
                   <div class="tl-body">
-                    <div class="tl-title">${h.status}</div>
+                    <div class="tl-title">${esc(h.status)}${reaberta ? ' <span style="font-weight:600;color:var(--amber-600,#b45309)">(reaberta)</span>' : ''}</div>
                     <div class="tl-desc">${fmtDateTime(h.data)}${h.obs ? ' · ' + esc(h.obs) : ''}${h.setor ? ' · Setor: ' + esc(h.setor) : ''}</div>
                   </div>
                 </div>`;
@@ -2268,11 +2492,6 @@ async function abrirPrefDet(id) {
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="card" style="background:var(--blue-50);border-color:var(--blue-100)">
-            <div style="font-size:11px;font-weight:700;color:var(--blue-500);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Status atual</div>
-            ${badge(o.status)}
-            <div style="font-size:12px;color:var(--slate-400);margin-top:8px">Atualizado em ${fmtDateTime(o.atualizadoEm)}</div>
-          </div>
           ${o.avaliacao ? `<div class="card">
             <div style="font-size:11px;font-weight:700;color:var(--slate-400);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">Avaliação do cidadão</div>
             <div class="aval-stars-display">${[1,2,3,4,5].map(n => `<span class="aval-star ${n <= o.avaliacao.nota ? 'filled' : ''}">★</span>`).join('')}</div>
@@ -2282,14 +2501,16 @@ async function abrirPrefDet(id) {
             <div class="action-tabs">
               <button type="button" class="action-tab active" data-tab="status" onclick="actionTab('status')">Status</button>
               <button type="button" class="action-tab" data-tab="encaminhar" onclick="actionTab('encaminhar')">Encaminhar</button>
-              <button type="button" class="action-tab" data-tab="mensagem" onclick="actionTab('mensagem')">Mensagem</button>
             </div>
             <div class="action-panel active" data-action-panel="status">
               <select class="action-sel" id="det-status">
-                ${todosStatus.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
+                ${STATUS_ORDEM_JS.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}
               </select>
-              <textarea class="action-ta" id="det-obs" placeholder="Observação sobre a mudança de status..."></textarea>
-              <button class="action-btn ab-primary" onclick="aplicarStatus()">Aplicar status</button>
+              <input class="action-sel" id="det-responsavel" placeholder="Responsável (nome ou cargo)" value="${esc(o.responsavel || '')}" style="margin-top:8px">
+              <input class="action-sel" type="date" id="det-prazo" value="${o.prazo ? new Date(o.prazo).toISOString().slice(0,10) : ''}" style="margin-top:8px">
+              <textarea class="action-ta" id="det-obs" placeholder="Observação sobre a mudança de status (obrigatória ao retroceder o status)..."></textarea>
+              <textarea class="action-ta" id="det-evidencia" placeholder="Evidência da resolução (obrigatório apenas ao marcar como Resolvida)..."></textarea>
+              <button class="action-btn ab-primary" onclick="aplicarStatus()">Aplicar</button>
             </div>
             <div class="action-panel" data-action-panel="encaminhar">
               <select class="action-sel" id="det-setor">
@@ -2298,10 +2519,12 @@ async function abrirPrefDet(id) {
               <textarea class="action-ta" id="det-obs-setor" placeholder="Observações para o setor..."></textarea>
               <button class="action-btn ab-outline" onclick="encaminharSetor()">Encaminhar</button>
             </div>
-            <div class="action-panel" data-action-panel="mensagem">
-              <textarea class="action-ta" id="det-msg" placeholder="Escreva uma mensagem de retorno..."></textarea>
-              <button class="action-btn ab-outline" onclick="enviarMensagem()">Enviar mensagem</button>
-            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Conversa com o cidadão</div>
+            <div id="pdet-conversa" style="max-height:300px;overflow-y:auto;margin-bottom:12px">${renderConversa(o.mensagens, 'prefeitura')}</div>
+            <textarea class="action-ta" id="det-msg" placeholder="Escreva uma mensagem de retorno..."></textarea>
+            <button class="action-btn ab-outline" style="width:100%" onclick="enviarMensagemAdmin('${o.id}')">Enviar mensagem</button>
           </div>
         </div>
       </div>`;
@@ -2309,6 +2532,8 @@ async function abrirPrefDet(id) {
     content.innerHTML = `<div class="empty"><p>Erro: ${e.message}</p></div>`;
   }
 }
+
+const STATUS_ORDEM_JS = ['Recebida', 'Em análise', 'Encaminhada', 'Em atendimento', 'Resolvida'];
 
 function actionTab(tab) {
   document.querySelectorAll('.action-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
@@ -2318,8 +2543,19 @@ function actionTab(tab) {
 async function aplicarStatus() {
   const status = document.getElementById('det-status').value;
   const obs = document.getElementById('det-obs').value;
+  const responsavel = document.getElementById('det-responsavel').value.trim();
+  const prazoVal = document.getElementById('det-prazo').value;
+  const evidencia = document.getElementById('det-evidencia').value.trim();
+  if (status === 'Resolvida' && !evidencia) {
+    toast('Descreva a evidência da resolução antes de marcar como resolvida.', 'red');
+    return;
+  }
   try {
-    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status, obs });
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, {
+      status, obs, responsavel: responsavel || undefined,
+      prazo: prazoVal ? new Date(prazoVal).toISOString() : undefined,
+      evidencia: evidencia || undefined
+    });
     toast(`Status atualizado: ${status}`);
     await abrirPrefDet(currentOcId);
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
@@ -2335,24 +2571,47 @@ async function encaminharSetor() {
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
 }
 
-async function enviarMensagem() {
-  const msg = document.getElementById('det-msg').value.trim();
-  if (!msg) { toast('Escreva uma mensagem.', 'red'); return; }
-  const statusAtual = document.getElementById('det-status').value;
+// Mensagens agora são uma rota própria (addMensagem) e nunca mudam o status sozinhas — antes,
+// enviar uma mensagem reaplicava o que estivesse selecionado no dropdown de status, mesmo que
+// o operador não tivesse clicado em "Aplicar", poluindo o histórico e podendo mudar status sem querer.
+async function enviarMensagemAdmin(id) {
+  const input = document.getElementById('det-msg');
+  const texto = input.value.trim();
+  if (!texto) { toast('Escreva uma mensagem.', 'red'); return; }
   try {
-    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: statusAtual, obs: 'Mensagem enviada ao cidadão', mensagem: msg });
+    await api('POST', `/api/ocorrencias/${id}/mensagens`, { texto });
     toast('Mensagem enviada ao cidadão!');
-    document.getElementById('det-msg').value = '';
-    await abrirPrefDet(currentOcId);
+    input.value = '';
+    await abrirPrefDet(id);
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
 }
 
 async function marcarResolvida() {
+  const evidencia = prompt('Descreva brevemente a evidência da resolução (o que foi feito):');
+  if (evidencia === null) return;
+  if (!evidencia.trim()) { toast('É preciso descrever a evidência da resolução.', 'red'); return; }
   try {
-    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: 'Resolvida', obs: 'Ocorrência resolvida pela equipe' });
+    await api('PUT', `/api/ocorrencias/${currentOcId}/status`, { status: 'Resolvida', obs: 'Ocorrência resolvida pela equipe', evidencia: evidencia.trim() });
     toast('Ocorrência marcada como resolvida!');
     await abrirPrefDet(currentOcId);
   } catch (e) { toast('Erro: ' + e.message, 'red'); }
+}
+
+// Indicador de notificações internas para a prefeitura: quantas ocorrências têm mensagem do
+// cidadão (ou pedido de reabertura) ainda não vista pela equipe. Atualiza um badge no menu
+// e toca um som quando o total aumenta.
+async function atualizarNotifAdmin() {
+  if (!SESSION || SESSION.role !== 'admin') return;
+  try {
+    const stats = await api('GET', '/api/stats');
+    const n = stats.naoLidas || 0;
+    document.querySelectorAll('.notif-badge').forEach(el => {
+      if (n > 0) { el.textContent = n > 99 ? '99+' : n; el.style.display = ''; }
+      else { el.style.display = 'none'; }
+    });
+    if (n > notifUltimaContagem) Sound.play('notify');
+    notifUltimaContagem = n;
+  } catch {}
 }
 
 async function loadAuthStats() {
@@ -2395,9 +2654,24 @@ function esc(str) {
   }
   goView('v-auth');
   loadAuthStats();
+
+  // Link de redefinição de senha (?reset=TOKEN): abre direto a tela de nova senha.
+  const resetToken = new URLSearchParams(window.location.search).get('reset');
+  if (resetToken) abrirRedefinirSenha(resetToken);
 })();
 
 document.getElementById('login-senha').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+// Esc fecha modais dispensáveis (perfil público e recuperação de senha). O modal de termos
+// de uso é obrigatório e não fecha com Esc — só com uma ação explícita (aceitar ou recusar).
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const perfilModal = document.getElementById('perfil-publico-modal');
+  const senhaModal = document.getElementById('senha-modal');
+  if (perfilModal && perfilModal.classList.contains('show')) fecharPerfilPublico();
+  else if (senhaModal && senhaModal.classList.contains('show')) fecharModalSenha();
+  else closeSidebar();
+});
 </script>
 </body>
 </html>
