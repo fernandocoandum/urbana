@@ -23,8 +23,7 @@ async function initDB() {
           bairro TEXT DEFAULT '',
           criado_em TIMESTAMPTZ DEFAULT NOW(),
           termos_aceitos_em TIMESTAMPTZ,
-          foto TEXT,
-          premium BOOLEAN DEFAULT false
+          foto TEXT
         );
         CREATE TABLE IF NOT EXISTS ocorrencias (
           id TEXT PRIMARY KEY,
@@ -71,7 +70,6 @@ async function initDB() {
         );
         ALTER TABLE users ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT;
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS premium BOOLEAN DEFAULT false;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS apoios JSONB DEFAULT '[]';
@@ -129,7 +127,7 @@ function initJsonDB() {
     } catch {}
   }
   jsonDB = {
-    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hash('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null, premium:false }],
+    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hash('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null }],
     ocorrencias: [
       { id:'oc1', protocolo:'PROT-2026-0001', userId:'u1', titulo:'Buraco na Rua João Machado', descricao:'Buraco de aproximadamente 80cm de diâmetro na pista principal.', categoria:'Pavimentação', endereco:'Rua João Machado, 450', bairro:'Centro', referencia:'Em frente à padaria Pão de Mel', foto:null, status:'Em atendimento', criadoEm:'2026-01-02T14:32:00.000Z', atualizadoEm:'2026-01-05T08:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-02T14:32:00.000Z',obs:'Registrada pelo cidadão'},{status:'Em análise',data:'2026-01-03T09:15:00.000Z',obs:'Avaliação técnica iniciada'},{status:'Encaminhada',data:'2026-01-03T16:48:00.000Z',obs:'Encaminhada para Secretaria de Obras'},{status:'Em atendimento',data:'2026-01-05T08:00:00.000Z',obs:'Equipe de campo em ação'}], mensagens:[], lat:-28.2761, lng:-49.1712, apoios:[], avaliacao:null },
       { id:'oc2', protocolo:'PROT-2026-0002', userId:'u1', titulo:'Poste sem iluminação — Av. Principal', descricao:'Poste apagado há mais de uma semana.', categoria:'Iluminação pública', endereco:'Av. Principal, 1200', bairro:'Centro', referencia:'Próximo ao Banco do Brasil', foto:null, status:'Em análise', criadoEm:'2026-01-05T10:00:00.000Z', atualizadoEm:'2026-01-06T09:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-05T10:00:00.000Z',obs:'Registrada'},{status:'Em análise',data:'2026-01-06T09:00:00.000Z',obs:'Verificação agendada'}], mensagens:[], lat:-28.2745, lng:-49.1698, apoios:[], avaliacao:null },
@@ -173,7 +171,7 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, premium:!!u.premium };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto };
     }
     return jsonDB.users.find(u => u.email === email) || null;
   },
@@ -182,7 +180,7 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, premium:!!u.premium };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto };
     }
     return jsonDB.users.find(u => u.id === id) || null;
   },
@@ -512,7 +510,7 @@ const server = http.createServer(async (req, res) => {
       if (!nome?.trim() || !email?.trim() || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
       if (senha.length < 6) return json(res, 400, { erro:'Senha deve ter no mínimo 6 caracteres.' });
       if (await db.emailExists(email.trim())) return json(res, 400, { erro:'E-mail já cadastrado.' });
-      await db.createUser({ id:'u'+Date.now(), nome:nome.trim(), email:email.trim().toLowerCase(), senha:hash(senha), role:'morador', bairro:bairro||'', foto:null, premium:false });
+      await db.createUser({ id:'u'+Date.now(), nome:nome.trim(), email:email.trim().toLowerCase(), senha:hash(senha), role:'morador', bairro:bairro||'', foto:null });
       return json(res, 201, { ok:true });
     }
 
@@ -522,7 +520,7 @@ const server = http.createServer(async (req, res) => {
       if (!user || user.senha !== hash(senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
       const token = genToken();
       await db.createSession(token, user.id);
-      return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null, premium: !!user.premium });
+      return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null });
     }
 
     if (pathname === '/api/logout' && req.method === 'POST') {
@@ -553,7 +551,7 @@ const server = http.createServer(async (req, res) => {
       const resolvidas = minhas.filter(o => o.status === 'Resolvida').length;
       const apoiosDados = await db.contarApoiosDados(user.id);
       return json(res, 200, {
-        nome:user.nome, email:user.email, foto:user.foto||null, premium: !!user.premium,
+        nome:user.nome, email:user.email, foto:user.foto||null,
         stats: { ocorrencias: minhas.length, resolvidas, apoiosDados }
       });
     }
@@ -582,12 +580,12 @@ const server = http.createServer(async (req, res) => {
       const resolvidas = dele.filter(o => o.status === 'Resolvida').length;
       const apoiosDados = await db.contarApoiosDados(alvo.id);
       return json(res, 200, {
-        nome:alvo.nome, foto:alvo.foto||null, premium: !!alvo.premium,
+        nome:alvo.nome, foto:alvo.foto||null,
         stats: { ocorrencias: dele.length, resolvidas, apoiosDados }
       });
     }
 
-    if (pathname === '/api/chat-premium' && req.method === 'GET') {
+    if (pathname === '/api/chat' && req.method === 'GET') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
       const msgs = await db.listChatMensagens();
@@ -599,7 +597,7 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, msgs.map(m => ({ ...m, foto: fotosPorUsuario[m.userId] })));
     }
 
-    if (pathname === '/api/chat-premium' && req.method === 'POST') {
+    if (pathname === '/api/chat' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
       const { texto } = await parseBody(req);
