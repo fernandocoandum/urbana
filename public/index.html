@@ -418,6 +418,14 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 .toast-dot.green{background:var(--green-500);box-shadow:0 0 8px rgba(34,197,94,.7)}
 .toast-dot.red{background:var(--red-500);box-shadow:0 0 8px rgba(239,68,68,.7)}
 .toast-dot.blue{background:var(--blue-500);box-shadow:0 0 8px rgba(59,130,246,.7)}
+.sound-toggle-btn{position:fixed;bottom:82px;right:24px;width:40px;height:40px;border-radius:50%;background:rgba(15,23,42,.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.12);color:#e2e8f0;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9998;box-shadow:0 10px 26px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.1);transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s ease,color .2s ease,opacity .2s ease;opacity:.55}
+.sound-toggle-btn:hover{opacity:1}
+.sound-toggle-btn svg{width:17px;height:17px}
+.sound-toggle-btn:hover{transform:scale(1.08)}
+.sound-toggle-btn:active{transform:scale(.92)}
+.sound-toggle-btn.muted{color:#64748b}
+@media (prefers-reduced-motion: reduce){.sound-toggle-btn{transition-duration:.01ms!important}}
+@media (max-width:640px){.sound-toggle-btn{bottom:74px;right:16px;width:36px;height:36px}}
 
 .termos-modal{display:none;position:fixed;inset:0;z-index:5000;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,20,.72);backdrop-filter:blur(6px)}
 .termos-modal.show{display:flex}
@@ -495,7 +503,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 }
 
 @media (prefers-reduced-motion: reduce){
-  .view.active,.metric-card,.mini-stat,.ocorr-card,tbody tr,.tl-item,.success-icon,.proto-box,.empty svg,.badge::before,.cit-banner::before,.sb-logo-mark{animation:none!important;opacity:1!important;transform:none!important}
+  .view.active,.metric-card,.mini-stat,.ocorr-card,tbody tr,.tl-item,.success-icon,.proto-box,.empty svg,.badge::before,.cit-banner::before,.sb-logo-mark,.chat-msg-row,.feed-item{animation:none!important;opacity:1!important;transform:none!important}
   .cat-bar-fill,.toast,.metric-card,.mini-stat,.ocorr-card,tbody tr,.sidebar,.sidebar-backdrop{transition-duration:.01ms!important}
 }
 
@@ -530,7 +538,8 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 .chat-wrap{display:flex;flex-direction:column;height:min(620px,calc(100vh - 220px));background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--r-lg);overflow:hidden}
 .chat-messages{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
-.chat-msg-row{display:flex;align-items:flex-end;gap:8px;max-width:78%}
+@keyframes chatMsgIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.chat-msg-row{display:flex;align-items:flex-end;gap:8px;max-width:78%;animation:chatMsgIn .32s cubic-bezier(.22,1,.36,1) both}
 .chat-msg-row.mine{align-self:flex-end;flex-direction:row-reverse}
 .chat-msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;overflow:hidden;background:var(--blue-500);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;font-family:var(--font-ui);cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
 .chat-msg-avatar:hover{transform:scale(1.08)}
@@ -1097,6 +1106,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 </div>
 <div class="toast" id="toast"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span></div>
+<button class="sound-toggle-btn" id="sound-toggle-btn" onclick="Sound.toggle()" title="Desativar sons" aria-label="Ativar ou desativar sons"></button>
 
 <script>
 const API = '';
@@ -1104,6 +1114,63 @@ let SESSION = null;
 let ocorrencias = [];
 let currentOcId = null;
 let chatPollInterval = null;
+let chatLastMsgId = null;
+
+/* ---- Sound: synthesized UI feedback (Web Audio API, no external files) ---- */
+const ICON_SOUND_ON = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5 2.3a.6.6 0 0 0-.98-.46L4.06 4.6H2a1 1 0 0 0-1 1v4.8a1 1 0 0 0 1 1h2.06l3.46 2.76a.6.6 0 0 0 .98-.46V2.3z"/><path d="M11.1 4.9a.6.6 0 0 1 .85 0 4.6 4.6 0 0 1 0 6.2.6.6 0 1 1-.87-.83 3.4 3.4 0 0 0 0-4.54.6.6 0 0 1 .02-.83z"/><path d="M12.7 3.2a.6.6 0 0 1 .85-.02 7.2 7.2 0 0 1 0 9.64.6.6 0 1 1-.88-.82 6 6 0 0 0 0-8 .6.6 0 0 1 .03-.8z"/></svg>';
+const ICON_SOUND_OFF = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8.5 2.3a.6.6 0 0 0-.98-.46L4.06 4.6H2a1 1 0 0 0-1 1v4.8a1 1 0 0 0 1 1h2.06l3.46 2.76a.6.6 0 0 0 .98-.46V2.3z"/><path d="M11 5.6a.6.6 0 0 1 .85 0L13 6.75l1.15-1.15a.6.6 0 1 1 .85.85L13.85 7.6 15 8.75a.6.6 0 1 1-.85.85L13 8.45l-1.15 1.15a.6.6 0 1 1-.85-.85L12.15 7.6 11 6.45a.6.6 0 0 1 0-.85z"/></svg>';
+const Sound = (function () {
+  let ctx = null;
+  let muted = localStorage.getItem('urbaniza+_sound_muted') === '1';
+  function getCtx() {
+    if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { ctx = null; } }
+    if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+    return ctx;
+  }
+  function tone(freq, opts = {}) {
+    const { duration = 0.12, type = 'sine', gain = 0.08, delay = 0, glideTo = null } = opts;
+    const c = getCtx();
+    if (!c) return;
+    const t0 = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    if (glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, t0 + duration);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.014);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+    osc.connect(g); g.connect(c.destination);
+    osc.start(t0); osc.stop(t0 + duration + 0.03);
+  }
+  const EVENTS = {
+    success: () => { tone(659, { duration: .1, gain: .07 }); tone(880, { duration: .16, gain: .07, delay: .09 }); },
+    error: () => { tone(330, { duration: .17, gain: .08, glideTo: 210 }); },
+    send: () => { tone(520, { duration: .09, gain: .06, glideTo: 780 }); },
+    notify: () => { tone(740, { duration: .1, gain: .05 }); tone(988, { duration: .13, gain: .045, delay: .075 }); },
+    click: () => { tone(600, { duration: .045, gain: .045 }); },
+    toggle: () => { tone(480, { duration: .08, gain: .06 }); }
+  };
+  function updateBtn() {
+    const btn = document.getElementById('sound-toggle-btn');
+    if (!btn) return;
+    btn.classList.toggle('muted', muted);
+    btn.innerHTML = muted ? ICON_SOUND_OFF : ICON_SOUND_ON;
+    btn.title = muted ? 'Ativar sons' : 'Desativar sons';
+  }
+  return {
+    play(name) { if (muted) return; const fn = EVENTS[name]; if (fn) { try { fn(); } catch {} } },
+    isMuted() { return muted; },
+    toggle() {
+      muted = !muted;
+      localStorage.setItem('urbaniza+_sound_muted', muted ? '1' : '0');
+      updateBtn();
+      if (!muted) this.play('toggle');
+    },
+    initBtn: updateBtn
+  };
+})();
+Sound.initBtn();
 
 async function api(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
@@ -1157,6 +1224,7 @@ function toast(msg, type = 'green') {
   t.classList.add('show');
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove('show'), 3500);
+  Sound.play(type === 'red' ? 'error' : 'success');
 }
 
 const BADGE_MAP = { 'Recebida': 'badge-recebida', 'Em análise': 'badge-analise', 'Encaminhada': 'badge-encaminhada', 'Em atendimento': 'badge-atendimento', 'Resolvida': 'badge-resolvida' };
@@ -1276,7 +1344,7 @@ async function loadPerfil() {
         <div class="perfil-banner"></div>
         <div class="perfil-head">
           <div class="perfil-avatar-wrap">
-            ${p.foto ? `<img src="${p.foto}" class="perfil-avatar" id="perfil-avatar-img">` : `<div class="perfil-avatar" id="perfil-avatar-img">${ini}</div>`}
+            ${p.foto ? `<img src="${esc(p.foto)}" class="perfil-avatar" id="perfil-avatar-img">` : `<div class="perfil-avatar" id="perfil-avatar-img">${ini}</div>`}
             <div class="perfil-avatar-edit" onclick="document.getElementById('perfil-foto-input').click()" title="Trocar foto">
               <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 3a1 1 0 0 0-.8.4L3 4.5H2a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 2 13.5h12a1.5 1.5 0 0 0 1.5-1.5V6A1.5 1.5 0 0 0 14 4.5h-1l-.7-1.1a1 1 0 0 0-.8-.4h-7z"/></svg>
             </div>
@@ -1401,7 +1469,7 @@ async function abrirPerfilPublico(userId) {
       <div class="perfil-banner"></div>
       <div class="perfil-head">
         <div class="perfil-avatar-wrap">
-          ${p.foto ? `<img src="${p.foto}" class="perfil-avatar">` : `<div class="perfil-avatar">${ini}</div>`}
+          ${p.foto ? `<img src="${esc(p.foto)}" class="perfil-avatar">` : `<div class="perfil-avatar">${ini}</div>`}
         </div>
         <div>
           <div class="perfil-nome-row">
@@ -1444,6 +1512,7 @@ async function loadChat() {
         <button onclick="enviarChatMsg()">Enviar</button>
       </div>
     </div>`;
+  chatLastMsgId = null;
   await renderChatMensagens();
   clearInterval(chatPollInterval);
   chatPollInterval = setInterval(renderChatMensagens, 4000);
@@ -1459,13 +1528,18 @@ async function renderChatMensagens() {
       const mine = m.userId === SESSION.id;
       const foto = mine ? (SESSION.foto || null) : m.foto;
       const nomeHtml = mine ? 'Você' : `<span class="chat-user-link" onclick="abrirPerfilPublico('${m.userId}')">${esc(m.nome)}</span>`;
-      const avatarHtml = `<div class="chat-msg-avatar" onclick="abrirPerfilPublico('${m.userId}')" title="${esc(m.nome)}">${foto ? `<img src="${foto}">` : initials(m.nome)}</div>`;
+      const avatarHtml = `<div class="chat-msg-avatar" onclick="abrirPerfilPublico('${m.userId}')" title="${esc(m.nome)}">${foto ? `<img src="${esc(foto)}">` : initials(m.nome)}</div>`;
       return `<div class="chat-msg-row ${mine ? 'mine' : ''}">
         ${avatarHtml}
         <div class="chat-msg ${mine ? 'mine' : ''}"><div class="chat-msg-meta">${nomeHtml} · ${fmtDateTime(m.criadoEm)}</div>${esc(m.texto)}</div>
       </div>`;
     }).join('') : '<div class="empty"><p>Nenhuma mensagem ainda. Comece a conversa!</p></div>';
     if (wasAtBottom) box.scrollTop = box.scrollHeight;
+    if (msgs.length) {
+      const last = msgs[msgs.length - 1];
+      if (chatLastMsgId !== null && last.id !== chatLastMsgId && last.userId !== SESSION.id) Sound.play('notify');
+      chatLastMsgId = last.id;
+    }
   } catch (e) {}
 }
 
@@ -1476,6 +1550,7 @@ async function enviarChatMsg() {
   input.value = '';
   try {
     await api('POST', '/api/chat', { texto });
+    Sound.play('send');
     await renderChatMensagens();
     const box = document.getElementById('chat-messages');
     if (box) box.scrollTop = box.scrollHeight;
@@ -1547,6 +1622,7 @@ async function doLogin() {
     });
     SESSION = data;
     localStorage.setItem('urbaniza+_session', JSON.stringify(data));
+    Sound.play('success');
     afterLogin();
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
@@ -1851,7 +1927,7 @@ async function abrirMoradorDet(id) {
               ${badge(o.status)}
             </div>
             ${renderOcStepper(o.status)}
-            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
+            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.4)"><div style="font-size:48px">${catEmoji(o.categoria).split(' ')[0]}</div><p style="font-size:12px">Sem foto</p></div>`}</div>
             <div class="form-grid" style="gap:14px">
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>
               <div><div class="df-label">Bairro</div><div class="df-val">${esc(o.bairro)}</div></div>
@@ -2042,6 +2118,7 @@ async function enviarOcorrencia() {
     document.getElementById('foto-preview').style.display = 'none';
     fotoInput.value = '';
     ocorrencias = [];
+    Sound.play('success');
     goView('v-sucesso');
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
@@ -2163,7 +2240,7 @@ async function abrirPrefDet(id) {
               </div>
             </div>
             ${renderOcStepper(o.status)}
-            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${o.foto}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
+            <div class="detail-img-wrap" style="margin-top:20px">${o.foto ? `<img src="${esc(o.foto)}" alt="Foto">` : `<div style="text-align:center;color:rgba(255,255,255,.5)"><div style="font-size:48px;margin-bottom:8px">${catEmoji(o.categoria).split(' ')[0]}</div><p>Sem foto</p></div>`}</div>
             <div class="form-grid" style="gap:14px">
               <div><div class="df-label">Cidadão</div><div class="df-val">${esc(o.nomeUsuario)}</div></div>
               <div><div class="df-label">Categoria</div><div class="df-val">${catEmoji(o.categoria)}</div></div>

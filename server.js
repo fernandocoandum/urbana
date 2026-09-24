@@ -49,7 +49,8 @@ async function initDB() {
         CREATE TABLE IF NOT EXISTS sessions (
           token TEXT PRIMARY KEY,
           user_id TEXT NOT NULL,
-          criado_em TIMESTAMPTZ DEFAULT NOW()
+          criado_em TIMESTAMPTZ DEFAULT NOW(),
+          expira_em TIMESTAMPTZ
         );
         CREATE TABLE IF NOT EXISTS config (
           key TEXT PRIMARY KEY,
@@ -70,12 +71,13 @@ async function initDB() {
         );
         ALTER TABLE users ADD COLUMN IF NOT EXISTS termos_aceitos_em TIMESTAMPTZ;
         ALTER TABLE users ADD COLUMN IF NOT EXISTS foto TEXT;
+        ALTER TABLE sessions ADD COLUMN IF NOT EXISTS expira_em TIMESTAMPTZ;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION;
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS apoios JSONB DEFAULT '[]';
         ALTER TABLE ocorrencias ADD COLUMN IF NOT EXISTS avaliacao JSONB;
       `);
-      const adminHash = hash('admin');
+      const adminHash = hashPassword('admin');
       await pool.query(`
         INSERT INTO users (id, nome, email, senha, role, termos_aceitos_em)
         VALUES ('u1','Admin Prefeitura','admin@prefeitura.gov.br',$1,'admin',NOW())
@@ -127,7 +129,7 @@ function initJsonDB() {
     } catch {}
   }
   jsonDB = {
-    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hash('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null }],
+    users: [{ id:'u1', nome:'Admin Prefeitura', email:'admin@prefeitura.gov.br', senha:hashPassword('admin'), role:'admin', bairro:'', criadoEm:'2026-01-01T00:00:00.000Z', termosAceitosEm:'2026-01-01T00:00:00.000Z', foto:null }],
     ocorrencias: [
       { id:'oc1', protocolo:'PROT-2026-0001', userId:'u1', titulo:'Buraco na Rua João Machado', descricao:'Buraco de aproximadamente 80cm de diâmetro na pista principal.', categoria:'Pavimentação', endereco:'Rua João Machado, 450', bairro:'Centro', referencia:'Em frente à padaria Pão de Mel', foto:null, status:'Em atendimento', criadoEm:'2026-01-02T14:32:00.000Z', atualizadoEm:'2026-01-05T08:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-02T14:32:00.000Z',obs:'Registrada pelo cidadão'},{status:'Em análise',data:'2026-01-03T09:15:00.000Z',obs:'Avaliação técnica iniciada'},{status:'Encaminhada',data:'2026-01-03T16:48:00.000Z',obs:'Encaminhada para Secretaria de Obras'},{status:'Em atendimento',data:'2026-01-05T08:00:00.000Z',obs:'Equipe de campo em ação'}], mensagens:[], lat:-28.2761, lng:-49.1712, apoios:[], avaliacao:null },
       { id:'oc2', protocolo:'PROT-2026-0002', userId:'u1', titulo:'Poste sem iluminação — Av. Principal', descricao:'Poste apagado há mais de uma semana.', categoria:'Iluminação pública', endereco:'Av. Principal, 1200', bairro:'Centro', referencia:'Próximo ao Banco do Brasil', foto:null, status:'Em análise', criadoEm:'2026-01-05T10:00:00.000Z', atualizadoEm:'2026-01-06T09:00:00.000Z', historico:[{status:'Recebida',data:'2026-01-05T10:00:00.000Z',obs:'Registrada'},{status:'Em análise',data:'2026-01-06T09:00:00.000Z',obs:'Verificação agendada'}], mensagens:[], lat:-28.2745, lng:-49.1698, apoios:[], avaliacao:null },
@@ -145,8 +147,63 @@ function saveJsonDB() {
   try { fs.writeFileSync(DB_FILE, JSON.stringify(jsonDB, null, 2)); } catch {}
 }
 
-function hash(str) { return crypto.createHash('sha256').update(str).digest('hex'); }
 function genToken() { return crypto.randomBytes(32).toString('hex'); }
+
+// --- Senhas: scrypt com salt por usuário, com verificação de contas antigas (sha256 sem salt) ---
+function hashPassword(senha) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const derived = crypto.scryptSync(senha, salt, 64).toString('hex');
+  return `scrypt:${salt}:${derived}`;
+}
+function verifyPassword(senha, armazenado) {
+  if (!armazenado || typeof senha !== 'string') return false;
+  if (armazenado.startsWith('scrypt:')) {
+    const [, salt, derivedHex] = armazenado.split(':');
+    if (!salt || !derivedHex) return false;
+    const stored = Buffer.from(derivedHex, 'hex');
+    const test = crypto.scryptSync(senha, salt, stored.length);
+    return stored.length === test.length && crypto.timingSafeEqual(stored, test);
+  }
+  // Compatibilidade com contas criadas antes do reforço de segurança (sha256 sem salt)
+  const legacy = Buffer.from(crypto.createHash('sha256').update(senha).digest('hex'), 'hex');
+  const stored = Buffer.from(armazenado, 'hex');
+  return legacy.length === stored.length && crypto.timingSafeEqual(legacy, stored);
+}
+function isLegacyHash(armazenado) { return !!armazenado && !armazenado.startsWith('scrypt:'); }
+
+// --- Rate limiting simples em memória (por IP), protege contra força bruta e abuso ---
+const rateLimitStore = new Map();
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.socket.remoteAddress || 'desconhecido';
+}
+function rateLimit(key, limit, windowMs) {
+  const now = Date.now();
+  if (rateLimitStore.size > 10000) {
+    for (const [k, v] of rateLimitStore) if (now > v.resetAt) rateLimitStore.delete(k);
+  }
+  let entry = rateLimitStore.get(key);
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + windowMs };
+    rateLimitStore.set(key, entry);
+  }
+  entry.count++;
+  if (entry.count > limit) return { limited: true, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  return { limited: false };
+}
+
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 dias
+
+// --- Validação de arquivos enviados pelo usuário (fotos) ---
+const ALLOWED_IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+function isOwnUploadUrl(v) { return v === null || v === undefined || /^\/api\/arquivos\/[A-Za-z0-9]+$/.test(v); }
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function cap(str, max) { return typeof str === 'string' ? str.trim().slice(0, max) : str; }
+const CATEGORIAS_VALIDAS = new Set(['Pavimentação','Iluminação pública','Limpeza urbana','Sinalização','Drenagem / Bueiro','Parques e jardins','Outros']);
+const BAIRROS_VALIDOS = new Set(['Centro','Pinheiral','Baixo Pinheiral','São Maurício','Rio Glória','Santa Clara','Outro']);
+const STATUS_VALIDOS = new Set(['Recebida','Em análise','Encaminhada','Em atendimento','Resolvida']);
 
 function anoAtualBR() {
   return new Intl.DateTimeFormat('en-US', { timeZone: 'America/Sao_Paulo', year: 'numeric' }).format(new Date());
@@ -232,25 +289,44 @@ const db = {
     }
     return jsonDB.users.some(u => u.email === email);
   },
-  async createSession(token, userId) {
+  async createSession(token, userId, expiresAt) {
     if (usePostgres) {
-      await pool.query('INSERT INTO sessions (token,user_id) VALUES ($1,$2)', [token, userId]);
+      await pool.query('INSERT INTO sessions (token,user_id,expira_em) VALUES ($1,$2,$3)', [token, userId, expiresAt ? new Date(expiresAt) : null]);
       return;
     }
-    jsonDB.sessions[token] = { userId }; saveJsonDB();
+    jsonDB.sessions[token] = { userId, expiresAt: expiresAt || null }; saveJsonDB();
   },
   async getSession(token) {
     if (usePostgres) {
-      const r = await pool.query('SELECT user_id FROM sessions WHERE token=$1', [token]);
-      return r.rows[0] ? { userId: r.rows[0].user_id } : null;
+      const r = await pool.query('SELECT user_id, expira_em FROM sessions WHERE token=$1', [token]);
+      if (!r.rows[0]) return null;
+      if (r.rows[0].expira_em && new Date(r.rows[0].expira_em).getTime() < Date.now()) {
+        await pool.query('DELETE FROM sessions WHERE token=$1', [token]);
+        return null;
+      }
+      return { userId: r.rows[0].user_id };
     }
-    return jsonDB.sessions[token] || null;
+    const s = jsonDB.sessions[token];
+    if (!s) return null;
+    if (s.expiresAt && s.expiresAt < Date.now()) {
+      delete jsonDB.sessions[token]; saveJsonDB();
+      return null;
+    }
+    return s;
   },
   async deleteSession(token) {
     if (usePostgres) {
       await pool.query('DELETE FROM sessions WHERE token=$1', [token]); return;
     }
     delete jsonDB.sessions[token]; saveJsonDB();
+  },
+  async updateSenha(userId, novoHash) {
+    if (usePostgres) {
+      await pool.query('UPDATE users SET senha=$1 WHERE id=$2', [novoHash, userId]);
+      return;
+    }
+    const u = jsonDB.users.find(u => u.id === userId);
+    if (u) { u.senha = novoHash; saveJsonDB(); }
   },
   async listOcorrencias(filters = {}) {
     if (usePostgres) {
@@ -444,9 +520,31 @@ function parseBody(req) {
   });
 }
 
+// Headers de segurança aplicados em toda resposta (API, estáticos e arquivos)
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'geolocation=(self), camera=(), microphone=(), payment=()',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com",
+    "media-src 'self'",
+    "script-src 'self' https://unpkg.com 'unsafe-inline'",
+    "style-src 'self' https://unpkg.com https://fonts.googleapis.com 'unsafe-inline'",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'"
+  ].join('; ')
+};
+const CORS_HEADERS = { 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Content-Type,Authorization', 'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS' };
+
 function json(res, code, data) {
   const body = JSON.stringify(data);
-  res.writeHead(code, { 'Content-Type':'application/json', 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Content-Type,Authorization', 'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS' });
+  res.writeHead(code, { 'Content-Type':'application/json', ...CORS_HEADERS, ...SECURITY_HEADERS });
   res.end(body);
 }
 
@@ -465,14 +563,17 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname;
 
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, { 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Content-Type,Authorization', 'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS' });
+    res.writeHead(204, { ...CORS_HEADERS, ...SECURITY_HEADERS });
     return res.end();
   }
 
   if (req.method === 'GET' && !pathname.startsWith('/api/')) {
+    const publicDir = path.join(__dirname, 'public');
     let filePath = pathname === '/' ? '/index.html' : pathname;
-    filePath = path.join(__dirname, 'public', filePath);
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    filePath = path.join(publicDir, filePath);
+    // Defesa extra contra path traversal, mesmo o URL nativo já normalizando "..".
+    const dentroDoPublic = filePath === publicDir || filePath.startsWith(publicDir + path.sep);
+    if (dentroDoPublic && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath);
       const mime = { '.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.gif':'image/gif', '.svg':'image/svg+xml', '.webp':'image/webp', '.mp4':'video/mp4', '.webm':'video/webm' };
       const contentType = mime[ext] || 'application/octet-stream';
@@ -484,42 +585,52 @@ const server = http.createServer(async (req, res) => {
         const start = match && match[1] ? parseInt(match[1], 10) : 0;
         const end = match && match[2] ? parseInt(match[2], 10) : size - 1;
         if (isNaN(start) || isNaN(end) || start > end || end >= size) {
-          res.writeHead(416, { 'Content-Range': `bytes */${size}` });
+          res.writeHead(416, { 'Content-Range': `bytes */${size}`, ...SECURITY_HEADERS });
           return res.end();
         }
         res.writeHead(206, {
           'Content-Type': contentType,
           'Content-Length': end - start + 1,
           'Content-Range': `bytes ${start}-${end}/${size}`,
-          'Accept-Ranges': 'bytes'
+          'Accept-Ranges': 'bytes',
+          ...SECURITY_HEADERS
         });
         return fs.createReadStream(filePath, { start, end }).pipe(res);
       }
 
-      res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': size, 'Accept-Ranges': 'bytes' });
+      res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': size, 'Accept-Ranges': 'bytes', ...SECURITY_HEADERS });
       return fs.createReadStream(filePath).pipe(res);
     }
-    const idx = path.join(__dirname, 'public', 'index.html');
-    if (fs.existsSync(idx)) { res.writeHead(200, { 'Content-Type':'text/html' }); return fs.createReadStream(idx).pipe(res); }
+    const idx = path.join(publicDir, 'index.html');
+    if (fs.existsSync(idx)) { res.writeHead(200, { 'Content-Type':'text/html', ...SECURITY_HEADERS }); return fs.createReadStream(idx).pipe(res); }
     return json(res, 404, { erro: 'Não encontrado' });
   }
 
   try {
     if (pathname === '/api/cadastro' && req.method === 'POST') {
+      const rl = rateLimit('cadastro:' + clientIp(req), 8, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: `Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { nome, email, senha, bairro } = await parseBody(req);
       if (!nome?.trim() || !email?.trim() || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
+      const emailNorm = email.trim().toLowerCase();
+      if (!EMAIL_RE.test(emailNorm)) return json(res, 400, { erro:'E-mail inválido.' });
       if (senha.length < 6) return json(res, 400, { erro:'Senha deve ter no mínimo 6 caracteres.' });
-      if (await db.emailExists(email.trim())) return json(res, 400, { erro:'E-mail já cadastrado.' });
-      await db.createUser({ id:'u'+Date.now(), nome:nome.trim(), email:email.trim().toLowerCase(), senha:hash(senha), role:'morador', bairro:bairro||'', foto:null });
+      if (senha.length > 200) return json(res, 400, { erro:'Senha muito longa.' });
+      if (await db.emailExists(emailNorm)) return json(res, 400, { erro:'E-mail já cadastrado.' });
+      await db.createUser({ id:'u'+Date.now()+Math.random().toString(36).slice(2,7), nome:cap(nome,100), email:emailNorm, senha:hashPassword(senha), role:'morador', bairro:cap(bairro,60)||'', foto:null });
       return json(res, 201, { ok:true });
     }
 
     if (pathname === '/api/login' && req.method === 'POST') {
+      const rl = rateLimit('login:' + clientIp(req), 10, 15 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { email, senha } = await parseBody(req);
-      const user = await db.findUser(email?.trim().toLowerCase());
-      if (!user || user.senha !== hash(senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
+      if (!email?.trim() || !senha) return json(res, 400, { erro:'Preencha e-mail e senha.' });
+      const user = await db.findUser(email.trim().toLowerCase());
+      if (!user || !verifyPassword(senha, user.senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
+      if (isLegacyHash(user.senha)) await db.updateSenha(user.id, hashPassword(senha)); // reforça o hash de contas antigas de forma transparente
       const token = genToken();
-      await db.createSession(token, user.id);
+      await db.createSession(token, user.id, Date.now() + SESSION_TTL_MS);
       return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null });
     }
 
@@ -563,9 +674,12 @@ const server = http.createServer(async (req, res) => {
       const upd = {};
       if (nome !== undefined) {
         if (!nome.trim()) return json(res, 400, { erro:'Nome não pode ficar em branco.' });
-        upd.nome = nome.trim();
+        upd.nome = cap(nome, 100);
       }
-      if (foto !== undefined) upd.foto = foto;
+      if (foto !== undefined) {
+        if (!isOwnUploadUrl(foto)) return json(res, 400, { erro:'Foto inválida.' });
+        upd.foto = foto;
+      }
       await db.updatePerfil(user.id, upd);
       return json(res, 200, { ok:true });
     }
@@ -589,22 +703,27 @@ const server = http.createServer(async (req, res) => {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
       const msgs = await db.listChatMensagens();
-      const fotosPorUsuario = {};
+      const usuariosPorId = {};
       for (const uid of [...new Set(msgs.map(m => m.userId))]) {
-        const u = await db.findUserById(uid);
-        fotosPorUsuario[uid] = u ? (u.foto || null) : null;
+        usuariosPorId[uid] = await db.findUserById(uid);
       }
-      return json(res, 200, msgs.map(m => ({ ...m, foto: fotosPorUsuario[m.userId] })));
+      // Nome e foto sempre refletem o perfil atual do autor, não um retrato da mensagem antiga.
+      return json(res, 200, msgs.map(m => {
+        const u = usuariosPorId[m.userId];
+        return { ...m, nome: u ? u.nome : m.nome, foto: u ? (u.foto || null) : null };
+      }));
     }
 
     if (pathname === '/api/chat' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const rl = rateLimit('chat:' + user.id, 30, 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: 'Você está enviando mensagens rápido demais. Espere um pouco.' });
       const { texto } = await parseBody(req);
       if (!texto?.trim()) return json(res, 400, { erro:'Mensagem vazia.' });
-      const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:texto.trim().slice(0,500), criadoEm:new Date().toISOString() };
+      const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:cap(texto,500), criadoEm:new Date().toISOString() };
       await db.addChatMensagem(msg);
-      return json(res, 201, { ok:true });
+      return json(res, 201, { ok:true, id: msg.id });
     }
 
     if (pathname === '/api/stats' && req.method === 'GET') {
@@ -628,11 +747,18 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/ocorrencias' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const rl = rateLimit('ocorrencia:' + user.id, 20, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: 'Muitas denúncias em pouco tempo. Tente novamente mais tarde.' });
       const { titulo, descricao, categoria, endereco, bairro, referencia, foto, lat, lng } = await parseBody(req);
       if (!titulo?.trim() || !categoria || !endereco?.trim() || !bairro) return json(res, 400, { erro:'Preencha os campos obrigatórios.' });
+      if (!CATEGORIAS_VALIDAS.has(categoria)) return json(res, 400, { erro:'Categoria inválida.' });
+      if (!BAIRROS_VALIDOS.has(bairro)) return json(res, 400, { erro:'Bairro inválido.' });
+      if (!isOwnUploadUrl(foto)) return json(res, 400, { erro:'Foto inválida.' });
+      if (lat !== undefined && lat !== null && typeof lat !== 'number') return json(res, 400, { erro:'Localização inválida.' });
+      if (lng !== undefined && lng !== null && typeof lng !== 'number') return json(res, 400, { erro:'Localização inválida.' });
       const protocolo = await gerarProtocolo();
       const agora = new Date().toISOString();
-      const oc = { id:'oc'+Date.now(), protocolo, userId:user.id, titulo:titulo.trim(), descricao:descricao||'', categoria, endereco:endereco.trim(), bairro, referencia:referencia||'', foto:foto||null, status:'Recebida', criadoEm:agora, atualizadoEm:agora, historico:[{status:'Recebida',data:agora,obs:'Ocorrência registrada pelo cidadão'}], mensagens:[], lat: typeof lat === 'number' ? lat : null, lng: typeof lng === 'number' ? lng : null, apoios:[], avaliacao:null };
+      const oc = { id:'oc'+Date.now()+Math.random().toString(36).slice(2,7), protocolo, userId:user.id, titulo:cap(titulo,150), descricao:cap(descricao,3000)||'', categoria, endereco:cap(endereco,200), bairro, referencia:cap(referencia,200)||'', foto:foto||null, status:'Recebida', criadoEm:agora, atualizadoEm:agora, historico:[{status:'Recebida',data:agora,obs:'Ocorrência registrada pelo cidadão'}], mensagens:[], lat: typeof lat === 'number' ? lat : null, lng: typeof lng === 'number' ? lng : null, apoios:[], avaliacao:null };
       await db.createOcorrencia(oc);
       return json(res, 201, { ok:true, protocolo, id:oc.id });
     }
@@ -652,7 +778,8 @@ const server = http.createServer(async (req, res) => {
       const user = await authUser(req);
       if (!user || user.role !== 'admin') return json(res, 403, { erro:'Acesso negado.' });
       const { status, obs, setor, mensagem } = await parseBody(req);
-      const ok = await db.updateStatus(matchUpd[1], status, obs, setor, mensagem);
+      if (!STATUS_VALIDOS.has(status)) return json(res, 400, { erro:'Status inválido.' });
+      const ok = await db.updateStatus(matchUpd[1], status, cap(obs,500), cap(setor,100), cap(mensagem,1000));
       if (!ok) return json(res, 404, { erro:'Não encontrada.' });
       return json(res, 200, { ok:true });
     }
@@ -680,7 +807,7 @@ const server = http.createServer(async (req, res) => {
       const { nota, comentario } = await parseBody(req);
       const n = parseInt(nota);
       if (!n || n < 1 || n > 5) return json(res, 400, { erro:'Nota inválida.' });
-      const avaliacao = await db.avaliar(matchAval[1], n, comentario);
+      const avaliacao = await db.avaliar(matchAval[1], n, cap(comentario,500));
       return json(res, 200, { ok:true, avaliacao });
     }
 
@@ -700,22 +827,30 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/upload' && req.method === 'POST') {
       const user = await authUser(req);
       if (!user) return json(res, 401, { erro:'Não autenticado.' });
+      const rl = rateLimit('upload:' + user.id, 40, 60 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: 'Muitos envios de imagem em pouco tempo. Tente novamente mais tarde.' });
       const { data } = await parseBody(req);
-      if (!data) return json(res, 400, { erro:'Sem dados.' });
-      const match = /^data:(image\/\w+);base64,(.+)$/.exec(data);
-      const mime = match ? match[1] : 'image/jpeg';
-      const base64 = match ? match[2] : data;
+      if (!data || typeof data !== 'string') return json(res, 400, { erro:'Sem dados.' });
+      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(data);
+      if (!match) return json(res, 400, { erro:'Formato de imagem inválido.' });
+      const mime = match[1].toLowerCase();
+      if (!ALLOWED_IMAGE_MIME.has(mime)) return json(res, 400, { erro:'Tipo de imagem não suportado. Envie JPEG, PNG, WEBP ou GIF.' });
+      const base64 = match[2];
+      let buffer;
+      try { buffer = Buffer.from(base64, 'base64'); } catch { return json(res, 400, { erro:'Imagem corrompida.' }); }
+      if (!buffer.length) return json(res, 400, { erro:'Imagem vazia.' });
+      if (buffer.length > MAX_IMAGE_BYTES) return json(res, 400, { erro:'Imagem muito grande (máx. 8MB).' });
       const id = 'img' + Date.now() + Math.random().toString(36).slice(2, 8);
       await db.salvarArquivo(id, mime, base64);
       return json(res, 200, { url:`/api/arquivos/${id}` });
     }
 
-    const matchArquivo = pathname.match(/^\/api\/arquivos\/([^/]+)$/);
+    const matchArquivo = pathname.match(/^\/api\/arquivos\/([A-Za-z0-9]+)$/);
     if (matchArquivo && req.method === 'GET') {
       const arq = await db.buscarArquivo(matchArquivo[1]);
       if (!arq) return json(res, 404, { erro:'Arquivo não encontrado.' });
       const buffer = Buffer.from(arq.dados, 'base64');
-      res.writeHead(200, { 'Content-Type': arq.mime, 'Cache-Control': 'public, max-age=31536000, immutable', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(200, { 'Content-Type': arq.mime, 'Cache-Control': 'public, max-age=31536000, immutable', ...CORS_HEADERS, ...SECURITY_HEADERS });
       return res.end(buffer);
     }
 
