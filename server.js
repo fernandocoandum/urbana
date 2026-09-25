@@ -927,7 +927,21 @@ function parseBody(req) {
   });
 }
 
-// Headers de segurança aplicados em toda resposta (API, estáticos e arquivos)
+// Headers de segurança aplicados em toda resposta (API, estáticos e arquivos).
+//
+// script-src e style-src mantêm 'unsafe-inline': o app usa onclick="..." e style="..." em
+// milhares de pontos do markup, gerados dinamicamente em runtime (template literals com IDs
+// variáveis, ex. onclick="abrirMoradorDet('${o.id}')"). Um nonce por requisição só cobre a
+// própria tag <script>, não atributos de evento inline — tentar removê-lo quebra literalmente
+// todo botão da aplicação (testado: qualquer onclick para de executar, CSP bloqueia com
+// "Refused to execute inline event handler"). 'unsafe-hashes' também não serve aqui, porque o
+// conteúdo desses atributos muda a cada render (IDs diferentes por ocorrência/usuário), então
+// não há um hash fixo para permitir. Migrar isso de verdade exigiria reescrever todo o
+// event-handling do front-end para addEventListener — fora do escopo de um patch de segurança
+// que não pode quebrar funcionalidades. O que a CSP abaixo ainda trava de verdade: qualquer
+// <script src="https://dominio-malicioso.com/..."> injetado via XSS (script-src limita a origens
+// já confiáveis), carregamento de imagens/mídia/fontes de origens arbitrárias, ser embutido em
+// iframe de terceiros (frame-ancestors) e submissão de formulários para fora do site.
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
@@ -947,7 +961,17 @@ const SECURITY_HEADERS = {
     "form-action 'self'"
   ].join('; ')
 };
-const CORS_HEADERS = { 'Access-Control-Allow-Origin':'*', 'Access-Control-Allow-Headers':'Content-Type,Authorization', 'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS' };
+// Restrito à própria origem do app em produção (VERCEL_URL/PUBLIC_ORIGIN); '*' só permanece
+// como fallback de desenvolvimento local, onde a origem pode mudar de porta a cada teste.
+const ALLOWED_ORIGIN = process.env.PUBLIC_ORIGIN || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+const CORS_HEADERS = { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN || '*', 'Access-Control-Allow-Headers':'Content-Type,Authorization', 'Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS', 'Vary': 'Origin' };
+function sendIndexHtml(res, idxPath) {
+  let html;
+  try { html = fs.readFileSync(idxPath, 'utf8'); } catch { return json(res, 404, { erro:'Não encontrado' }); }
+  const body = Buffer.from(html, 'utf8');
+  res.writeHead(200, { 'Content-Type':'text/html; charset=utf-8', 'Content-Length': body.length, ...SECURITY_HEADERS });
+  res.end(body);
+}
 
 function json(res, code, data) {
   const body = JSON.stringify(data);
@@ -980,6 +1004,10 @@ const server = http.createServer(async (req, res) => {
     filePath = path.join(publicDir, filePath);
     // Defesa extra contra path traversal, mesmo o URL nativo já normalizando "..".
     const dentroDoPublic = filePath === publicDir || filePath.startsWith(publicDir + path.sep);
+    const idx = path.join(publicDir, 'index.html');
+    if (dentroDoPublic && filePath === idx && fs.existsSync(idx)) {
+      return sendIndexHtml(res, idx);
+    }
     if (dentroDoPublic && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath);
       const mime = { '.html':'text/html', '.css':'text/css', '.js':'application/javascript', '.png':'image/png', '.jpg':'image/jpeg', '.gif':'image/gif', '.svg':'image/svg+xml', '.webp':'image/webp', '.mp4':'video/mp4', '.webm':'video/webm' };
@@ -1008,8 +1036,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': contentType, 'Content-Length': size, 'Accept-Ranges': 'bytes', ...SECURITY_HEADERS });
       return fs.createReadStream(filePath).pipe(res);
     }
-    const idx = path.join(publicDir, 'index.html');
-    if (fs.existsSync(idx)) { res.writeHead(200, { 'Content-Type':'text/html', ...SECURITY_HEADERS }); return fs.createReadStream(idx).pipe(res); }
+    if (fs.existsSync(idx)) return sendIndexHtml(res, idx);
     return json(res, 404, { erro: 'Não encontrado' });
   }
 
@@ -1023,10 +1050,15 @@ const server = http.createServer(async (req, res) => {
       if (rl.limited) return json(res, 429, { erro: `Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { nome, email, senha, bairro } = await parseBody(req);
       if (typeof nome !== 'string' || !nome.trim() || typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return json(res, 400, { erro:'Preencha todos os campos.' });
+      if (email.length > 254 || nome.length > 300) return json(res, 400, { erro:'Campo excede o tamanho máximo.' });
       const emailNorm = email.trim().toLowerCase();
       if (!EMAIL_RE.test(emailNorm)) return json(res, 400, { erro:'E-mail inválido.' });
       if (senha.length < 6) return json(res, 400, { erro:'Senha deve ter no mínimo 6 caracteres.' });
       if (senha.length > 200) return json(res, 400, { erro:'Senha muito longa.' });
+      // Mesma lista fechada de bairros usada ao registrar uma ocorrência — sem isso, o campo
+      // (um <select> no formulário, mas qualquer texto via chamada direta à API) aceitava
+      // qualquer string arbitrária no cadastro.
+      if (bairro !== undefined && bairro !== '' && !BAIRROS_VALIDOS.has(bairro)) return json(res, 400, { erro:'Bairro inválido.' });
       if (await db.emailExists(emailNorm)) return json(res, 400, { erro:'E-mail já cadastrado.' });
       await db.createUser({ id:'u'+Date.now()+Math.random().toString(36).slice(2,7), nome:cap(nome,100), email:emailNorm, senha:hashPassword(senha), role:'morador', bairro:cap(bairro,60)||'', foto:null });
       return json(res, 201, { ok:true });
@@ -1037,6 +1069,10 @@ const server = http.createServer(async (req, res) => {
       if (rl.limited) return json(res, 429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
       const { email, senha } = await parseBody(req);
       if (typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return json(res, 400, { erro:'Preencha e-mail e senha.' });
+      // Limite de tamanho ANTES de gastar CPU com scrypt: sem isso, um payload de senha
+      // gigante (o body aceita até 20MB) força o servidor a derivar hash de uma entrada enorme
+      // a cada tentativa — um vetor barato de negação de serviço, mesmo com rate limit por IP.
+      if (email.length > 254 || senha.length > 200) return json(res, 400, { erro:'E-mail ou senha incorretos.' });
       const user = await db.findUser(email.trim().toLowerCase());
       if (!user || !verifyPassword(senha, user.senha)) return json(res, 401, { erro:'E-mail ou senha incorretos.' });
       if (isLegacyHash(user.senha)) await db.updateSenha(user.id, hashPassword(senha)); // reforça o hash de contas antigas de forma transparente
@@ -1084,7 +1120,7 @@ const server = http.createServer(async (req, res) => {
       const { nome, foto } = await parseBody(req);
       const upd = {};
       if (nome !== undefined) {
-        if (!nome.trim()) return json(res, 400, { erro:'Nome não pode ficar em branco.' });
+        if (typeof nome !== 'string' || !nome.trim()) return json(res, 400, { erro:'Nome não pode ficar em branco.' });
         upd.nome = cap(nome, 100);
       }
       if (foto !== undefined) {
@@ -1426,7 +1462,12 @@ const server = http.createServer(async (req, res) => {
       if (!buffer.length) return json(res, 400, { erro:'Imagem vazia.' });
       if (buffer.length > MAX_IMAGE_BYTES) return json(res, 400, { erro:'Imagem muito grande (máx. 8MB).' });
       if (!assinaturaImagemValida(mime, buffer)) return json(res, 400, { erro:'O arquivo não é uma imagem válida do tipo declarado.' });
-      const id = 'img' + Date.now() + Math.random().toString(36).slice(2, 8);
+      // ID com 128 bits de entropia criptográfica — a única coisa que impede alguém de listar
+      // fotos de outras pessoas é não conseguir adivinhar essa URL (a rota de leitura abaixo é
+      // pública, sem checagem de dono, de propósito, pra funcionar em ocorrências/perfis
+      // públicos). O formato antigo (Date.now() + Math.random()) era previsível e pequeno
+      // demais pra servir como segredo.
+      const id = 'img' + crypto.randomBytes(16).toString('hex');
       await db.salvarArquivo(id, mime, base64);
       return json(res, 200, { url:`/api/arquivos/${id}` });
     }
@@ -1451,13 +1492,28 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-initDB().then(() => {
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log('');
-    console.log('Servidor Urbana rodando na porta ' + PORT);
-    console.log(`http://localhost:${PORT}`);
-    console.log('');
-    console.log('Login admin: admin@prefeitura.gov.br / admin');
-    console.log('');
+// O guard `require.main === module` deixa este arquivo exigível (`require('./server')`) sem
+// efeito colateral de subir servidor/DB — é isso que permite os testes automatizados (Fase 3)
+// importarem as funções puras abaixo (hashPassword, validações, etc.) e também instanciar o
+// servidor sob demanda em testes de integração, sem duplicar a lógica de boot em outro arquivo.
+// Rodando via `node server.js` (ou `npm start`) o comportamento é idêntico a antes.
+if (require.main === module) {
+  initDB().then(() => {
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log('');
+      console.log('Servidor Urbana rodando na porta ' + PORT);
+      console.log(`http://localhost:${PORT}`);
+      console.log('');
+      console.log('Login admin: admin@prefeitura.gov.br / admin');
+      console.log('');
+    });
   });
-});
+}
+
+module.exports = {
+  server, initDB, PORT,
+  hashPassword, verifyPassword, isLegacyHash,
+  cap, isCoordenadaValida, isOwnUploadUrl, assinaturaImagemValida,
+  rateLimit, genToken,
+  EMAIL_RE, BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_VALIDOS, STATUS_ORDEM, ALLOWED_IMAGE_MIME,
+};
