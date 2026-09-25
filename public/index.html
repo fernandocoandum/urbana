@@ -35,11 +35,21 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 @keyframes authSheenMove{0%{transform:translate(-30%,-30%) rotate(0deg)}100%{transform:translate(-30%,-30%) rotate(360deg)}}
 
 .auth-stage{position:relative;min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;overflow:clip;background:#02040a}
-/* Fundo estrelado leve em CSS puro — substitui um vídeo decorativo de ~10MB (stars.mp4) que
-   era carregado com preload="auto" só para dar um efeito de fundo no login. */
-.auth-bg{
-  position:absolute;inset:0;width:100%;height:100%;z-index:0;
-  background-color:#050814;
+/* Fundo animado em CSS puro — substitui um vídeo decorativo de ~10MB (stars.mp4) que era
+   carregado com preload="auto" só para dar um efeito de fundo no login. Aqui o movimento vem
+   de duas camadas de estrelas com deriva (parallax) e cintilação independente, uma nebulosa
+   lenta ao fundo, e uma estrela cadente ocasional — tudo leve e sem nenhum arquivo externo. */
+.auth-bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:hidden;background:#050814}
+.auth-bg-nebula{
+  position:absolute;inset:-10%;width:120%;height:120%;
+  background:
+    radial-gradient(ellipse 60% 45% at 25% 30%, rgba(59,90,190,.35) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 78% 68%, rgba(120,60,190,.28) 0%, transparent 60%),
+    linear-gradient(180deg,#050814 0%,#0a1128 55%,#0d1a3a 100%);
+  animation:auth-nebula-drift 26s ease-in-out infinite alternate;
+}
+.auth-bg-stars{
+  position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);
   background-image:
     radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,.9) 0, transparent 50%),
     radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.7) 0, transparent 50%),
@@ -50,12 +60,45 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
     radial-gradient(1.5px 1.5px at 70% 38%, rgba(255,255,255,.8) 0, transparent 50%),
     radial-gradient(1px 1px at 45% 22%, rgba(255,255,255,.6) 0, transparent 50%),
     radial-gradient(1px 1px at 62% 85%, rgba(255,255,255,.55) 0, transparent 50%),
-    radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.5) 0, transparent 50%),
-    linear-gradient(180deg,#050814 0%,#0a1128 55%,#0d1a3a 100%);
-  animation:auth-bg-twinkle 8s ease-in-out infinite;
+    radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.5) 0, transparent 50%);
+  animation:auth-stars-drift 50s linear infinite, auth-twinkle 5s ease-in-out infinite;
 }
-@keyframes auth-bg-twinkle{0%,100%{opacity:1}50%{opacity:.82}}
-@media (prefers-reduced-motion: reduce){.auth-bg{animation:none}}
+.auth-bg-stars-2{
+  background-image:
+    radial-gradient(1px 1px at 35% 8%, rgba(255,255,255,.55) 0, transparent 50%),
+    radial-gradient(1px 1px at 58% 30%, rgba(255,255,255,.4) 0, transparent 50%),
+    radial-gradient(1px 1px at 88% 45%, rgba(255,255,255,.5) 0, transparent 50%),
+    radial-gradient(1px 1px at 20% 65%, rgba(255,255,255,.35) 0, transparent 50%),
+    radial-gradient(1px 1px at 74% 90%, rgba(255,255,255,.45) 0, transparent 50%),
+    radial-gradient(1px 1px at 4% 40%, rgba(255,255,255,.4) 0, transparent 50%);
+  animation:auth-stars-drift-2 80s linear infinite, auth-twinkle 7s ease-in-out 1.5s infinite;
+  opacity:.8;
+}
+.auth-bg-shooting{
+  position:absolute;top:14%;left:-10%;width:2px;height:2px;border-radius:50%;
+  background:#fff;box-shadow:0 0 6px 1px rgba(255,255,255,.9);
+  animation:auth-shooting-star 9s linear infinite;
+  animation-delay:3s;
+}
+.auth-bg-shooting::before{
+  content:'';position:absolute;top:50%;right:0;width:90px;height:1px;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.8));
+  transform:translateY(-50%);
+}
+@keyframes auth-nebula-drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-3%,2%) scale(1.06)}}
+@keyframes auth-stars-drift{0%{transform:translate(0,0)}100%{transform:translate(-1.5%,-1%)}}
+@keyframes auth-stars-drift-2{0%{transform:translate(0,0)}100%{transform:translate(1.2%,-1.6%)}}
+@keyframes auth-twinkle{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes auth-shooting-star{
+  0%{transform:translate(0,0) rotate(18deg);opacity:0}
+  2%{opacity:1}
+  10%{transform:translate(48vw,26vh) rotate(18deg);opacity:0}
+  100%{opacity:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .auth-bg-nebula,.auth-bg-stars,.auth-bg-stars-2,.auth-bg-shooting{animation:none}
+  .auth-bg-shooting{display:none}
+}
 .auth-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 38%,rgba(10,14,30,.1) 0%,rgba(4,8,22,.4) 55%,rgba(2,4,14,.68) 100%)}
 .auth-shell{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;padding:20px}
 
@@ -645,7 +688,12 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 <div id="v-auth" class="view active" style="display:flex!important">
   <div class="auth-stage">
-    <div class="auth-bg" aria-hidden="true"></div>
+    <div class="auth-bg" aria-hidden="true">
+      <div class="auth-bg-nebula"></div>
+      <div class="auth-bg-stars"></div>
+      <div class="auth-bg-stars auth-bg-stars-2"></div>
+      <div class="auth-bg-shooting"></div>
+    </div>
     <div class="auth-scrim"></div>
 
     <div class="auth-shell">
