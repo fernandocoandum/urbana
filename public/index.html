@@ -803,6 +803,25 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .perfil-publico-close:hover{transform:scale(1.1) rotate(90deg)}
 .perfil-publico-inner .perfil-stats-grid{max-width:none}
 </style>
+<style id="ajustes-layout">
+/* Ajustes: conteudo centralizado em telas largas, perfil e rodape do wizard */
+.content{max-width:1240px;width:100%;margin-left:auto;margin-right:auto;box-sizing:border-box}
+.form-footer{justify-content:space-between}
+@media (min-width:600px){
+  .perfil-head{align-items:flex-start}
+  .perfil-head>div:last-child{margin-top:54px}
+}
+/* Sem botao de som; chat no canto inferior pra nao tampar conteudo */
+.sound-toggle-btn{display:none!important}
+.urbaninha-launcher{bottom:20px}
+.urbaninha-panel{bottom:88px;height:max(260px, min(460px, calc(100vh - 120px)))}
+.toast{bottom:88px}
+@media (max-width:640px){
+  .urbaninha-launcher{bottom:16px}
+  .urbaninha-panel{bottom:76px;height:max(240px, min(420px, calc(100vh - 100px)))}
+  .toast{bottom:76px}
+}
+</style>
 </head>
 <body>
 <button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" hidden>
