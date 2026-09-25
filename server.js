@@ -518,7 +518,7 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, criadoEm:u.criado_em };
     }
     return jsonDB.users.find(u => u.email === email) || null;
   },
@@ -527,7 +527,7 @@ const db = {
       const r = await pool.query('SELECT * FROM users WHERE id=$1', [id]);
       if (!r.rows[0]) return null;
       const u = r.rows[0];
-      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto };
+      return { id:u.id, nome:u.nome, email:u.email, senha:u.senha, role:u.role, bairro:u.bairro, termosAceitosEm:u.termos_aceitos_em, foto:u.foto, criadoEm:u.criado_em };
     }
     return jsonDB.users.find(u => u.id === id) || null;
   },
@@ -952,10 +952,11 @@ const SECURITY_HEADERS = {
     "default-src 'self'",
     "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com",
     "media-src 'self'",
-    "script-src 'self' https://unpkg.com 'unsafe-inline'",
-    "style-src 'self' https://unpkg.com https://fonts.googleapis.com 'unsafe-inline'",
+    "script-src 'self' https://unpkg.com https://accounts.google.com 'unsafe-inline'",
+    "frame-src https://accounts.google.com",
+    "style-src 'self' https://unpkg.com https://fonts.googleapis.com https://accounts.google.com 'unsafe-inline'",
     "font-src 'self' https://fonts.gstatic.com data:",
-    "connect-src 'self'",
+    "connect-src 'self' https://accounts.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'"
@@ -977,6 +978,19 @@ function json(res, code, data) {
   const body = JSON.stringify(data);
   res.writeHead(code, { 'Content-Type':'application/json', ...CORS_HEADERS, ...SECURITY_HEADERS });
   res.end(body);
+}
+
+function verificarTokenGoogle(idToken) {
+  return new Promise(resolve => {
+    const rq = https.get('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken), r => {
+      let d = '';
+      r.on('data', c => { d += c; if (d.length > 20000) r.destroy(); });
+      r.on('end', () => { if (r.statusCode !== 200) return resolve(null); try { resolve(JSON.parse(d)); } catch { resolve(null); } });
+      r.on('error', () => resolve(null));
+    });
+    rq.on('error', () => resolve(null));
+    rq.setTimeout(8000, () => { rq.destroy(); resolve(null); });
+  });
 }
 
 function getToken(req) { return (req.headers['authorization']||'').replace('Bearer ','').trim(); }
@@ -1081,6 +1095,36 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null });
     }
 
+    if (pathname === '/api/config' && req.method === 'GET') {
+      return json(res, 200, { googleClientId: process.env.GOOGLE_CLIENT_ID || null });
+    }
+
+    // Login com Google (Google Identity Services): o front manda o ID token assinado pelo
+    // Google e o servidor valida com o próprio Google (audiência, emissor, e-mail verificado)
+    // antes de criar a sessão. Se o e-mail ainda não tem conta, cria uma de morador.
+    if (pathname === '/api/login/google' && req.method === 'POST') {
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      if (!clientId) return json(res, 404, { erro:'Login com Google não configurado.' });
+      const rl = rateLimit('login:' + clientIp(req), 10, 15 * 60 * 1000);
+      if (rl.limited) return json(res, 429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter/60)} min.` });
+      const { credential } = await parseBody(req);
+      if (typeof credential !== 'string' || !credential || credential.length > 4096) return json(res, 400, { erro:'Credencial inválida.' });
+      const info = await verificarTokenGoogle(credential);
+      const emissorOk = info && (info.iss === 'accounts.google.com' || info.iss === 'https://accounts.google.com');
+      if (!info || info.aud !== clientId || !emissorOk || String(info.email_verified) !== 'true' || !info.email || Number(info.exp) * 1000 < Date.now()) {
+        return json(res, 401, { erro:'Não foi possível validar sua conta Google.' });
+      }
+      const emailNorm = String(info.email).trim().toLowerCase();
+      let user = await db.findUser(emailNorm);
+      if (!user) {
+        await db.createUser({ id:'u'+Date.now()+Math.random().toString(36).slice(2,7), nome:cap(info.name || emailNorm.split('@')[0], 100), email:emailNorm, senha:hashPassword(crypto.randomBytes(32).toString('hex')), role:'morador', bairro:'', foto:null });
+        user = await db.findUser(emailNorm);
+      }
+      const token = genToken();
+      await db.createSession(token, user.id, Date.now() + SESSION_TTL_MS);
+      return json(res, 200, { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null });
+    }
+
     if (pathname === '/api/logout' && req.method === 'POST') {
       const token = getToken(req);
       if (token) await db.deleteSession(token);
@@ -1110,7 +1154,10 @@ const server = http.createServer(async (req, res) => {
       const apoiosDados = await db.contarApoiosDados(user.id);
       return json(res, 200, {
         nome:user.nome, email:user.email, foto:user.foto||null,
-        stats: { ocorrencias: minhas.length, resolvidas, apoiosDados }
+        bairro:user.bairro||'', criadoEm:user.criadoEm||null,
+        stats: { ocorrencias: minhas.length, resolvidas, apoiosDados },
+        recentes: minhas.slice().sort((a,b) => new Date(b.criadoEm) - new Date(a.criadoEm)).slice(0,4)
+          .map(o => ({ id:o.id, protocolo:o.protocolo, titulo:o.titulo, status:o.status, categoria:o.categoria, criadoEm:o.criadoEm }))
       });
     }
 

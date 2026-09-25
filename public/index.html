@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <!-- `defer` nos três scripts de CDN abaixo: sem isso, o navegador para de interpretar a página
      inteira pra baixar e executar cada um antes de desenhar qualquer coisa na tela — com 3 scripts
@@ -809,7 +810,6 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .form-footer{justify-content:space-between}
 @media (min-width:600px){
   .perfil-head{align-items:flex-start}
-  .perfil-head>div:last-child{margin-top:54px}
 }
 /* Sem botao de som; chat no canto inferior pra nao tampar conteudo */
 .sound-toggle-btn{display:none!important}
@@ -821,6 +821,86 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .urbaninha-panel{bottom:76px;height:max(240px, min(420px, calc(100vh - 100px)))}
   .toast{bottom:76px}
 }
+
+/* ===== Ajustes finais (rodada 2) ===== */
+/* Fontes: títulos com mais corpo (Plus Jakarta Sans) e texto em Inter. A tela de login mantém as fontes dela. */
+:root{--font-display:'Plus Jakarta Sans',-apple-system,'SF Pro Display',system-ui,sans-serif;--font-ui:'Inter',-apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,'Segoe UI',Roboto,sans-serif}
+#v-auth{--font-display:'Syne',sans-serif;--font-ui:'DM Sans',sans-serif}
+body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.topbar-title{font-weight:800;letter-spacing:-.025em}
+
+/* Chat: botão fixo no canto, sem flutuar, com área de clique maior e acima de tudo */
+.urbaninha-launcher{bottom:24px;right:24px;animation:none!important;z-index:9999}
+.urbaninha-launcher::after{content:'';position:absolute;inset:-8px;border-radius:50%}
+.urbaninha-panel{bottom:92px;z-index:9998}
+@media (max-width:640px){.urbaninha-launcher{bottom:18px;right:16px}.urbaninha-panel{bottom:80px}}
+
+/* Nova ocorrência centralizada */
+.content > .back-link + .card[style*="max-width:720px"]{margin-left:auto;margin-right:auto;max-width:820px!important;width:100%}
+.content:has(> .back-link + .card[style*="max-width:720px"]) > .back-link{display:flex;width:fit-content;margin-left:max(0px,calc(50% - 410px))}
+.wizard-head{text-align:center}
+.wizard-steps{justify-content:center}
+
+/* Fotos inteiras, sem corte */
+.upload-preview{object-fit:contain;max-height:340px;background:var(--slate-100)}
+.wz-review-photo{object-fit:contain;max-height:320px;background:var(--slate-100)}
+.detail-img-wrap{background:#0f172a}
+.detail-img-wrap img{object-fit:contain}
+
+/* Boas-vindas */
+.boasvindas{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:#050814;transition:opacity .7s cubic-bezier(.22,1,.36,1)}
+.boasvindas.saindo{opacity:0;pointer-events:none}
+.boasvindas-txt{position:relative;z-index:1;padding:0 24px;text-align:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:800;font-size:clamp(30px,5.4vw,64px);letter-spacing:-.03em;color:#fff;text-shadow:0 6px 40px rgba(59,130,246,.55)}
+.boasvindas-cursor{display:inline-block;width:.08em;min-width:3px;height:.95em;margin-left:.08em;vertical-align:-.1em;background:#93c5fd;border-radius:2px;animation:bvBlink .9s steps(1) infinite}
+@keyframes bvBlink{50%{opacity:0}}
+
+/* Google */
+.google-login-wrap{margin-top:14px}
+.google-divider{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.55);font-size:12px;margin-bottom:12px}
+.google-divider::before,.google-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.18)}
+.google-btn-slot{display:flex;justify-content:center;min-height:44px}
+
+/* Perfil */
+.perfil-layout{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.perfil-banner{height:150px}
+.perfil-head{padding:0 32px 26px;margin-top:-48px}
+.perfil-avatar-wrap,.perfil-avatar{width:108px;height:108px}
+.perfil-avatar{font-size:34px}
+.perfil-nome-display{font-family:var(--font-display);font-size:28px;letter-spacing:-.025em}
+.perfil-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.perfil-chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--slate-600);background:var(--slate-50);border:1px solid var(--slate-100);padding:5px 11px;border-radius:100px}
+.perfil-chip svg{width:12px;height:12px;color:var(--blue-500)}
+@media (min-width:600px){.perfil-head{align-items:flex-start}.perfil-head>.perfil-head-info{margin-top:60px}}
+.perfil-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.perfil-grid{grid-template-columns:1fr}}
+.perfil-col-main,.perfil-col-side{display:flex;flex-direction:column;gap:20px;min-width:0}
+.perfil-stats-grid{margin:0;max-width:none}
+.perfil-stat-card{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.05)}
+.perfil-stat-num{font-family:var(--font-display);font-size:30px}
+.perfil-section{padding:22px 24px}
+.perfil-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.perfil-section-title{font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--slate-900);letter-spacing:-.015em;margin-bottom:14px}
+.perfil-section-head .perfil-section-title{margin-bottom:0}
+.perfil-section-kicker{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate-400)}
+.perfil-nivel-nome{font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--slate-900);margin-top:4px;letter-spacing:-.02em}
+.perfil-nivel-pontos{font-size:13px;font-weight:700;color:var(--blue-700);background:var(--blue-50);padding:6px 12px;border-radius:100px;white-space:nowrap}
+.perfil-progress{height:10px;background:var(--slate-100);border-radius:100px;overflow:hidden}
+.perfil-progress-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--blue-500),var(--blue-400));transform-origin:left;animation:perfilBarIn 1s cubic-bezier(.22,1,.36,1) both .15s}
+@keyframes perfilBarIn{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.perfil-nivel-hint{font-size:13px;color:var(--slate-500);margin-top:10px;line-height:1.5}
+.perfil-link-btn{background:none;border:none;color:var(--blue-600);font-weight:600;font-size:13px;cursor:pointer;font-family:var(--font-ui)}
+.perfil-atividade{display:flex;flex-direction:column}
+.perfil-atv-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--slate-100)}
+.perfil-atv-item:first-child{border-top:none;padding-top:0}
+.perfil-atv-dot{width:10px;height:10px;border-radius:50%;background:var(--blue-500);box-shadow:0 0 0 4px var(--blue-50);flex-shrink:0}
+.perfil-atv-txt{flex:1;min-width:0}
+.perfil-atv-titulo{font-weight:600;font-size:14px;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.perfil-atv-meta{font-size:12px;color:var(--slate-400);margin-top:2px}
+.perfil-vazio{text-align:center;padding:10px 0 4px;color:var(--slate-500);font-size:14px}
+.perfil-vazio .btn-submit{margin:12px auto 0}
+.perfil-readonly{padding:11px 14px;border-radius:12px;background:var(--slate-50);color:var(--slate-600);font-size:14px;word-break:break-all}
+.perfil-form-wrap{max-width:none}
+@media (prefers-reduced-motion: reduce){.perfil-progress-bar{animation:none}.boasvindas-cursor{animation:none}}
 </style>
 </head>
 <body>
@@ -916,6 +996,10 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
               <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
               Entrar no sistema
             </button>
+            <div id="google-login-wrap" class="google-login-wrap" style="display:none">
+              <div class="google-divider"><span>ou</span></div>
+              <div id="google-btn" class="google-btn-slot"></div>
+            </div>
             <button type="button" class="auth-link-btn" onclick="abrirRecuperarSenha()" style="display:block;width:100%;text-align:center;background:none;border:none;color:#93c5fd;font-size:12.5px;margin-top:12px;cursor:pointer;text-decoration:underline;padding:4px">Esqueceu sua senha?</button>
           </div>
 
@@ -1746,7 +1830,11 @@ async function loadPerfil() {
   try {
     const p = await api('GET', '/api/perfil');
     const ini = initials(p.nome);
+    const nivel = calcularNivelPerfil(p.stats);
+    const membroDesde = p.criadoEm ? new Date(p.criadoEm).toLocaleDateString('pt-BR', { month:'long', year:'numeric' }) : '';
+    const recentes = Array.isArray(p.recentes) ? p.recentes : [];
     content.innerHTML = `
+      <div class="perfil-layout">
       <div class="card perfil-card perfil-card-full">
         <div class="perfil-banner"></div>
         <div class="perfil-head">
@@ -1757,25 +1845,29 @@ async function loadPerfil() {
             </div>
             <input type="file" accept="image/*" id="perfil-foto-input" style="display:none" onchange="onPerfilFotoChange(this)">
           </div>
-          <div>
+          <div class="perfil-head-info">
             <div class="perfil-nome-row">
               <div class="perfil-nome-display" id="perfil-nome-display">${esc(p.nome)}</div>
               <span class="perfil-role-badge">${SESSION.role === 'admin' ? 'Administrador' : 'Morador'}</span>
             </div>
-            <div class="perfil-meta-row">
-              <span class="perfil-email">${esc(p.email)}</span>
+            <div class="perfil-chips">
+              <span class="perfil-chip"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 3h13a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm.5 1.3v7.2h12V4.3L8 8.6 2 4.3zM13 4H3l5 3.6L13 4z"/></svg>${esc(p.email)}</span>
+              ${p.bairro ? `<span class="perfil-chip"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 0 0-5 5c0 3.75 5 9 5 9s5-5.25 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>${esc(p.bairro)}</span>` : ''}
+              ${membroDesde ? `<span class="perfil-chip"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 1v2H2.5A1.5 1.5 0 0 0 1 4.5v9A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 13.5 3H12V1h-1.5v2h-5V1H4zM2.5 6h11v7.5h-11V6z"/></svg>Membro desde ${esc(membroDesde)}</span>` : ''}
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="perfil-body">
+      <div class="perfil-grid">
+        <div class="perfil-col-main">
           <div class="perfil-stats-grid">
             <div class="perfil-stat-card">
               <div class="perfil-stat-icon"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 2v8h10V4H3zm1 1h8v1H4V5zm0 2h8v1H4V7zm0 2h5v1H4V9z"/></svg></div>
               <div class="perfil-stat-num">${p.stats.ocorrencias}</div><div class="perfil-stat-label">Ocorrências registradas</div>
             </div>
             <div class="perfil-stat-card">
-              <div class="perfil-stat-icon green"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg></div>
+              <div class="perfil-stat-icon green"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 1 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0z"/></svg></div>
               <div class="perfil-stat-num">${p.stats.resolvidas}</div><div class="perfil-stat-label">Resolvidas</div>
             </div>
             <div class="perfil-stat-card">
@@ -1784,17 +1876,55 @@ async function loadPerfil() {
             </div>
           </div>
 
-          <div class="perfil-form-wrap">
+          <div class="card perfil-section">
+            <div class="perfil-section-head">
+              <div>
+                <div class="perfil-section-kicker">Seu nível</div>
+                <div class="perfil-nivel-nome">${nivel.emoji} ${nivel.nome}</div>
+              </div>
+              <div class="perfil-nivel-pontos">${nivel.pontos} pts</div>
+            </div>
+            <div class="perfil-progress"><div class="perfil-progress-bar" style="width:${nivel.progresso}%"></div></div>
+            <div class="perfil-nivel-hint">${nivel.proximo ? `Faltam <strong>${nivel.faltam} pts</strong> para <strong>${nivel.proximo}</strong>. Cada ocorrência vale 10 pts, cada resolvida +5 e cada apoio 2.` : 'Você chegou ao nível máximo. Obrigado por cuidar da cidade!'}</div>
+          </div>
+
+          <div class="card perfil-section">
+            <div class="perfil-section-head">
+              <div class="perfil-section-title">Atividade recente</div>
+              ${recentes.length ? `<button class="perfil-link-btn" onclick="moradorNav('lista')">Ver todas →</button>` : ''}
+            </div>
+            ${recentes.length ? `<div class="perfil-atividade">${recentes.map(o => `
+              <div class="perfil-atv-item">
+                <div class="perfil-atv-dot"></div>
+                <div class="perfil-atv-txt"><div class="perfil-atv-titulo">${esc(o.titulo)}</div><div class="perfil-atv-meta">${esc(o.protocolo)} · ${fmtDate(o.criadoEm)}</div></div>
+                ${badge(esc(o.status))}
+              </div>`).join('')}</div>`
+            : `<div class="perfil-vazio"><p>Você ainda não registrou nenhuma ocorrência.</p><button class="btn-submit" onclick="moradorNav('form')">Registrar a primeira</button></div>`}
+          </div>
+        </div>
+
+        <div class="perfil-col-side">
+          <div class="card perfil-section">
+            <div class="perfil-section-title">Dados da conta</div>
             <div class="form-group perfil-form-row">
               <label class="form-label" for="perfil-nome-input">Nome de exibição</label>
               <input class="form-input" id="perfil-nome-input" value="${esc(p.nome)}" maxlength="60">
             </div>
-            <div style="display:flex;align-items:center">
+            <div class="form-group">
+              <label class="form-label">E-mail</label>
+              <div class="perfil-readonly">${esc(p.email)}</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Bairro</label>
+              <div class="perfil-readonly">${p.bairro ? esc(p.bairro) : 'Não informado'}</div>
+            </div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
               <button class="btn-submit" onclick="salvarPerfil()" id="perfil-save-btn">Salvar alterações</button>
               <span class="perfil-save-msg" id="perfil-save-msg">Salvo!</span>
             </div>
           </div>
         </div>
+      </div>
       </div>`;
   } catch (e) {
     content.innerHTML = `<div class="empty"><p>Erro: ${e.message}</p></div>`;
@@ -2049,7 +2179,7 @@ async function doLogin() {
     SESSION = data;
     localStorage.setItem('urbaniza+_session', JSON.stringify(data));
     Sound.play('success');
-    afterLogin();
+    mostrarBoasVindas(afterLogin);
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
   } finally {
@@ -2101,6 +2231,92 @@ async function doLogout() {
   const cadErr = document.getElementById('cad-error'); if (cadErr) cadErr.classList.remove('show');
   goView('v-auth');
   loadAuthStats();
+}
+
+function calcularNivelPerfil(st) {
+  const pontos = (st.ocorrencias || 0) * 10 + (st.resolvidas || 0) * 5 + (st.apoiosDados || 0) * 2;
+  const niveis = [
+    { min: 0, nome: 'Cidadão iniciante', emoji: '🌱' },
+    { min: 20, nome: 'Cidadão ativo', emoji: '🏙️' },
+    { min: 60, nome: 'Colaborador da cidade', emoji: '🤝' },
+    { min: 150, nome: 'Guardião do Urbana', emoji: '🛡️' }
+  ];
+  let i = 0;
+  while (i + 1 < niveis.length && pontos >= niveis[i + 1].min) i++;
+  const atual = niveis[i], prox = niveis[i + 1];
+  const progresso = prox ? Math.round(((pontos - atual.min) / (prox.min - atual.min)) * 100) : 100;
+  return { pontos, nome: atual.nome, emoji: atual.emoji, proximo: prox ? prox.nome : null, faltam: prox ? prox.min - pontos : 0, progresso: Math.max(4, Math.min(100, progresso)) };
+}
+
+// Tela de boas-vindas depois do login: fundo igual ao da tela de login e a frase
+// "Bem-vindo ao Urbana!" sendo digitada. O painel carrega por baixo enquanto isso.
+function mostrarBoasVindas(depois) {
+  const reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ov = document.createElement('div');
+  ov.className = 'boasvindas';
+  ov.setAttribute('role', 'status');
+  const bg = document.querySelector('#v-auth .auth-bg');
+  if (bg) ov.appendChild(bg.cloneNode(true));
+  const txt = document.createElement('div');
+  txt.className = 'boasvindas-txt';
+  const alvo = document.createElement('span');
+  const cursor = document.createElement('span');
+  cursor.className = 'boasvindas-cursor';
+  txt.append(alvo, cursor);
+  ov.appendChild(txt);
+  document.body.appendChild(ov);
+  try { depois(); } catch (e) { console.error(e); }
+  const frase = 'Bem-vindo ao Urbana!';
+  const sair = () => { ov.classList.add('saindo'); setTimeout(() => ov.remove(), 700); };
+  if (reduz) { alvo.textContent = frase; setTimeout(sair, 1000); return; }
+  let i = 0;
+  const tick = () => {
+    i++;
+    alvo.textContent = frase.slice(0, i);
+    if (i < frase.length) setTimeout(tick, 65 + Math.random() * 45);
+    else setTimeout(sair, 950);
+  };
+  setTimeout(tick, 400);
+}
+
+// Login com Google: só aparece se o servidor tiver GOOGLE_CLIENT_ID configurado.
+let googleLoginIniciado = false;
+async function iniciarLoginGoogle() {
+  if (googleLoginIniciado) return;
+  googleLoginIniciado = true;
+  try {
+    const cfg = await api('GET', '/api/config');
+    if (!cfg || !cfg.googleClientId) return;
+    await new Promise((ok, falha) => {
+      if (window.google && google.accounts && google.accounts.id) return ok();
+      const sc = document.createElement('script');
+      sc.src = 'https://accounts.google.com/gsi/client';
+      sc.async = true; sc.onload = ok; sc.onerror = falha;
+      document.head.appendChild(sc);
+    });
+    google.accounts.id.initialize({ client_id: cfg.googleClientId, callback: onGoogleCredential, ux_mode: 'popup' });
+    const slot = document.getElementById('google-btn');
+    const wrap = document.getElementById('google-login-wrap');
+    if (!slot || !wrap) return;
+    wrap.style.display = 'block';
+    google.accounts.id.renderButton(slot, { theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with', locale: 'pt-BR', width: Math.min(360, Math.max(220, slot.offsetWidth || 300)) });
+  } catch (e) {
+    googleLoginIniciado = false;
+  }
+}
+
+async function onGoogleCredential(resp) {
+  const err = document.getElementById('login-error');
+  if (err) err.classList.remove('show');
+  try {
+    const data = await api('POST', '/api/login/google', { credential: resp.credential });
+    SESSION = data;
+    localStorage.setItem('urbaniza+_session', JSON.stringify(data));
+    Sound.play('success');
+    mostrarBoasVindas(afterLogin);
+  } catch (e) {
+    if (err) { err.textContent = e.message; err.classList.add('show'); }
+  }
 }
 
 function afterLogin() {
@@ -3008,6 +3224,7 @@ async function atualizarNotifAdmin() {
 }
 
 async function loadAuthStats() {
+  iniciarLoginGoogle();
   try {
     const total = document.getElementById('stat-total');
     if (!total) return;
