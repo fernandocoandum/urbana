@@ -1516,10 +1516,18 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-module.exports = {
+// A exportação padrão (`module.exports`) PRECISA ser o próprio servidor HTTP (ou uma função) —
+// é o erro exato que a Vercel deu ("Invalid export found... The default export must be a
+// function or server") quando este arquivo exportava um objeto solto {server, initDB, ...}.
+// Aqui `module.exports` é literalmente o `server`, e as funções que os testes (Fase 3) precisam
+// importar são penduradas como propriedades extras dele — inclusive `server` como
+// autorreferência, pra `const { server } = require('./server')` nos testes continuar funcionando
+// sem nenhuma mudança nos arquivos de teste.
+module.exports = server;
+Object.assign(module.exports, {
   server, initDB, PORT,
   hashPassword, verifyPassword, isLegacyHash,
   cap, isCoordenadaValida, isOwnUploadUrl, assinaturaImagemValida,
   rateLimit, genToken,
   EMAIL_RE, BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_VALIDOS, STATUS_ORDEM, ALLOWED_IMAGE_MIME,
-};
+});
