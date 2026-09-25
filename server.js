@@ -3,6 +3,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const PORT = process.env.PORT || 3000;
 
@@ -352,6 +353,89 @@ function geocodeNominatim(query) {
 function reverseGeocodeNominatim(lat, lng) {
   const qs = new URLSearchParams({ format: 'json', lat: String(lat), lon: String(lng), zoom: '18', addressdetails: '1' });
   return nominatimRequest('/reverse?' + qs.toString());
+}
+// Envio real do e-mail de recuperação de senha. Duas formas são suportadas, nenhuma delas
+// com credenciais fixas no código — tudo vem de variáveis de ambiente definidas na hospedagem
+// (ex.: Vercel). Sem nenhuma das duas configuradas, o fluxo cai no modo de demonstração
+// (token exibido na resposta), como antes.
+//   1) Gmail (GMAIL_USER + GMAIL_APP_PASSWORD): manda pelo SMTP do Gmail com uma "senha de app"
+//      — não exige domínio próprio, funciona com qualquer conta @gmail.com. Tem prioridade
+//      porque não depende de verificar domínio.
+//   2) Resend (RESEND_API_KEY): serviço transacional dedicado; exige verificar um domínio
+//      próprio para enviar a qualquer destinatário (sem isso, só entrega para o e-mail da
+//      própria conta Resend).
+function htmlEmailRecuperacao(link) {
+  return `<div style="font-family:sans-serif;font-size:14px;color:#1f2937;line-height:1.6">
+    <p>Olá,</p>
+    <p>Recebemos um pedido para redefinir a senha da sua conta no <strong>Urbana</strong>, o sistema de ocorrências urbanas de Braço do Norte.</p>
+    <p><a href="${link}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 18px;border-radius:100px;font-weight:600">Criar nova senha</a></p>
+    <p style="font-size:12px;color:#6b7280">Ou copie e cole este link no navegador:<br>${link}</p>
+    <p style="font-size:12px;color:#6b7280">Este link expira em 1 hora. Se você não solicitou essa alteração, pode ignorar este e-mail com segurança.</p>
+  </div>`;
+}
+let gmailTransporter = null;
+function obterTransportadorGmail() {
+  if (!gmailTransporter) {
+    gmailTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+      // Timeouts curtos: se o SMTP do Gmail ficar inacessível (rede, credencial revogada etc.),
+      // falha rápido e cai no fallback em vez de travar a requisição esperando indefinidamente.
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
+    });
+  }
+  return gmailTransporter;
+}
+function enviarEmailRecuperacaoGmail(destinatario, link) {
+  const transportador = obterTransportadorGmail();
+  return transportador.sendMail({
+    from: `"Urbana" <${process.env.GMAIL_USER}>`,
+    to: destinatario,
+    subject: 'Recuperação de senha - Urbana',
+    html: htmlEmailRecuperacao(link)
+  });
+}
+function enviarEmailRecuperacaoResend(destinatario, link) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) return reject(new Error('RESEND_API_KEY não configurada.'));
+    const payload = JSON.stringify({
+      from: process.env.RESEND_FROM || 'Urbana <onboarding@resend.dev>',
+      to: [destinatario],
+      subject: 'Recuperação de senha - Urbana',
+      html: htmlEmailRecuperacao(link)
+    });
+    const options = {
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      },
+      timeout: 8000
+    };
+    const reqResend = https.request(options, (resp) => {
+      let dataStr = '';
+      resp.on('data', (chunk) => { dataStr += chunk; });
+      resp.on('end', () => {
+        if (resp.statusCode >= 200 && resp.statusCode < 300) resolve(true);
+        else reject(new Error(`Resend respondeu ${resp.statusCode}: ${dataStr.slice(0, 300)}`));
+      });
+    });
+    reqResend.on('timeout', () => reqResend.destroy(new Error('Tempo esgotado ao enviar e-mail de recuperação.')));
+    reqResend.on('error', reject);
+    reqResend.write(payload);
+    reqResend.end();
+  });
+}
+function baseUrlFromReq(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost:3000';
+  const proto = req.headers['x-forwarded-proto'] || (host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https');
+  return `${proto}://${host}`;
 }
 function isOwnUploadUrl(v) { return v === null || v === undefined || /^\/api\/arquivos\/[A-Za-z0-9]+$/.test(v); }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1270,10 +1354,27 @@ const server = http.createServer(async (req, res) => {
       const tokenHash = crypto.createHash('sha256').update(tokenBruto).digest('hex');
       const expiraEm = new Date(Date.now() + 60 * 60 * 1000).toISOString();
       await db.setResetToken(emailNorm, tokenHash, expiraEm);
-      // Não há serviço de e-mail configurado neste projeto. Para não vazar o token de redefinição
-      // em produção, ele só é devolvido na resposta em modo de desenvolvimento (JSON local) ou se
-      // DEBUG_EXPOSE_RESET_TOKEN estiver explicitamente definido (uso educacional/demonstração).
-      if (!usePostgres || process.env.DEBUG_EXPOSE_RESET_TOKEN) {
+      const linkRedefinicao = `${baseUrlFromReq(req)}/?reset=${tokenBruto}`;
+      // Ordem de prioridade: Gmail (não exige domínio próprio) > Resend (exige domínio
+      // verificado para entregar a qualquer destinatário) > modo de demonstração.
+      const temGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+      const temResend = !!process.env.RESEND_API_KEY;
+      if (temGmail || temResend) {
+        try {
+          if (temGmail) await enviarEmailRecuperacaoGmail(emailNorm, linkRedefinicao);
+          else await enviarEmailRecuperacaoResend(emailNorm, linkRedefinicao);
+        } catch (e) {
+          console.error(`Falha ao enviar e-mail de recuperação via ${temGmail ? 'Gmail' : 'Resend'}:`, e.message);
+          console.log(`Token de redefinição de senha gerado para ${emailNorm} (falha no envio do e-mail): ${tokenBruto}`);
+          if (!usePostgres || process.env.DEBUG_EXPOSE_RESET_TOKEN) {
+            resposta.tokenDemo = tokenBruto;
+            resposta.mensagem += ' (não foi possível enviar o e-mail agora; token incluído para fins de demonstração.)';
+          }
+        }
+      } else if (!usePostgres || process.env.DEBUG_EXPOSE_RESET_TOKEN) {
+        // Sem serviço de e-mail configurado. Para não vazar o token de redefinição em produção,
+        // ele só é devolvido na resposta em modo de desenvolvimento (JSON local) ou se
+        // DEBUG_EXPOSE_RESET_TOKEN estiver explicitamente definido (uso educacional/demonstração).
         resposta.tokenDemo = tokenBruto;
         resposta.mensagem += ' (modo demonstração: token incluído na resposta pois não há serviço de e-mail configurado.)';
       } else {

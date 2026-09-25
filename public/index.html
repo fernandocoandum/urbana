@@ -43,61 +43,89 @@ html,body{height:100%;font-family:var(--font-ui);background:var(--bg);color:var(
 .auth-bg-nebula{
   position:absolute;inset:-10%;width:120%;height:120%;
   background:
-    radial-gradient(ellipse 60% 45% at 25% 30%, rgba(59,90,190,.35) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 78% 68%, rgba(120,60,190,.28) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 45% at 25% 30%, rgba(70,105,210,.45) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 78% 68%, rgba(140,70,210,.36) 0%, transparent 60%),
+    radial-gradient(ellipse 45% 35% at 55% 15%, rgba(90,150,230,.22) 0%, transparent 60%),
     linear-gradient(180deg,#050814 0%,#0a1128 55%,#0d1a3a 100%);
-  animation:auth-nebula-drift 26s ease-in-out infinite alternate;
+  animation:auth-nebula-drift 20s ease-in-out infinite alternate;
 }
 .auth-bg-stars{
   position:absolute;inset:-2px;width:calc(100% + 4px);height:calc(100% + 4px);
   background-image:
-    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,.9) 0, transparent 50%),
-    radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.7) 0, transparent 50%),
-    radial-gradient(1.5px 1.5px at 50% 62%, rgba(255,255,255,.85) 0, transparent 50%),
-    radial-gradient(1px 1px at 28% 78%, rgba(255,255,255,.6) 0, transparent 50%),
-    radial-gradient(1px 1px at 92% 68%, rgba(255,255,255,.7) 0, transparent 50%),
-    radial-gradient(1px 1px at 15% 52%, rgba(255,255,255,.5) 0, transparent 50%),
-    radial-gradient(1.5px 1.5px at 70% 38%, rgba(255,255,255,.8) 0, transparent 50%),
-    radial-gradient(1px 1px at 45% 22%, rgba(255,255,255,.6) 0, transparent 50%),
-    radial-gradient(1px 1px at 62% 85%, rgba(255,255,255,.55) 0, transparent 50%),
-    radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.5) 0, transparent 50%);
-  animation:auth-stars-drift 50s linear infinite, auth-twinkle 5s ease-in-out infinite;
+    radial-gradient(1.5px 1.5px at 10% 20%, rgba(255,255,255,.95) 0, transparent 50%),
+    radial-gradient(1px 1px at 80% 12%, rgba(255,255,255,.8) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 50% 62%, rgba(255,255,255,.9) 0, transparent 50%),
+    radial-gradient(1px 1px at 28% 78%, rgba(255,255,255,.75) 0, transparent 50%),
+    radial-gradient(1px 1px at 92% 68%, rgba(255,255,255,.8) 0, transparent 50%),
+    radial-gradient(1px 1px at 15% 52%, rgba(255,255,255,.65) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 70% 38%, rgba(255,255,255,.9) 0, transparent 50%),
+    radial-gradient(1px 1px at 45% 22%, rgba(255,255,255,.75) 0, transparent 50%),
+    radial-gradient(1px 1px at 62% 85%, rgba(255,255,255,.7) 0, transparent 50%),
+    radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.65) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 38% 44%, rgba(255,255,255,.85) 0, transparent 50%),
+    radial-gradient(1px 1px at 66% 8%, rgba(255,255,255,.7) 0, transparent 50%),
+    radial-gradient(1px 1px at 95% 30%, rgba(255,255,255,.6) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 22% 95%, rgba(255,255,255,.8) 0, transparent 50%),
+    radial-gradient(1px 1px at 82% 92%, rgba(255,255,255,.65) 0, transparent 50%),
+    radial-gradient(1px 1px at 8% 65%, rgba(255,255,255,.7) 0, transparent 50%);
+  animation:auth-stars-drift 45s linear infinite, auth-twinkle 3.5s ease-in-out infinite;
 }
 .auth-bg-stars-2{
   background-image:
-    radial-gradient(1px 1px at 35% 8%, rgba(255,255,255,.55) 0, transparent 50%),
-    radial-gradient(1px 1px at 58% 30%, rgba(255,255,255,.4) 0, transparent 50%),
-    radial-gradient(1px 1px at 88% 45%, rgba(255,255,255,.5) 0, transparent 50%),
-    radial-gradient(1px 1px at 20% 65%, rgba(255,255,255,.35) 0, transparent 50%),
-    radial-gradient(1px 1px at 74% 90%, rgba(255,255,255,.45) 0, transparent 50%),
-    radial-gradient(1px 1px at 4% 40%, rgba(255,255,255,.4) 0, transparent 50%);
-  animation:auth-stars-drift-2 80s linear infinite, auth-twinkle 7s ease-in-out 1.5s infinite;
-  opacity:.8;
+    radial-gradient(1px 1px at 35% 8%, rgba(255,255,255,.7) 0, transparent 50%),
+    radial-gradient(1px 1px at 58% 30%, rgba(255,255,255,.55) 0, transparent 50%),
+    radial-gradient(1px 1px at 88% 45%, rgba(255,255,255,.65) 0, transparent 50%),
+    radial-gradient(1px 1px at 20% 65%, rgba(255,255,255,.5) 0, transparent 50%),
+    radial-gradient(1px 1px at 74% 90%, rgba(255,255,255,.6) 0, transparent 50%),
+    radial-gradient(1px 1px at 4% 40%, rgba(255,255,255,.55) 0, transparent 50%),
+    radial-gradient(1.5px 1.5px at 48% 52%, rgba(255,255,255,.6) 0, transparent 50%),
+    radial-gradient(1px 1px at 13% 12%, rgba(255,255,255,.5) 0, transparent 50%),
+    radial-gradient(1px 1px at 68% 68%, rgba(255,255,255,.55) 0, transparent 50%),
+    radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,.5) 0, transparent 50%);
+  animation:auth-stars-drift-2 65s linear infinite, auth-twinkle 4.5s ease-in-out 1.2s infinite;
+  opacity:.9;
 }
 .auth-bg-shooting{
   position:absolute;top:14%;left:-10%;width:2px;height:2px;border-radius:50%;
-  background:#fff;box-shadow:0 0 6px 1px rgba(255,255,255,.9);
-  animation:auth-shooting-star 9s linear infinite;
-  animation-delay:3s;
+  background:#fff;box-shadow:0 0 8px 2px rgba(255,255,255,1);
+  animation:auth-shooting-star 4.5s linear infinite;
+  animation-delay:1s;
 }
 .auth-bg-shooting::before{
-  content:'';position:absolute;top:50%;right:0;width:90px;height:1px;
-  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.8));
+  content:'';position:absolute;top:50%;right:0;width:110px;height:1.5px;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.95));
   transform:translateY(-50%);
 }
-@keyframes auth-nebula-drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-3%,2%) scale(1.06)}}
+.auth-bg-shooting-2{
+  position:absolute;top:58%;left:110%;width:2px;height:2px;border-radius:50%;
+  background:#fff;box-shadow:0 0 7px 2px rgba(255,255,255,.9);
+  animation:auth-shooting-star-2 6s linear infinite;
+  animation-delay:3.4s;
+}
+.auth-bg-shooting-2::before{
+  content:'';position:absolute;top:50%;left:0;width:80px;height:1.5px;
+  background:linear-gradient(270deg, rgba(255,255,255,0), rgba(255,255,255,.85));
+  transform:translateY(-50%);
+}
+@keyframes auth-nebula-drift{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-3%,2%) scale(1.08)}}
 @keyframes auth-stars-drift{0%{transform:translate(0,0)}100%{transform:translate(-1.5%,-1%)}}
 @keyframes auth-stars-drift-2{0%{transform:translate(0,0)}100%{transform:translate(1.2%,-1.6%)}}
-@keyframes auth-twinkle{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes auth-twinkle{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes auth-shooting-star{
   0%{transform:translate(0,0) rotate(18deg);opacity:0}
   2%{opacity:1}
-  10%{transform:translate(48vw,26vh) rotate(18deg);opacity:0}
+  16%{transform:translate(58vw,30vh) rotate(18deg);opacity:0}
+  100%{opacity:0}
+}
+@keyframes auth-shooting-star-2{
+  0%{transform:translate(0,0) rotate(200deg);opacity:0}
+  3%{opacity:1}
+  20%{transform:translate(-62vw,-34vh) rotate(200deg);opacity:0}
   100%{opacity:0}
 }
 @media (prefers-reduced-motion: reduce){
-  .auth-bg-nebula,.auth-bg-stars,.auth-bg-stars-2,.auth-bg-shooting{animation:none}
-  .auth-bg-shooting{display:none}
+  .auth-bg-nebula,.auth-bg-stars,.auth-bg-stars-2,.auth-bg-shooting,.auth-bg-shooting-2{animation:none}
+  .auth-bg-shooting,.auth-bg-shooting-2{display:none}
 }
 .auth-scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 38%,rgba(10,14,30,.1) 0%,rgba(4,8,22,.4) 55%,rgba(2,4,14,.68) 100%)}
 .auth-shell{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:320px;padding:20px}
@@ -492,6 +520,58 @@ tbody td{padding:13px 16px;font-size:13.5px;color:var(--slate-700)}
 @media (prefers-reduced-motion: reduce){.sound-toggle-btn{transition-duration:.01ms!important}}
 @media (max-width:640px){.sound-toggle-btn{bottom:74px;right:16px;width:36px;height:36px}}
 
+/* ===== Urbaninha: assistente de suporte "fake" (respostas por palavra-chave, sem IA real) ===== */
+.urbaninha-launcher{position:fixed;right:24px;bottom:140px;width:56px;height:56px;border-radius:50%;background:linear-gradient(145deg,var(--blue-400),var(--blue-700));display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 26px rgba(37,99,235,.45),inset 0 1px 0 rgba(255,255,255,.3);z-index:9997;animation:urbaninha-float 3s ease-in-out infinite;transition:transform .2s ease}
+.urbaninha-launcher:hover{transform:scale(1.07)}
+.urbaninha-launcher:active{transform:scale(.93)}
+.urbaninha-launcher-pulse{position:absolute;inset:0;border-radius:50%;background:rgba(37,99,235,.55);animation:urbaninha-pulse 2.4s ease-out infinite}
+.urbaninha-launcher-icon,.urbaninha-launcher-close{position:relative;width:26px;height:26px;color:#fff;transition:opacity .2s ease,transform .2s ease}
+.urbaninha-launcher-close{position:absolute;opacity:0;transform:scale(.6) rotate(-45deg)}
+.urbaninha-launcher.open .urbaninha-launcher-icon{opacity:0;transform:scale(.6) rotate(45deg)}
+.urbaninha-launcher.open .urbaninha-launcher-close{opacity:1;transform:scale(1) rotate(0)}
+.urbaninha-launcher.open .urbaninha-launcher-pulse{display:none}
+@keyframes urbaninha-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes urbaninha-pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(1.7);opacity:0}}
+
+.urbaninha-panel{position:fixed;right:24px;bottom:206px;width:328px;max-width:calc(100vw - 32px);height:440px;max-height:calc(100vh - 250px);background:#fff;border-radius:20px;box-shadow:0 20px 50px rgba(15,23,42,.3);display:flex;flex-direction:column;overflow:hidden;z-index:9997;transform:translateY(16px) scale(.96);opacity:0;pointer-events:none;transition:opacity .25s cubic-bezier(.22,1,.36,1),transform .3s cubic-bezier(.22,1,.36,1)}
+.urbaninha-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.urbaninha-header{display:flex;align-items:center;gap:10px;padding:14px;background:linear-gradient(135deg,var(--blue-600),var(--blue-800));color:#fff;flex-shrink:0}
+.urbaninha-avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:18px;animation:urbaninha-wobble 2.6s ease-in-out infinite;flex-shrink:0}
+@keyframes urbaninha-wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.urbaninha-header-text{display:flex;flex-direction:column;line-height:1.3;flex:1;min-width:0}
+.urbaninha-header-text strong{font-family:var(--font-display);font-size:14px}
+.urbaninha-status{font-size:10.5px;opacity:.85;display:flex;align-items:center;gap:5px}
+.urbaninha-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:urbaninha-dot-pulse 1.8s infinite}
+@keyframes urbaninha-dot-pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}70%{box-shadow:0 0 0 5px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.urbaninha-close-btn{background:none;border:none;color:#fff;font-size:14px;cursor:pointer;opacity:.85;padding:4px;flex-shrink:0}
+.urbaninha-close-btn:hover{opacity:1}
+.urbaninha-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:var(--slate-50)}
+.urbaninha-msg{max-width:82%;padding:8px 12px;border-radius:14px;font-size:12.5px;line-height:1.5;animation:urbaninha-msg-in .25s cubic-bezier(.22,1,.36,1) both}
+@keyframes urbaninha-msg-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.urbaninha-msg.bot{align-self:flex-start;background:#fff;border:1px solid var(--border);color:var(--slate-700);border-bottom-left-radius:4px}
+.urbaninha-msg.user{align-self:flex-end;background:var(--blue-600);color:#fff;border-bottom-right-radius:4px}
+.urbaninha-typing{align-self:flex-start;display:flex;gap:4px;padding:10px 12px;background:#fff;border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px}
+.urbaninha-typing span{width:6px;height:6px;border-radius:50%;background:var(--slate-400);animation:urbaninha-typing-bounce 1.1s infinite;display:inline-block}
+.urbaninha-typing span:nth-child(2){animation-delay:.15s}
+.urbaninha-typing span:nth-child(3){animation-delay:.3s}
+@keyframes urbaninha-typing-bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.urbaninha-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px;background:var(--slate-50);flex-shrink:0}
+.urbaninha-chip{border:1px solid var(--blue-200);background:var(--blue-50);color:var(--blue-700);font-size:11px;padding:5px 10px;border-radius:100px;cursor:pointer;white-space:nowrap;transition:background .15s ease;font-family:var(--font-ui)}
+.urbaninha-chip:hover{background:var(--blue-100)}
+.urbaninha-input-row{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);flex-shrink:0;background:#fff}
+.urbaninha-input{flex:1;border:1px solid var(--border);border-radius:100px;padding:9px 14px;font-size:12.5px;font-family:var(--font-ui);outline:none;transition:border-color .2s ease;min-width:0}
+.urbaninha-input:focus{border-color:var(--blue-500)}
+.urbaninha-send{width:34px;height:34px;border-radius:50%;background:var(--blue-600);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s ease,transform .1s ease}
+.urbaninha-send:hover{background:var(--blue-700)}
+.urbaninha-send:active{transform:scale(.92)}
+@media (max-width:640px){
+  .urbaninha-launcher{right:16px;bottom:126px;width:50px;height:50px}
+  .urbaninha-panel{right:10px;left:10px;width:auto;bottom:184px;max-height:calc(100vh - 230px)}
+}
+@media (prefers-reduced-motion: reduce){
+  .urbaninha-launcher,.urbaninha-launcher-pulse,.urbaninha-avatar,.urbaninha-dot,.urbaninha-msg,.urbaninha-typing span{animation:none!important}
+}
+
 .termos-modal{display:none;position:fixed;inset:0;z-index:5000;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,20,.72);backdrop-filter:blur(6px)}
 .termos-modal.show{display:flex}
 .termos-card{width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;background:#fff;border-radius:22px;box-shadow:0 30px 70px rgba(0,0,0,.4);overflow:hidden;animation:authCardIn .4s cubic-bezier(.22,1,.36,1) both}
@@ -693,6 +773,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       <div class="auth-bg-stars"></div>
       <div class="auth-bg-stars auth-bg-stars-2"></div>
       <div class="auth-bg-shooting"></div>
+      <div class="auth-bg-shooting-2"></div>
     </div>
     <div class="auth-scrim"></div>
 
@@ -726,7 +807,7 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
               <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M10 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6v-2H5V5h5V3zm4 5-3-3v2H7v2h4v2l3-3z"/></svg>
               Entrar no sistema
             </button>
-            <button type="button" class="auth-link-btn" onclick="abrirRecuperarSenha()" style="background:none;border:none;color:var(--blue-600);font-size:12.5px;margin-top:12px;cursor:pointer;text-decoration:underline;padding:4px">Esqueceu sua senha?</button>
+            <button type="button" class="auth-link-btn" onclick="abrirRecuperarSenha()" style="display:block;width:100%;text-align:center;background:none;border:none;color:#93c5fd;font-size:12.5px;margin-top:12px;cursor:pointer;text-decoration:underline;padding:4px">Esqueceu sua senha?</button>
           </div>
 
                     <div id="form-cadastro" class="auth-panel">
@@ -1182,6 +1263,29 @@ html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 </div>
 <div class="toast" id="toast"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span></div>
 <button class="sound-toggle-btn" id="sound-toggle-btn" onclick="Sound.toggle()" title="Desativar sons" aria-label="Ativar ou desativar sons"></button>
+
+<!-- Urbaninha: assistente de suporte "fake" (respostas prontas por palavra-chave, sem IA real por trás) -->
+<div id="urbaninha-launcher" class="urbaninha-launcher" onclick="toggleUrbaninha()" role="button" aria-label="Abrir assistente de suporte Urbaninha" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleUrbaninha();}">
+  <span class="urbaninha-launcher-pulse"></span>
+  <svg viewBox="0 0 24 24" fill="none" class="urbaninha-launcher-icon"><path d="M12 3c-4.97 0-9 3.58-9 8 0 2.39 1.15 4.53 3 6.02V21l3.2-1.83c.9.21 1.84.33 2.8.33 4.97 0 9-3.58 9-8s-4.03-8-9-8Z" fill="currentColor"/><circle cx="8.5" cy="11" r="1.15" fill="#fff"/><circle cx="12" cy="11" r="1.15" fill="#fff"/><circle cx="15.5" cy="11" r="1.15" fill="#fff"/></svg>
+  <svg viewBox="0 0 24 24" fill="none" class="urbaninha-launcher-close"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+</div>
+<div id="urbaninha-panel" class="urbaninha-panel" role="dialog" aria-label="Chat de suporte Urbaninha" aria-hidden="true">
+  <div class="urbaninha-header">
+    <div class="urbaninha-avatar">🤖</div>
+    <div class="urbaninha-header-text">
+      <strong>Urbaninha</strong>
+      <span class="urbaninha-status"><span class="urbaninha-dot"></span> assistente virtual</span>
+    </div>
+    <button type="button" class="urbaninha-close-btn" onclick="toggleUrbaninha(false)" aria-label="Fechar chat">✕</button>
+  </div>
+  <div id="urbaninha-messages" class="urbaninha-messages"></div>
+  <div id="urbaninha-suggestions" class="urbaninha-suggestions"></div>
+  <form class="urbaninha-input-row" onsubmit="return enviarMensagemUrbaninha(event)">
+    <input id="urbaninha-input" class="urbaninha-input" type="text" placeholder="Digite sua dúvida..." autocomplete="off" maxlength="240">
+    <button type="submit" class="urbaninha-send" aria-label="Enviar"><svg viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M2 10l15-7-6 16-2.5-6.5L2 10Z" fill="currentColor"/></svg></button>
+  </form>
+</div>
 
 <script>
 const API = '';
@@ -2718,8 +2822,113 @@ document.addEventListener('keydown', e => {
   const senhaModal = document.getElementById('senha-modal');
   if (perfilModal && perfilModal.classList.contains('show')) fecharPerfilPublico();
   else if (senhaModal && senhaModal.classList.contains('show')) fecharModalSenha();
+  else if (urbaninhaAberta) toggleUrbaninha(false);
   else closeSidebar();
 });
+
+/* ================== Urbaninha: assistente de suporte "fake" ==================
+   Um widget de chat simples, só no front-end: as respostas vêm de um mapeamento de
+   palavras-chave para mensagens prontas — NÃO há nenhuma IA real por trás. A ideia é
+   dar suporte rápido para as dúvidas mais comuns sem depender de nenhum serviço externo. */
+const URBANINHA_REGRAS = [
+  { padrao: /(oi|ol[áa]|bom dia|boa tarde|boa noite|hey|eae|e a[ií])/i,
+    respostas: ['Oi! 👋 Eu sou a Urbaninha, assistente de suporte por aqui. Posso ajudar com dúvidas sobre como registrar uma ocorrência, acompanhar o status, recuperar sua senha e mais. O que você precisa?'] },
+  { padrao: /(registr|abrir|cria[r]?|nova ocorr[êe]ncia|reportar|denunciar)/i,
+    respostas: ['Para registrar uma ocorrência: faça login, clique em "Nova Ocorrência", escolha a categoria (iluminação, buraco na via, etc.), informe o endereço e, se quiser, anexe fotos. Depois é só acompanhar o andamento em "Minhas Ocorrências"! 📍'] },
+  { padrao: /(senha|esque[cç]i|recuper|login|entrar|acesso)/i,
+    respostas: ['Esqueceu sua senha? Na tela de login, clique em "Esqueceu sua senha?" e informe seu e-mail — você vai receber um link para criar uma nova senha. Se não chegar em alguns minutos, dá uma olhada na caixa de spam! 📧'] },
+  { padrao: /(status|andamento|prazo|quanto tempo|situa[çc][ãa]o|demora)/i,
+    respostas: ['Dá para acompanhar o status de cada ocorrência (Recebida, Em análise, Encaminhada, Em atendimento ou Resolvida) em "Minhas Ocorrências" — lá aparece o histórico completo e, quando informado, o prazo estimado da equipe responsável. ⏳'] },
+  { padrao: /(reabr|resolveu errado|n[ãa]o foi resolvid|voltou o problema|de novo)/i,
+    respostas: ['Se um problema marcado como "resolvido" voltar a acontecer, abra a ocorrência e use a opção de pedir reabertura, explicando o que ainda está errado. A equipe é notificada automaticamente. 🔁'] },
+  { padrao: /(foto|imagem|anexo|upload)/i,
+    respostas: ['Dá para anexar fotos (JPEG, PNG, WEBP ou GIF, até 8MB) ao registrar ou responder uma ocorrência — isso ajuda bastante a equipe a entender o problema! 📷'] },
+  { padrao: /(mensage|responder|conversa|contato|falar com|prefeitura)/i,
+    respostas: ['Dentro de cada ocorrência tem um espaço de mensagens para conversar diretamente com a prefeitura sobre aquele caso específico. É só abrir a ocorrência e escrever por lá. 💬'] },
+  { padrao: /(obrigad|valeu|show|ajudou|de nada|beleza)/i,
+    respostas: ['Disponha! 😊 Qualquer outra dúvida, é só chamar.'] },
+  { padrao: /(humano|pessoa de verdade|atendente real|voc[êe] [ée] rob[oô]|bot mesmo|inteligencia artificial|intelig[êe]ncia artificial)/i,
+    respostas: ['Hehe, confesso: sou só uma assistente de respostas prontas — nada de inteligência artificial de verdade por trás! Para falar com alguém da equipe, use o espaço de mensagens dentro da ocorrência. 🤖'] },
+];
+const URBANINHA_FALLBACK = ['Hmm, ainda não tenho uma resposta pronta pra isso 😅 Tenta perguntar sobre: registrar ocorrência, status, senha, fotos ou mensagens.'];
+const URBANINHA_SUGESTOES = ['Como registro uma ocorrência?', 'Esqueci minha senha', 'Como vejo o status?', 'Posso anexar fotos?'];
+
+let urbaninhaAberta = false;
+let urbaninhaIniciada = false;
+
+function toggleUrbaninha(forcar) {
+  const painel = document.getElementById('urbaninha-panel');
+  const lanc = document.getElementById('urbaninha-launcher');
+  if (!painel || !lanc) return;
+  urbaninhaAberta = typeof forcar === 'boolean' ? forcar : !urbaninhaAberta;
+  painel.classList.toggle('open', urbaninhaAberta);
+  painel.setAttribute('aria-hidden', String(!urbaninhaAberta));
+  lanc.classList.toggle('open', urbaninhaAberta);
+  if (urbaninhaAberta) {
+    if (!urbaninhaIniciada) {
+      urbaninhaIniciada = true;
+      renderSugestoesUrbaninha();
+      mostrarDigitandoUrbaninha(() => {
+        adicionarMensagemUrbaninha('bot', 'Oi! 👋 Eu sou a Urbaninha, assistente de suporte do Urbana. Escolhe um tópico abaixo ou digita sua pergunta que eu tento ajudar!');
+      });
+    }
+    setTimeout(() => document.getElementById('urbaninha-input')?.focus(), 320);
+  }
+}
+
+function adicionarMensagemUrbaninha(de, texto) {
+  const box = document.getElementById('urbaninha-messages');
+  if (!box) return;
+  const div = document.createElement('div');
+  div.className = 'urbaninha-msg ' + (de === 'user' ? 'user' : 'bot');
+  div.textContent = texto;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function mostrarDigitandoUrbaninha(callback) {
+  const box = document.getElementById('urbaninha-messages');
+  if (!box) return callback();
+  const typing = document.createElement('div');
+  typing.className = 'urbaninha-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+  const atraso = 500 + Math.random() * 500;
+  setTimeout(() => { typing.remove(); callback(); }, atraso);
+}
+
+function renderSugestoesUrbaninha() {
+  const box = document.getElementById('urbaninha-suggestions');
+  if (!box) return;
+  box.innerHTML = '';
+  URBANINHA_SUGESTOES.forEach(s => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'urbaninha-chip';
+    btn.textContent = s;
+    btn.addEventListener('click', () => processarMensagemUrbaninha(s));
+    box.appendChild(btn);
+  });
+}
+
+function enviarMensagemUrbaninha(ev) {
+  ev.preventDefault();
+  const input = document.getElementById('urbaninha-input');
+  const texto = input.value.trim();
+  if (!texto) return false;
+  input.value = '';
+  processarMensagemUrbaninha(texto);
+  return false;
+}
+
+function processarMensagemUrbaninha(texto) {
+  adicionarMensagemUrbaninha('user', texto);
+  const regra = URBANINHA_REGRAS.find(r => r.padrao.test(texto));
+  const opcoes = regra ? regra.respostas : URBANINHA_FALLBACK;
+  const resposta = opcoes[Math.floor(Math.random() * opcoes.length)];
+  mostrarDigitandoUrbaninha(() => adicionarMensagemUrbaninha('bot', resposta));
+}
 </script>
 </body>
 </html>
