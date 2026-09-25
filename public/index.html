@@ -1017,17 +1017,14 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;text-renderin
               <label class="auth-label" for="cad-senha">Senha (mínimo 6 caracteres)</label>
               <input id="cad-senha" class="auth-input" type="password" placeholder="••••••••" autocomplete="new-password">
             </div>
-            <div class="auth-form-group">
-              <label class="auth-label" for="cad-bairro">Bairro</label>
-              <select id="cad-bairro" class="auth-input">
-                <option value="">Selecione seu bairro</option>
-                <option>Centro</option><option>Pinheiral</option><option>Baixo Pinheiral</option><option>São Maurício</option><option>Rio Glória</option><option>Outro</option>
-              </select>
-            </div>
             <button class="auth-btn" id="btn-cad" onclick="doCadastro()">
               <svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M8 1a1 1 0 0 1 1 1v5h5a1 1 0 0 1 0 2H9v5a1 1 0 0 1-2 0V9H2a1 1 0 0 1 0-2h5V2a1 1 0 0 1 1-1z"/></svg>
               Criar minha conta
             </button>
+            <div id="google-cad-wrap" class="google-login-wrap" style="display:none">
+              <div class="google-divider"><span>ou</span></div>
+              <div id="google-btn-cad" class="google-btn-slot"></div>
+            </div>
           </div>
         </div>
         </div>
@@ -2199,7 +2196,7 @@ async function doCadastro() {
       nome: document.getElementById('cad-nome').value.trim(),
       email: document.getElementById('cad-email').value.trim(),
       senha,
-      bairro: document.getElementById('cad-bairro').value
+      bairro: ''
     });
     toast('Conta criada! Faça login.');
     authTab('login');
@@ -2299,7 +2296,14 @@ async function iniciarLoginGoogle() {
     const wrap = document.getElementById('google-login-wrap');
     if (!slot || !wrap) return;
     wrap.style.display = 'block';
-    google.accounts.id.renderButton(slot, { theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with', locale: 'pt-BR', width: Math.min(360, Math.max(220, slot.offsetWidth || 300)) });
+    const largura = Math.min(360, Math.max(220, slot.offsetWidth || 300));
+    google.accounts.id.renderButton(slot, { theme: 'filled_black', size: 'large', shape: 'pill', text: 'continue_with', locale: 'pt-BR', width: largura });
+    const slotCad = document.getElementById('google-btn-cad');
+    const wrapCad = document.getElementById('google-cad-wrap');
+    if (slotCad && wrapCad) {
+      wrapCad.style.display = 'block';
+      google.accounts.id.renderButton(slotCad, { theme: 'filled_black', size: 'large', shape: 'pill', text: 'signup_with', locale: 'pt-BR', width: largura });
+    }
   } catch (e) {
     googleLoginIniciado = false;
   }
