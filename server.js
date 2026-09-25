@@ -376,9 +376,15 @@ function htmlEmailRecuperacao(link) {
 let gmailTransporter = null;
 function obterTransportadorGmail() {
   if (!gmailTransporter) {
+    // O Google mostra a senha de app com espaços (ex.: "abcd efgh ijkl mnop") só para
+    // facilitar a leitura — a credencial real são as 16 letras sem espaço nenhum. Removemos
+    // qualquer espaço aqui para não falhar silenciosamente se alguém colar com espaços na
+    // variável de ambiente.
+    const gmailUser = (process.env.GMAIL_USER || '').trim();
+    const gmailPass = (process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '');
     gmailTransporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
+      auth: { user: gmailUser, pass: gmailPass },
       // Timeouts curtos: se o SMTP do Gmail ficar inacessível (rede, credencial revogada etc.),
       // falha rápido e cai no fallback em vez de travar a requisição esperando indefinidamente.
       connectionTimeout: 10000,
