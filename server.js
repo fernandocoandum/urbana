@@ -1492,12 +1492,18 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-// O guard `require.main === module` deixa este arquivo exigível (`require('./server')`) sem
-// efeito colateral de subir servidor/DB — é isso que permite os testes automatizados (Fase 3)
-// importarem as funções puras abaixo (hashPassword, validações, etc.) e também instanciar o
-// servidor sob demanda em testes de integração, sem duplicar a lógica de boot em outro arquivo.
-// Rodando via `node server.js` (ou `npm start`) o comportamento é idêntico a antes.
-if (require.main === module) {
+// IMPORTANTE: a Vercel identifica um "Node.js server" varrendo o arquivo em busca da CHAMADA a
+// server.listen() acontecendo durante o carregamento do módulo — ela importa este arquivo com o
+// próprio runtime dela (não roda `node server.js` como processo principal), então `require.main
+// === module` NUNCA é verdadeiro lá dentro. Uma versão anterior deste arquivo usava esse guard
+// pra evitar o efeito colateral de subir servidor/DB quando os testes (Fase 3) fazem
+// `require('./server')` — só que isso também escondia o listen() da Vercel e quebrava o deploy
+// (erro 500 FUNCTION_INVOCATION_FAILED: a função nunca ficava escutando em porta nenhuma pra
+// receber o tráfego roteado). A checagem certa é por NODE_ENV: o Vitest define NODE_ENV=test
+// sozinho (é assim que tests/api.test.js consegue chamar initDB()/server.listen() na mão, numa
+// porta própria, sem colidir com este bloco) — em produção (Vercel) e no `node server.js` local
+// essa variável não é "test", então o listen() roda normalmente, exatamente como a Vercel espera.
+if (process.env.NODE_ENV !== 'test') {
   initDB().then(() => {
     server.listen(PORT, '0.0.0.0', () => {
       console.log('');
