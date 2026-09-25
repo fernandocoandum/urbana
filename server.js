@@ -1505,14 +1505,28 @@ const server = http.createServer(async (req, res) => {
 // essa variável não é "test", então o listen() roda normalmente, exatamente como a Vercel espera.
 if (process.env.NODE_ENV !== 'test') {
   initDB().then(() => {
-    server.listen(PORT, '0.0.0.0', () => {
-      console.log('');
-      console.log('Servidor Urbana rodando na porta ' + PORT);
-      console.log(`http://localhost:${PORT}`);
-      console.log('');
-      console.log('Login admin: admin@prefeitura.gov.br / admin');
-      console.log('');
-    });
+    // Defesa: os logs de produção mostraram um "ERR_SERVER_ALREADY_LISTEN" não tratado — algo no
+    // runtime da Vercel para detectar/rotear um "Node.js server" faz esse trecho do módulo
+    // executar mais de uma vez sobre o MESMO objeto `server` dentro do mesmo processo. `.listening`
+    // é a forma canônica do próprio Node de saber se o servidor já está de pé; o try/catch é só
+    // uma segunda rede de segurança caso a corrida aconteça entre a checagem e a chamada.
+    if (server.listening) return;
+    try {
+      server.listen(PORT, '0.0.0.0', () => {
+        console.log('');
+        console.log('Servidor Urbana rodando na porta ' + PORT);
+        console.log(`http://localhost:${PORT}`);
+        console.log('');
+        console.log('Login admin: admin@prefeitura.gov.br / admin');
+        console.log('');
+      });
+    } catch (e) {
+      if (!e || e.code !== 'ERR_SERVER_ALREADY_LISTEN') throw e;
+    }
+  }).catch(e => {
+    // Sem isso, qualquer falha aqui (inclusive as duas de cima, se algum caso escapar) vira uma
+    // "Unhandled Rejection" solta no log da Vercel em vez de uma mensagem clara.
+    console.error('Erro inesperado ao inicializar o servidor Urbana:', e && e.message);
   });
 }
 

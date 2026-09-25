@@ -10,14 +10,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- `defer` nos três scripts de CDN abaixo: sem isso, o navegador para de interpretar a página
+     inteira pra baixar e executar cada um antes de desenhar qualquer coisa na tela — com 3 scripts
+     (antes só tinha o Leaflet) isso deixava o primeiro carregamento visivelmente lento. Com defer,
+     o download acontece em paralelo enquanto o resto da página já é montado, e a execução deles só
+     roda depois que o HTML terminou de ser interpretado (mas sempre antes do DOMContentLoaded) —
+     por isso a checagem de `window.Motion`/`window.confetti` mais abaixo roda dentro de um listener
+     de DOMContentLoaded, e não direto no meio do <script> principal (senão ela rodaria cedo demais
+     e sempre veria as libs como "não carregadas"). -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <!-- Motion One (física de mola pra entrada dos modais de termos/senha) e canvas-confetti (comemoração
      pontual ao registrar/resolver uma ocorrência). Ambas são só um progressive enhancement: se a rede
      do usuário bloquear/atrasar a CDN, `window.Motion`/`window.confetti` simplesmente não existem e o
      app cai de volta pro comportamento 100% funcional de antes (ver checagem `motionEnabled`/
      `confettiEnabled` mais abaixo) — o mesmo princípio de fallback que o Leaflet já dependia aqui. -->
-<script src="https://unpkg.com/motion@11/dist/motion.js"></script>
-<script src="https://unpkg.com/canvas-confetti@1/dist/confetti.browser.js"></script>
+<script src="https://unpkg.com/motion@11/dist/motion.js" defer></script>
+<script src="https://unpkg.com/canvas-confetti@1/dist/confetti.browser.js" defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1380,41 +1388,57 @@ let notifPollInterval = null;
 let notifUltimaContagem = 0;
 
 /* ---- MotionFX: mola física (Motion One) pra entrada dos modais de termos/senha, com fallback
-   automático pra CSS puro. `motionEnabled` só fica true se a lib realmente carregou (a tag
-   <script> no <head> pode falhar silenciosamente por rede/ad-blocker — nesse caso window.Motion
-   nem existe) e o usuário não pediu prefers-reduced-motion. Reaproveitar essa mesma checagem pro
-   "reduced motion" evita duplicar a lógica de acessibilidade que o resto do app já respeita. ---- */
-const motionEnabled = !!(window.Motion && window.Motion.animate) &&
-  !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (motionEnabled) document.documentElement.classList.add('motion-ready');
+   automático pra CSS puro. Os três <script> de CDN (Leaflet, Motion, confetti) usam `defer` pra
+   não travar o primeiro desenho da página — o efeito colateral é que eles só terminam de rodar
+   depois que o HTML inteiro foi interpretado, um instante antes do evento DOMContentLoaded. Por
+   isso a detecção abaixo roda dentro desse evento, e não direto aqui: checar `window.Motion` no
+   meio do parsing (como era antes) sempre veria a lib como "não carregada", mesmo com a rede
+   perfeita, porque o script deferido ainda nem tinha executado. `motionEnabled`/`confettiEnabled`
+   ficam declaradas aqui em cima (escopo do <script> inteiro) só pra `celebrar()` e o resto do
+   código conseguirem enxergar o valor definitivo, calculado lá embaixo. ---- */
+let motionEnabled = false;
+let confettiEnabled = false;
 
-if (motionEnabled) {
-  // Um único observer por modal, ligado uma vez no boot: qualquer código que já existia (e que
-  // continua igual) só precisa adicionar a classe `show` como sempre fez — o observer detecta e
-  // toca a entrada com mola no cartão interno. Assim nenhum dos vários pontos que abrem/fecham
-  // esses modais (aceitarTermos, recusarTermos, fecharModalSenha, clique no backdrop, etc.)
-  // precisou ser tocado, e o fechamento continua exatamente como antes (instantâneo).
-  ['termos-modal', 'senha-modal'].forEach(id => {
-    const modal = document.getElementById(id);
-    if (!modal) return;
-    new MutationObserver(() => {
-      if (!modal.classList.contains('show')) return;
-      const card = modal.querySelector('.termos-card, .modal-card-solid');
-      if (!card) return;
-      window.Motion.animate(
-        card,
-        { opacity: [0, 1], transform: ['translateY(18px) scale(.96)', 'translateY(0px) scale(1)'] },
-        { type: 'spring', bounce: 0, duration: .4 }
-      );
-    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
-  });
-}
+window.addEventListener('DOMContentLoaded', () => {
+  // `motionEnabled` só fica true se a lib realmente carregou (a tag <script> pode falhar
+  // silenciosamente por rede/ad-blocker — nesse caso window.Motion nem existe) e o usuário não
+  // pediu prefers-reduced-motion. Reaproveitar essa mesma checagem pro "reduced motion" evita
+  // duplicar a lógica de acessibilidade que o resto do app já respeita.
+  motionEnabled = !!(window.Motion && window.Motion.animate) &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (motionEnabled) document.documentElement.classList.add('motion-ready');
+
+  if (motionEnabled) {
+    // Um único observer por modal, ligado uma vez no boot: qualquer código que já existia (e que
+    // continua igual) só precisa adicionar a classe `show` como sempre fez — o observer detecta e
+    // toca a entrada com mola no cartão interno. Assim nenhum dos vários pontos que abrem/fecham
+    // esses modais (aceitarTermos, recusarTermos, fecharModalSenha, clique no backdrop, etc.)
+    // precisou ser tocado, e o fechamento continua exatamente como antes (instantâneo).
+    ['termos-modal', 'senha-modal'].forEach(id => {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      new MutationObserver(() => {
+        if (!modal.classList.contains('show')) return;
+        const card = modal.querySelector('.termos-card, .modal-card-solid');
+        if (!card) return;
+        window.Motion.animate(
+          card,
+          { opacity: [0, 1], transform: ['translateY(18px) scale(.96)', 'translateY(0px) scale(1)'] },
+          { type: 'spring', bounce: 0, duration: .4 }
+        );
+      }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    });
+  }
+
+  // Confete: mesma lógica de fallback do Motion (ver acima).
+  confettiEnabled = !!window.confetti &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+});
 
 /* ---- Celebrar: confete sutil só em dois momentos de conquista real (ocorrência enviada,
    ocorrência marcada como resolvida) — nunca decorativo, seguindo o mesmo princípio de "utility"
-   do feedback sonoro já existente (Sound). Mesma checagem de rede/reduced-motion do MotionFX. ---- */
-const confettiEnabled = !!window.confetti &&
-  !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   do feedback sonoro já existente (Sound). Só é chamada bem depois do carregamento (em resposta a
+   uma ação do usuário), então `confettiEnabled` já está com o valor definitivo nesse ponto. ---- */
 function celebrar() {
   if (!confettiEnabled) return;
   window.confetti({ particleCount: 90, spread: 72, startVelocity: 38, origin: { y: .6 }, colors: ['#2563eb', '#0ea5e9', '#22c55e', '#f59e0b'] });
