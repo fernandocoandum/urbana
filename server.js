@@ -1041,7 +1041,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   try {
-    if (!dbReady) {
+    if (!dbReady && process.env.DATABASE_URL) { if (!global.__dbInitPromise) global.__dbInitPromise = initDB().finally(() => { global.__dbInitPromise = null; }); await global.__dbInitPromise; } if (!dbReady) {
       return json(res, 503, { erro: 'Serviço temporariamente indisponível (banco de dados fora do ar). Tente novamente em instantes.' });
     }
 
