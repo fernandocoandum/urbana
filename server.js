@@ -1365,10 +1365,14 @@ const server = http.createServer(async (req, res) => {
       // verificado para entregar a qualquer destinatário) > modo de demonstração.
       const temGmail = !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
       const temResend = !!process.env.RESEND_API_KEY;
+      // Log incondicional a cada tentativa — assim dá pra ver nos logs da Vercel exatamente
+      // qual caminho foi tomado (Gmail, Resend ou nenhum configurado), mesmo quando dá certo.
+      console.log(`[recuperar-senha] GMAIL_USER=${process.env.GMAIL_USER ? 'definido' : 'ausente'} GMAIL_APP_PASSWORD=${process.env.GMAIL_APP_PASSWORD ? 'definido' : 'ausente'} RESEND_API_KEY=${process.env.RESEND_API_KEY ? 'definido' : 'ausente'} usePostgres=${usePostgres}`);
       if (temGmail || temResend) {
         try {
           if (temGmail) await enviarEmailRecuperacaoGmail(emailNorm, linkRedefinicao);
           else await enviarEmailRecuperacaoResend(emailNorm, linkRedefinicao);
+          console.log(`[recuperar-senha] E-mail enviado com sucesso via ${temGmail ? 'Gmail' : 'Resend'} para ${emailNorm}`);
         } catch (e) {
           console.error(`Falha ao enviar e-mail de recuperação via ${temGmail ? 'Gmail' : 'Resend'}:`, e.message);
           console.log(`Token de redefinição de senha gerado para ${emailNorm} (falha no envio do e-mail): ${tokenBruto}`);
@@ -1381,6 +1385,7 @@ const server = http.createServer(async (req, res) => {
         // Sem serviço de e-mail configurado. Para não vazar o token de redefinição em produção,
         // ele só é devolvido na resposta em modo de desenvolvimento (JSON local) ou se
         // DEBUG_EXPOSE_RESET_TOKEN estiver explicitamente definido (uso educacional/demonstração).
+        console.log(`[recuperar-senha] Nenhum serviço de e-mail configurado — caiu no modo demonstração (usePostgres=${usePostgres}, DEBUG_EXPOSE_RESET_TOKEN=${!!process.env.DEBUG_EXPOSE_RESET_TOKEN}).`);
         resposta.tokenDemo = tokenBruto;
         resposta.mensagem += ' (modo demonstração: token incluído na resposta pois não há serviço de e-mail configurado.)';
       } else {
