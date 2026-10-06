@@ -1285,6 +1285,11 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 @keyframes tkFall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
 @media (max-width:420px){.tk-head{padding:1.6rem}.tk-content{padding:0 1.4rem 1.6rem}}
 @media (prefers-reduced-motion: reduce){.tk.imprimindo,.tk.imprimindo .tk-icon,.tk.imprimindo .tk-icon svg{animation:none!important}}
+
+/* A animação de entrada das telas desce 6px; em telas com a altura exata da janela isso fazia
+   aparecer e sumir a barra de rolagem, e o conteúdo "pulava" pro lado. Reservar o espaço da barra
+   sempre mantém a largura estável. */
+html{scrollbar-gutter:stable}
 </style>
 </head>
 <body>
