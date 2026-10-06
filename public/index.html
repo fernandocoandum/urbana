@@ -1230,6 +1230,17 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 @keyframes wzOut{to{opacity:0;transform:translateX(calc(var(--dir,1) * -40%))}}
 @media (max-width:560px){.wz-lab{display:none}.wz-step.active .wz-lab{display:inline}}
 @media (prefers-reduced-motion: reduce){.wz-line span,.wz-num,.wz-adot,.wz-check{transition:none}.wz-step.done .wz-check path{animation:none;stroke-dashoffset:0}}
+
+/* Tela de sucesso: protocolo em vidro escuro, legível e copiável */
+.proto-box{position:relative;background:rgba(255,255,255,.05)!important;border:1px solid rgba(147,197,253,.28)!important;color:#fff!important;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:24px;font-weight:700;letter-spacing:.08em;padding:16px 34px 16px 34px;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 4px rgba(59,130,246,.08),0 18px 40px -14px rgba(59,130,246,.45)!important;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);transition:border-color .2s ease,transform .2s ease}
+.proto-box:hover{border-color:rgba(147,197,253,.55)!important;transform:translateY(-1px)}
+.proto-box:focus-visible{outline:2px solid #93c5fd;outline-offset:3px}
+.proto-box::after{content:'Clique para copiar';position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);font:600 11px var(--font-ui);letter-spacing:.02em;color:rgba(255,255,255,.4);white-space:nowrap}
+.proto-box.copiado::after{content:'Copiado ✓';color:#86efac}
+.success-wrap .proto-box{margin-bottom:40px}
+.success-icon{background:rgba(34,197,94,.14)!important;box-shadow:0 0 0 6px rgba(34,197,94,.07),0 0 40px rgba(34,197,94,.25)}
+.success-icon svg{color:#86efac!important}
 </style>
 </head>
 <body>
@@ -1579,7 +1590,7 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
           <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
           <div style="font-family:var(--font-display);font-size:26px;font-weight:700;margin-bottom:8px">Ocorrência registrada!</div>
           <div style="font-size:15px;color:var(--slate-400);margin-bottom:24px">Seu protocolo é:</div>
-          <div class="proto-box" id="proto-gerado">PROT-2026-0000</div>
+          <button type="button" class="proto-box" id="proto-gerado" onclick="copiarProtocolo(this)" title="Clique para copiar">PROT-2026-0000</button>
           <div style="font-size:13px;color:var(--slate-400);max-width:380px;margin-bottom:28px;line-height:1.7">Nossa equipe analisará em até <strong>48 horas</strong>. Acompanhe em "Minhas Ocorrências".</div>
           <div style="display:flex;gap:12px">
             <button class="btn-submit" onclick="moradorNav('lista')">Ver minhas ocorrências</button>
@@ -1883,9 +1894,25 @@ window.addEventListener('DOMContentLoaded', () => {
    ocorrência marcada como resolvida) — nunca decorativo, seguindo o mesmo princípio de "utility"
    do feedback sonoro já existente (Sound). Só é chamada bem depois do carregamento (em resposta a
    uma ação do usuário), então `confettiEnabled` já está com o valor definitivo nesse ponto. ---- */
+// Confete saindo do ícone de sucesso (e não do meio da janela, que fica deslocado por causa do
+// menu lateral). Espera a tela de sucesso aparecer pra medir onde o ícone está.
+function copiarProtocolo(el) {
+  const txt = el.textContent.trim();
+  const ok = () => { el.classList.add('copiado'); setTimeout(() => el.classList.remove('copiado'), 1600); toast('Protocolo copiado!', 'blue'); };
+  if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok).catch(() => {}); else ok();
+}
+
 function celebrar() {
-  if (!confettiEnabled) return;
-  window.confetti({ particleCount: 90, spread: 72, startVelocity: 38, origin: { y: .6 }, colors: ['#2563eb', '#0ea5e9', '#22c55e', '#f59e0b'] });
+  if (!confettiEnabled || !window.confetti) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const ic = document.querySelector('#v-sucesso .success-icon');
+    const r = ic && ic.getBoundingClientRect();
+    const x = r && r.width ? (r.left + r.width / 2) / innerWidth : 0.5;
+    const y = r && r.height ? (r.top + r.height / 2) / innerHeight : 0.4;
+    const cores = ['#ffffff', '#93c5fd', '#3b82f6', '#c4b5fd', '#86efac'];
+    window.confetti({ particleCount: 110, spread: 80, startVelocity: 36, gravity: 0.9, ticks: 220, scalar: 0.9, origin: { x, y }, colors: cores, disableForReducedMotion: true });
+    setTimeout(() => window.confetti({ particleCount: 50, spread: 120, startVelocity: 24, origin: { x, y }, colors: cores, disableForReducedMotion: true }), 180);
+  }));
 }
 
 /* ---- Sound: synthesized UI feedback (Web Audio API, no external files) ---- */
@@ -3767,8 +3794,8 @@ async function enviarOcorrencia() {
     wizardReset();
     ocorrencias = [];
     Sound.play('success');
-    celebrar();
     goView('v-sucesso');
+    celebrar();
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
   } finally {
