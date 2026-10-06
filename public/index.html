@@ -1138,11 +1138,71 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
   background:linear-gradient(100deg,transparent,rgba(59,130,246,.35),transparent);transform:skewX(-20deg);transition:left .9s ease-in-out}
 .btn-submit:hover::after,.btn-new:hover::after,.ab-primary:hover::after,.btn-banner:hover::after,.termos-btn-aceitar:hover::after{left:125%}
 @media (prefers-reduced-motion: reduce){.btn-submit::after,.btn-new::after,.ab-primary::after,.btn-banner::after,.termos-btn-aceitar::after{display:none}}
+
+/* ═══ Leva 2 de elementos animados (Uiverse.io + React Bits, licença MIT) ═══ */
+
+/* 1. BlurText (React Bits): título do topo entra desfocado, palavra por palavra */
+.bt-word{display:inline-block;white-space:pre;animation:btIn .7s cubic-bezier(.22,1,.36,1) both}
+@keyframes btIn{from{opacity:0;filter:blur(10px);transform:translateY(-6px)}to{opacity:1;filter:blur(0);transform:none}}
+
+/* 2. ShinyText (React Bits): reflexo de luz passando pelo nome Urbana */
+.sb-brand,.sb-brand span{background:linear-gradient(110deg,var(--sh-base,rgba(255,255,255,.82)) 40%,#fff 50%,var(--sh-base,rgba(255,255,255,.82)) 60%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;animation:shinyText 4.5s linear infinite}
+.sb-brand span{--sh-base:#7fb4fb}
+@keyframes shinyText{from{background-position:150% 0}to{background-position:-100% 0}}
+
+/* 3. ClickSpark (React Bits): canvas das faíscas */
+#click-spark{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999}
+
+/* 6. Botão "Send" com aviãozinho — From Uiverse.io by adamgiebl (MIT), adaptado */
+.btn-send-fly{display:inline-flex;align-items:center;gap:0;overflow:hidden}
+.btn-send-fly .sf-wrap,.btn-send-fly .sf-plane,.btn-send-fly svg{display:block}
+.btn-send-fly .sf-plane{transform-origin:center;transition:transform .3s ease-in-out}
+.btn-send-fly .sf-label{display:block;margin-left:.4em;transition:transform .3s ease-in-out}
+.btn-send-fly:hover:not(:disabled) .sf-wrap{animation:sfFly .6s ease-in-out infinite alternate}
+.btn-send-fly:hover:not(:disabled) .sf-plane{transform:translateX(1.4em) rotate(45deg) scale(1.1)}
+.btn-send-fly:hover:not(:disabled) .sf-label{transform:translateX(12em)}
+.btn-send-fly.sf-go .sf-plane{transition:transform .4s ease-in;transform:translateX(18em) translateY(-1.5em) rotate(45deg) scale(1.1)!important}
+.btn-send-fly.sf-go .sf-label{transform:translateX(12em)}
+@keyframes sfFly{from{transform:translateY(.1em)}to{transform:translateY(-.1em)}}
+.chat-input-row .btn-send-fly{padding:0 18px;min-width:108px;justify-content:center}
+
+/* 7. Menu hambúrguer que vira X */
+.menu-toggle .burger{position:relative;width:18px;height:14px;display:block}
+.menu-toggle .burger span{position:absolute;left:0;width:100%;height:2px;border-radius:2px;background:#fff;transition:transform .35s cubic-bezier(.68,-.4,.27,1.4),opacity .2s ease,top .35s cubic-bezier(.68,-.4,.27,1.4)}
+.menu-toggle .burger span:nth-child(1){top:0}.menu-toggle .burger span:nth-child(2){top:6px}.menu-toggle .burger span:nth-child(3){top:12px}
+.menu-toggle.open .burger span:nth-child(1){top:6px;transform:rotate(45deg)}
+.menu-toggle.open .burger span:nth-child(2){opacity:0;transform:scaleX(0)}
+.menu-toggle.open .burger span:nth-child(3){top:6px;transform:rotate(-45deg)}
+.menu-toggle{background:rgba(14,18,30,.75)!important;border:1px solid var(--glass-border)!important}
+
+/* 8. Aviso com barra de tempo */
+.toast{overflow:hidden}
+.toast-bar{position:absolute;left:0;bottom:0;height:2px;width:100%;transform-origin:left;background:#86efac;opacity:.85}
+.toast.t-red .toast-bar{background:#fca5a5}.toast.t-blue .toast-bar{background:#93c5fd}
+.toast.show .toast-bar{animation:toastBar 3.5s linear forwards}
+@keyframes toastBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
+/* 9. Partículas do "apoiar" */
+.burst-p{position:fixed;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:99998}
+
+/* 10. Campos com borda brilhante no foco */
+.form-input:focus,.form-select:focus,.form-textarea:focus,.input-search:focus,.filter-sel:focus,.action-sel:focus,.action-ta:focus,.chat-input-row input:focus,.urbaninha-input-row input:focus,.auth-input:focus{
+  border-color:rgba(147,197,253,.55)!important;box-shadow:0 0 0 3px rgba(59,130,246,.14),0 0 22px -4px rgba(59,130,246,.45)!important;animation:inputGlow .45s ease-out}
+@keyframes inputGlow{from{box-shadow:0 0 0 0 rgba(59,130,246,.4),0 0 0 0 rgba(59,130,246,0)}}
+
+/* 5. TiltedCard: transição suave ao voltar */
+.ocorr-card{transition:transform .35s cubic-bezier(.22,1,.36,1),box-shadow .25s ease,border-color .25s ease!important;will-change:transform}
+
+@media (prefers-reduced-motion: reduce){
+  .bt-word,.sb-brand,.sb-brand span,.btn-send-fly .sf-wrap{animation:none!important}
+  .menu-toggle .burger span{transition:none}
+  .toast.show .toast-bar{animation:none}
+}
 </style>
 </head>
 <body>
-<button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" hidden>
-  <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.5 5.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1zm0 4.5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2h-13a1 1 0 0 1-1-1z"/></svg>
+<button id="menu-toggle" class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu" aria-expanded="false" hidden>
+  <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
 </button>
 <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeSidebar()"></div>
 
@@ -1700,7 +1760,7 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 </div>
 
 </div>
-<div class="toast" id="toast"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span></div>
+<div class="toast" id="toast" role="status"><div class="toast-dot green" id="toast-dot"></div><span id="toast-msg">OK</span><div class="toast-bar" id="toast-bar"></div></div>
 <button class="sound-toggle-btn" id="sound-toggle-btn" onclick="Sound.toggle()" title="Desativar sons" aria-label="Ativar ou desativar sons"></button>
 
 <!-- Urbaninha: assistente de suporte "fake" (respostas prontas por palavra-chave, sem IA real por trás) -->
@@ -1872,6 +1932,7 @@ function goView(id) {
     el.style.animation = '';
   }
   if (id === 'v-auth') iniciarTelaLogin();
+  else if (window._blurTopo) window._blurTopo();
   window.scrollTo(0, 0);
   closeSidebar();
   const menuBtn = document.getElementById('menu-toggle');
@@ -1889,17 +1950,24 @@ function toggleSidebar() {
   if (!sidebar) return;
   const isOpen = sidebar.classList.toggle('open');
   if (backdrop) backdrop.classList.toggle('show', isOpen);
+  const mb = document.getElementById('menu-toggle');
+  if (mb) { mb.classList.toggle('open', isOpen); mb.setAttribute('aria-expanded', isOpen); mb.setAttribute('aria-label', isOpen ? 'Fechar menu' : 'Abrir menu'); }
 }
 function closeSidebar() {
   document.querySelectorAll('.sidebar.open').forEach(s => s.classList.remove('open'));
   const backdrop = document.getElementById('sidebar-backdrop');
   if (backdrop) backdrop.classList.remove('show');
+  const mb = document.getElementById('menu-toggle');
+  if (mb) { mb.classList.remove('open'); mb.setAttribute('aria-expanded', 'false'); mb.setAttribute('aria-label', 'Abrir menu'); }
 }
 
 function toast(msg, type = 'green') {
   document.getElementById('toast-msg').textContent = msg;
   document.getElementById('toast-dot').className = 'toast-dot ' + type;
   const t = document.getElementById('toast');
+  t.classList.remove('t-green', 't-red', 't-blue'); t.classList.add('t-' + type);
+  const bar = document.getElementById('toast-bar');
+  if (bar) { bar.style.animation = 'none'; void bar.offsetWidth; bar.style.animation = ''; }
   t.classList.add('show');
   clearTimeout(t._t);
   t._t = setTimeout(() => t.classList.remove('show'), 3500);
@@ -2030,6 +2098,7 @@ async function apoiarNoMapa(id) {
     if (btn) {
       btn.classList.toggle('apoiado', r.apoiado);
       btn.textContent = r.apoiado ? '✓ Você apoia' : 'Eu também tenho esse problema';
+      if (r.apoiado) explodirParticulas(btn);
       const meta = btn.closest('.mapa-popup')?.querySelector('.mapa-popup-meta');
       if (meta) meta.textContent = meta.textContent.replace(/\d+ apoios?/, `${r.total} apoio${r.total === 1 ? '' : 's'}`);
     }
@@ -2437,7 +2506,7 @@ async function loadChat() {
       <div class="chat-messages" id="chat-messages"><div class="empty"><p>Carregando conversas...</p></div></div>
       <div class="chat-input-row">
         <input type="text" id="chat-input" placeholder="Escreva uma mensagem..." maxlength="500" onkeydown="if(event.key==='Enter')enviarChatMsg()">
-        <button onclick="enviarChatMsg()">Enviar</button>
+        <button class="btn-send-fly" onclick="enviarChatMsg()"><span class="sf-wrap"><span class="sf-plane"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg></span></span><span class="sf-label">Enviar</span></button>
       </div>
     </div>`;
   chatLastMsgId = null;
@@ -2659,6 +2728,135 @@ function calcularNivelPerfil(st) {
   document.addEventListener('pointermove', e => { ultimo = e; if (!raf) raf = requestAnimationFrame(aplicar); }, { passive: true });
   document.documentElement.addEventListener('pointerleave', () => { if (atual) { limpar(atual); atual = null; } });
 })();
+
+// ═══ Leva 2 de elementos animados (React Bits em JS puro + Uiverse) ═══
+function reduzMovimento() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function semHover() { return !!(window.matchMedia && matchMedia('(hover: none)').matches); }
+
+// 1. BlurText: reescreve o título em palavras animadas. Observa mudanças de texto (as telas
+// trocam o título via textContent) e reanima ao trocar de tela.
+function blurText(el, forcar) {
+  if (!el || reduzMovimento()) return;
+  const txt = el.textContent;
+  if (!forcar && el._btTxt === txt) return;
+  el._btTxt = txt;
+  el._btOwn = true;
+  el.setAttribute('aria-label', txt);
+  el.innerHTML = '';
+  txt.split(/(\s+)/).forEach((w, i) => {
+    const sp = document.createElement('span');
+    sp.className = 'bt-word'; sp.setAttribute('aria-hidden', 'true');
+    sp.textContent = w;
+    sp.style.animationDelay = (i * 0.05) + 's';
+    el.appendChild(sp);
+  });
+  setTimeout(() => { el._btOwn = false; }, 0);
+}
+(function iniciarBlurText() {
+  if (reduzMovimento()) return;
+  const obs = new MutationObserver(muts => {
+    for (const m of muts) {
+      const el = m.target.nodeType === 1 ? m.target.closest('.topbar-title') : m.target.parentElement?.closest('.topbar-title');
+      if (el && !el._btOwn) blurText(el);
+    }
+  });
+  document.querySelectorAll('.topbar-title').forEach(el => obs.observe(el, { childList: true, characterData: true, subtree: true }));
+  window._blurTopo = () => document.querySelectorAll('.view.active .topbar-title').forEach(el => blurText(el, true));
+})();
+
+// 3. ClickSpark: faíscas saindo do ponto do clique, num canvas fixo por cima de tudo
+(function iniciarClickSpark() {
+  if (reduzMovimento()) return;
+  const cv = document.createElement('canvas'); cv.id = 'click-spark'; cv.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  let sparks = [], raf = null, dpr = 1;
+  const medir = () => { dpr = Math.min(window.devicePixelRatio || 1, 2); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  medir(); addEventListener('resize', medir);
+  const DUR = 420, N = 8, RAIO = 20, TAM = 10;
+  const frame = now => {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    sparks = sparks.filter(sp => {
+      const p = (now - sp.t) / DUR; if (p >= 1) return false;
+      const e = p * (2 - p), d = e * RAIO, len = TAM * (1 - e);
+      ctx.strokeStyle = `rgba(191, 219, 254, ${1 - p})`; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sp.x + d * Math.cos(sp.a), sp.y + d * Math.sin(sp.a));
+      ctx.lineTo(sp.x + (d + len) * Math.cos(sp.a), sp.y + (d + len) * Math.sin(sp.a));
+      ctx.stroke();
+      return true;
+    });
+    raf = sparks.length ? requestAnimationFrame(frame) : null;
+  };
+  document.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || document.getElementById('v-auth')?.classList.contains('active') && e.target.closest('.auth-bg')) return;
+    const t = performance.now();
+    for (let i = 0; i < N; i++) sparks.push({ x: e.clientX, y: e.clientY, a: (2 * Math.PI * i) / N, t });
+    if (!raf) raf = requestAnimationFrame(frame);
+  }, { passive: true });
+})();
+
+// 4. Magnet: botões puxados de leve pelo mouse quando ele chega perto (usa a propriedade
+// "translate", que não briga com os "transform" de hover/animação que já existem)
+(function iniciarMagnet() {
+  if (reduzMovimento() || semHover()) return;
+  const SEL = '.urbaninha-launcher, .btn-new', PAD = 70, FORCA = 4;
+  let raf = null, ultimo = null;
+  const aplicar = () => {
+    raf = null; const e = ultimo; if (!e) return;
+    document.querySelectorAll(SEL).forEach(el => {
+      if (!el.offsetParent && getComputedStyle(el).position !== 'fixed') return;
+      const r = el.getBoundingClientRect();
+      const dentro = e.clientX > r.left - PAD && e.clientX < r.right + PAD && e.clientY > r.top - PAD && e.clientY < r.bottom + PAD;
+      if (dentro) {
+        const dx = (e.clientX - (r.left + r.width / 2)) / FORCA, dy = (e.clientY - (r.top + r.height / 2)) / FORCA;
+        el.style.transition = 'translate .3s ease-out';
+        el.style.translate = `${dx}px ${dy}px`;
+      } else if (el.style.translate) {
+        el.style.transition = 'translate .5s ease-in-out';
+        el.style.translate = '';
+      }
+    });
+  };
+  document.addEventListener('pointermove', e => { ultimo = e; if (!raf) raf = requestAnimationFrame(aplicar); }, { passive: true });
+})();
+
+// 5. TiltedCard: cards de ocorrência inclinam em 3D seguindo o mouse (até 6°)
+(function iniciarTiltCards() {
+  if (reduzMovimento() || semHover()) return;
+  let atual = null, raf = null, ultimo = null;
+  const soltar = el => el.style.removeProperty('transform');
+  const aplicar = () => {
+    raf = null; const e = ultimo; if (!e) return;
+    const card = e.target && e.target.closest ? e.target.closest('.ocorr-card') : null;
+    if (atual && atual !== card) soltar(atual);
+    atual = card; if (!card) return;
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+    card.style.setProperty('transform', `perspective(900px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg) translateY(-3px) scale(1.01)`, 'important');
+  };
+  document.addEventListener('pointermove', e => { ultimo = e; if (!raf) raf = requestAnimationFrame(aplicar); }, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => { if (atual) { soltar(atual); atual = null; } });
+})();
+
+// 9. Explosão de partículas (usada no "apoiar")
+function explodirParticulas(el) {
+  if (!el || reduzMovimento() || !el.animate) return;
+  const r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  const cores = ['#93c5fd', '#60a5fa', '#ffffff', '#c4b5fd', '#86efac'];
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('span');
+    p.className = 'burst-p';
+    p.style.left = (cx - 3.5) + 'px'; p.style.top = (cy - 3.5) + 'px';
+    p.style.background = cores[i % cores.length];
+    document.body.appendChild(p);
+    const ang = (Math.PI * 2 * i) / 14 + Math.random() * 0.4, dist = 30 + Math.random() * 40;
+    p.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+      { transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist}px) scale(0)`, opacity: 0 }
+    ], { duration: 650 + Math.random() * 250, easing: 'cubic-bezier(.22,1,.36,1)' }).onfinish = () => p.remove();
+  }
+}
 
 // ── Tela de login: fundo de partículas + card de vidro com inclinação 3D ──
 // Fundo adaptado do "ASMR Static Background": estilhaços de vidro e poeira de carvão com um
@@ -3075,11 +3273,13 @@ function wizardGoTo(step) {
   backBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
   if (step === WZ_TOTAL_STEPS) {
     wizardRenderReview();
-    nextBtn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+    nextBtn.innerHTML = '<span class="sf-wrap"><span class="sf-plane"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg></span></span><span class="sf-label">Enviar ocorrência</span>';
     nextBtn.setAttribute('onclick', 'enviarOcorrencia()');
+    nextBtn.classList.add('btn-send-fly');
   } else {
     nextBtn.innerHTML = 'Próximo<svg viewBox="0 0 16 16" fill="currentColor" style="width:13px;height:13px"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06z"/></svg>';
     nextBtn.setAttribute('onclick', 'wizardNext()');
+    nextBtn.classList.remove('btn-send-fly', 'sf-go');
   }
 }
 
@@ -3453,6 +3653,8 @@ async function enviarOcorrencia() {
     err.classList.add('show'); return;
   }
   btn.disabled = true;
+  if (!reduzMovimento()) { btn.classList.add('sf-go'); await new Promise(r => setTimeout(r, 420)); }
+  btn.classList.remove('sf-go');
   btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:16px;height:16px"></div>Enviando...';
 
   let fotoUrl = null;
@@ -3467,7 +3669,7 @@ async function enviarOcorrencia() {
       // sem foto como se nada tivesse acontecido. Agora avisamos e deixamos o cidadão decidir
       // se quer continuar sem a foto ou corrigir/tentar de novo.
       btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+      btn.innerHTML = '<span class="sf-wrap"><span class="sf-plane"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg></span></span><span class="sf-label">Enviar ocorrência</span>';
       const continuar = confirm('Não foi possível enviar a foto (' + upErr.message + ').\n\nDeseja enviar a ocorrência mesmo assim, sem foto?');
       if (!continuar) { return; }
       fotoUrl = null;
@@ -3502,7 +3704,7 @@ async function enviarOcorrencia() {
     err.textContent = e.message; err.classList.add('show');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="currentColor" style="width:15px;height:15px"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11z"/></svg>Enviar ocorrência';
+    btn.innerHTML = '<span class="sf-wrap"><span class="sf-plane"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"/></svg></span></span><span class="sf-label">Enviar ocorrência</span>';
   }
 }
 
