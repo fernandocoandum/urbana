@@ -1242,43 +1242,49 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 .success-icon{background:rgba(34,197,94,.14)!important;box-shadow:0 0 0 6px rgba(34,197,94,.07),0 0 40px rgba(34,197,94,.25)}
 .success-icon svg{color:#86efac!important}
 
-/* ═══ Comprovante em ticket (estilo Ticket Confirmation Card do 21st.dev) ═══ */
+/* ═══ Comprovante: Ticket Confirmation Card (21st.dev, por ravikatiyar162), adaptado ═══ */
 .success-wrap{min-height:auto;padding:8px 0 24px}
-.tk{--tk-bg:#0d1220;--tk-notch:#06080f;position:relative;width:100%;max-width:440px;background:var(--tk-bg);border:1px solid rgba(255,255,255,.08);border-radius:22px;text-align:left;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 60px -24px rgba(0,0,0,.8),0 0 60px -20px rgba(59,130,246,.35)}
-.tk-top{display:flex;flex-direction:column;align-items:center;text-align:center;padding:28px 26px 22px}
-.tk .success-icon{margin-bottom:14px;width:64px;height:64px}
-.tk-title{font-family:var(--font-display);font-size:23px;font-weight:700;color:#fff;letter-spacing:-.02em}
-.tk-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px}
-.tk-label{margin-top:20px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)}
-.tk .proto-box{margin:8px 0 18px!important;font-size:22px;padding:12px 26px}
-/* picote com recortes nas laterais */
-.tk-perf{position:relative;height:22px;margin:0 22px;background:linear-gradient(90deg,rgba(255,255,255,.18) 50%,transparent 0) 0 50%/12px 1.5px repeat-x}
-.tk-perf::before,.tk-perf::after{content:'';position:absolute;top:50%;width:22px;height:22px;border-radius:50%;background:var(--tk-notch);transform:translateY(-50%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.tk-perf::before{left:-34px}.tk-perf::after{right:-34px}
-.tk-body{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px;padding:18px 26px}
-.tk-row{display:flex;flex-direction:column;gap:5px;min-width:0}
-.tk-row-full{grid-column:1/-1}
-.tk-k{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4)}
-.tk-v{font-size:13.5px;color:rgba(255,255,255,.88);line-height:1.45;word-break:break-word}
-.tk-v-big{font-size:16px;font-weight:600;color:#fff}
-.tk-foot{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 26px 22px}
-.tk-barcode{width:100%;height:54px;fill:rgba(255,255,255,.85)}
-.tk-foot-txt{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45)}
-.tk-hint{max-width:440px;margin:22px auto 0;font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;text-align:center}
+.tk{position:relative;z-index:10;width:100%;max-width:24rem;background:#0d1220;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:1rem;text-align:left;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 15px -3px rgba(0,0,0,.5),0 30px 60px -24px rgba(0,0,0,.8),0 0 60px -24px rgba(59,130,246,.35)}
+.tk-notch{position:absolute;top:50%;width:2rem;height:2rem;border-radius:50%;background:#06080f;transform:translateY(-50%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.tk-notch-l{left:-1rem}.tk-notch-r{right:-1rem}
+.tk-head{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem}
+.tk .tk-icon{width:auto!important;height:auto!important;padding:.75rem;margin:0!important;border-radius:50%;background:rgba(59,130,246,.12)!important;box-shadow:none!important;animation:none}
+.tk .tk-icon svg{width:2.5rem!important;height:2.5rem!important;color:#60a5fa!important;stroke-dasharray:none!important;stroke-dashoffset:0!important;animation:none!important}
+.tk-title{font-family:var(--font-display);font-size:1.5rem;font-weight:600;margin-top:1rem;color:#fff;letter-spacing:-.01em}
+.tk-sub{margin-top:.25rem;color:rgba(255,255,255,.55);font-size:14px}
+.tk-content{display:flex;flex-direction:column;gap:1.5rem;padding:0 2rem 2rem}
+.tk-dash{width:100%;border-top:2px dashed rgba(255,255,255,.12)}
+.tk-grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.tk-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+.tk-k{font-size:.75rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.tk-v{font-weight:500;color:#fff}
+.tk-proto{background:none;border:none;padding:0;font:500 15px ui-monospace,'SF Mono',Menlo,Consolas,monospace;color:#fff;cursor:pointer;text-align:left;border-bottom:1px dashed rgba(147,197,253,.35);transition:color .2s ease,border-color .2s ease}
+.tk-proto:hover{color:#93c5fd;border-color:#93c5fd}
+.tk-proto.copiado{color:#86efac;border-color:#86efac}
+.tk-box{display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:.5rem;background:rgba(255,255,255,.05)}
+.tk-box-ico .cat-icon-circle{width:36px;height:36px}
+.tk-box-txt{min-width:0}
+.tk-box-t{font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tk-box-s{color:rgba(255,255,255,.55);font-size:13px;letter-spacing:.02em;line-height:1.45;margin-top:2px}
+.tk-barcode-wrap{display:flex;flex-direction:column;align-items:center;padding:.5rem 0}
+.tk-barcode{max-width:100%;fill:#fff}
+.tk-barcode-txt{margin-top:.5rem;font-size:14px;color:rgba(255,255,255,.55);letter-spacing:.3em}
+.tk-hint{max-width:24rem;margin:22px auto 0;font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;text-align:center}
 .tk-actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;justify-content:center}
-/* animação: ticket saindo da impressora + conteúdo em sequência */
-.tk.imprimindo{animation:tkPrint .9s cubic-bezier(.22,1,.36,1) both}
-.tk.imprimindo .tk-row{animation:tkRow .45s cubic-bezier(.22,1,.36,1) both}
-.tk.imprimindo .tk-row:nth-child(1){animation-delay:.45s}.tk.imprimindo .tk-row:nth-child(2){animation-delay:.52s}.tk.imprimindo .tk-row:nth-child(3){animation-delay:.59s}
-.tk.imprimindo .tk-row:nth-child(4){animation-delay:.66s}.tk.imprimindo .tk-row:nth-child(5){animation-delay:.73s}.tk.imprimindo .tk-row:nth-child(6){animation-delay:.8s}
-.tk.imprimindo .tk-barcode rect{transform-origin:center bottom;animation:tkBar .5s cubic-bezier(.22,1,.36,1) .85s both}
-@keyframes tkPrint{from{clip-path:inset(0 0 100% 0 round 22px);transform:translateY(-14px)}to{clip-path:inset(0 0 0 0 round 22px);transform:none}}
-@keyframes tkRow{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes tkBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.tk.imprimindo .proto-box{animation:none}
-@media (max-width:480px){.tk-body{grid-template-columns:1fr}.tk .proto-box{font-size:18px;padding:11px 18px}.tk-top{padding:24px 18px 18px}.tk-body,.tk-foot{padding-left:20px;padding-right:20px}}
-@media (prefers-reduced-motion: reduce){.tk.imprimindo,.tk.imprimindo .tk-row,.tk.imprimindo .tk-barcode rect{animation:none}}
+/* animações do original: card fade+zoom-in, ícone com zoom em etapas */
+.tk.imprimindo{animation:tkIn .5s cubic-bezier(.22,1,.36,1) both}
+.tk.imprimindo .tk-icon{animation:tkZoom50 .5s cubic-bezier(.22,1,.36,1) .3s both!important}
+.tk.imprimindo .tk-icon svg{animation:tkZoom75 .5s cubic-bezier(.22,1,.36,1) .5s both!important}
+@keyframes tkIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+@keyframes tkZoom50{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:none}}
+@keyframes tkZoom75{from{opacity:0;transform:scale(.75)}to{opacity:1;transform:none}}
+/* confete caindo */
+.tk-confetti{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.tk-confetti div{position:absolute;width:.5rem;height:1rem}
+@keyframes tkFall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+@media (max-width:420px){.tk-head{padding:1.6rem}.tk-content{padding:0 1.4rem 1.6rem}}
+@media (prefers-reduced-motion: reduce){.tk.imprimindo,.tk.imprimindo .tk-icon,.tk.imprimindo .tk-icon svg{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1626,19 +1632,26 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
       <div class="content">
         <div class="success-wrap">
           <div class="tk" id="tk" role="group" aria-label="Comprovante da ocorrência">
-            <div class="tk-top">
-              <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-              <div class="tk-title">Ocorrência registrada!</div>
-              <div class="tk-sub">Enviada à Prefeitura de Braço do Norte</div>
-              <div class="tk-label">Protocolo</div>
-              <button type="button" class="proto-box" id="proto-gerado" onclick="copiarProtocolo(this)" title="Clique para copiar">PROT-2026-0000</button>
+            <div class="tk-notch tk-notch-l" aria-hidden="true"></div>
+            <div class="tk-notch tk-notch-r" aria-hidden="true"></div>
+            <div class="tk-head">
+              <div class="tk-icon success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <h2 class="tk-title">Obrigado!</h2>
+              <p class="tk-sub">Sua ocorrência foi registrada com sucesso</p>
             </div>
-            <div class="tk-perf" aria-hidden="true"></div>
-            <div class="tk-body" id="tk-body"></div>
-            <div class="tk-perf" aria-hidden="true"></div>
-            <div class="tk-foot">
-              <svg class="tk-barcode" id="tk-barcode" aria-hidden="true" preserveAspectRatio="none"></svg>
-              <div class="tk-foot-txt" id="tk-foot-txt">PROT-2026-0000</div>
+            <div class="tk-content">
+              <div class="tk-dash" aria-hidden="true"></div>
+              <div class="tk-grid2">
+                <div><p class="tk-k">Protocolo</p><button type="button" class="tk-proto" id="proto-gerado" onclick="copiarProtocolo(this)" title="Clique para copiar">PROT-2026-0000</button></div>
+                <div class="tk-right"><p class="tk-k">Status</p><div class="tk-status" id="tk-status"></div></div>
+              </div>
+              <div><p class="tk-k">Data e hora</p><p class="tk-v" id="tk-data">–</p></div>
+              <div class="tk-box" id="tk-box"></div>
+              <div class="tk-dash" aria-hidden="true"></div>
+              <div class="tk-barcode-wrap">
+                <svg class="tk-barcode" id="tk-barcode" width="250" height="70" viewBox="0 0 250 70" aria-hidden="true"></svg>
+                <p class="tk-barcode-txt" id="tk-foot-txt">PROT-2026-0000</p>
+              </div>
             </div>
           </div>
           <div class="tk-hint">Nossa equipe analisa em até <strong>48 horas</strong>. Você acompanha tudo em "Minhas Ocorrências".</div>
@@ -1950,30 +1963,43 @@ window.addEventListener('DOMContentLoaded', () => {
 // Confirmation Card do 21st.dev): dados da ocorrência + código de barras decorativo gerado do
 // protocolo. O ticket "sai da impressora" ao aparecer.
 function preencherTicket(o) {
-  const quando = o.data.toLocaleDateString('pt-BR') + ' · ' + o.data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  document.getElementById('tk-body').innerHTML = `
-    <div class="tk-row tk-row-full"><span class="tk-k">Ocorrência</span><span class="tk-v tk-v-big">${esc(o.titulo)}</span></div>
-    <div class="tk-row"><span class="tk-k">Categoria</span><span class="tk-v">${catPill(o.categoria)}</span></div>
-    <div class="tk-row"><span class="tk-k">Status</span><span class="tk-v">${badge('Recebida')}</span></div>
-    <div class="tk-row tk-row-full"><span class="tk-k">Local</span><span class="tk-v">${esc(o.endereco)} · ${esc(o.bairro)}</span></div>
-    <div class="tk-row"><span class="tk-k">Registrada em</span><span class="tk-v">${esc(quando)}</span></div>
-    <div class="tk-row"><span class="tk-k">Prazo de análise</span><span class="tk-v">até 48 horas</span></div>`;
+  const dt = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(o.data).replace(',', ' •').replace(/\s+de\s+/g, ' ').replace('.', '');
+  document.getElementById('tk-data').textContent = dt;
+  document.getElementById('tk-status').innerHTML = badge('Recebida');
+  document.getElementById('tk-box').innerHTML = `
+    <span class="tk-box-ico">${catIconCircle(o.categoria, 36)}</span>
+    <div class="tk-box-txt"><p class="tk-box-t">${esc(o.titulo)}</p><p class="tk-box-s">${esc(o.categoria)} · ${esc(o.endereco)}, ${esc(o.bairro)}</p></div>`;
   document.getElementById('tk-foot-txt').textContent = o.protocolo;
-  // código de barras: larguras derivadas dos caracteres do protocolo (só visual)
-  const svg = document.getElementById('tk-barcode');
-  let x = 0, bars = '', seed = 7;
-  for (const ch of (o.protocolo + o.protocolo).split('')) {
-    seed = (seed * 31 + ch.charCodeAt(0)) % 997;
-    for (let k = 0; k < 3; k++) {
-      const w = 1 + ((seed >> k) % 3), gap = 1 + ((seed >> (k + 2)) % 2);
-      bars += `<rect x="${x}" y="0" width="${w}" height="100" rx=".3"/>`;
-      x += w + gap;
-    }
-  }
-  svg.setAttribute('viewBox', `0 0 ${x} 100`);
-  svg.innerHTML = bars;
+  // Código de barras do componente original: 60 barras, larguras 1.5/2.5 a partir de um hash do valor
+  const hash = str => str.split('').reduce((a, c) => { a = ((a << 5) - a) + c.charCodeAt(0); return a & a; }, 0);
+  const rnd = n => { const x = Math.sin(n) * 10000; return x - Math.floor(x); };
+  const seed = hash(o.protocolo);
+  const bars = Array.from({ length: 60 }, (_, i) => (rnd(seed + i) > 0.7 ? 2.5 : 1.5));
+  const total = bars.reduce((a, w) => a + w + 1.5, 0) - 1.5;
+  let x = (250 - total) / 2;
+  document.getElementById('tk-barcode').innerHTML = bars.map(w => { const r = `<rect x="${x.toFixed(2)}" y="10" width="${w}" height="50"/>`; x += w + 1.5; return r; }).join('');
   const tk = document.getElementById('tk');
   tk.classList.remove('imprimindo'); void tk.offsetWidth; tk.classList.add('imprimindo');
+}
+
+// Confete do componente original: 100 papeizinhos caindo do topo da tela (CSS puro, some em 6s)
+function chuvaDeConfete() {
+  if (reduzMovimento()) return;
+  document.querySelectorAll('.tk-confetti').forEach(el => el.remove());
+  const wrap = document.createElement('div');
+  wrap.className = 'tk-confetti'; wrap.setAttribute('aria-hidden', 'true');
+  const cores = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#8b5cf6', '#f97316'];
+  for (let i = 0; i < 100; i++) {
+    const p = document.createElement('div');
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.top = (-20 + Math.random() * 10) + '%';
+    p.style.backgroundColor = cores[i % cores.length];
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    p.style.animation = `tkFall ${2.5 + Math.random() * 2.5}s ${Math.random() * 2}s linear forwards`;
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 7000);
 }
 
 function copiarProtocolo(el) {
@@ -3876,7 +3902,7 @@ async function enviarOcorrencia() {
     ocorrencias = [];
     Sound.play('success');
     goView('v-sucesso');
-    celebrar();
+    setTimeout(chuvaDeConfete, 100);
   } catch (e) {
     err.textContent = e.message; err.classList.add('show');
   } finally {
