@@ -1198,6 +1198,38 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
   .menu-toggle .burger span{transition:none}
   .toast.show .toast-bar{animation:none}
 }
+
+/* ═══ Stepper do formulário (adaptado do Stepper do React Bits — MIT + Commons Clause) ═══ */
+.wz-step{gap:10px;color:rgba(255,255,255,.45)!important;cursor:default}
+.wz-step.done{cursor:pointer;color:rgba(255,255,255,.75)!important}
+.wz-step.done:hover .wz-dot{box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.wz-step.active{color:#fff!important}
+.wz-dot{position:relative;width:30px!important;height:30px!important;background:rgba(255,255,255,.08)!important;color:rgba(255,255,255,.55)!important;box-shadow:none!important;transform:none!important;border:1px solid rgba(255,255,255,.08);transition:background .3s ease,box-shadow .3s ease,border-color .3s ease!important}
+.wz-step.active .wz-dot,.wz-step.done .wz-dot{background:#3b82f6!important;border-color:#3b82f6;color:#fff!important}
+.wz-step.active .wz-dot{box-shadow:0 0 0 4px rgba(59,130,246,.18),0 0 18px rgba(59,130,246,.45)!important}
+.wz-num,.wz-adot,.wz-check{position:absolute;transition:opacity .25s ease,transform .3s cubic-bezier(.34,1.56,.64,1)}
+.wz-num{font-size:12px;font-weight:700}
+.wz-adot{width:10px;height:10px;border-radius:50%;background:#fff;opacity:0;transform:scale(0)}
+.wz-check{width:15px;height:15px;color:#fff;opacity:0}
+.wz-check path{stroke-dasharray:24;stroke-dashoffset:24}
+.wz-step.active .wz-num,.wz-step.done .wz-num{opacity:0;transform:scale(.4)}
+.wz-step.active .wz-adot{opacity:1;transform:scale(1)}
+.wz-step.done .wz-check{opacity:1}
+.wz-step.done .wz-check path{animation:wzCheck .3s ease-out .1s forwards}
+@keyframes wzCheck{to{stroke-dashoffset:0}}
+.wz-line{position:relative;height:2px!important;background:rgba(255,255,255,.1)!important;border-radius:2px;overflow:hidden}
+.wz-line span{position:absolute;inset:0 auto 0 0;width:0;background:#3b82f6;border-radius:2px;transition:width .4s cubic-bezier(.22,1,.36,1)}
+.wz-line.filled span{width:100%}
+/* conteúdo deslizando */
+.wz-stage{position:relative}
+.wz-stage.animando{overflow:hidden;transition:height .4s cubic-bezier(.22,1,.36,1)}
+.wz-panel{animation:none!important}
+.wz-panel.wz-leaving{display:block;position:absolute;top:0;left:0;right:0;animation:wzOut .4s cubic-bezier(.22,1,.36,1) forwards!important;pointer-events:none}
+.wz-panel.wz-entering{animation:wzIn .4s cubic-bezier(.22,1,.36,1) both!important}
+@keyframes wzIn{from{opacity:0;transform:translateX(calc(var(--dir,1) * 60%))}to{opacity:1;transform:none}}
+@keyframes wzOut{to{opacity:0;transform:translateX(calc(var(--dir,1) * -40%))}}
+@media (max-width:560px){.wz-lab{display:none}.wz-step.active .wz-lab{display:inline}}
+@media (prefers-reduced-motion: reduce){.wz-line span,.wz-num,.wz-adot,.wz-check{transition:none}.wz-step.done .wz-check path{animation:none;stroke-dashoffset:0}}
 </style>
 </head>
 <body>
@@ -1455,19 +1487,20 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
             <div class="wizard-title" id="wz-title">O que você quer relatar?</div>
             <div class="wizard-sub" id="wz-sub">Escolha a categoria que melhor descreve o problema</div>
             <div class="wizard-steps">
-              <div class="wz-step active" data-step="1"><span class="wz-dot">1</span>Categoria</div>
-              <div class="wz-line"></div>
-              <div class="wz-step" data-step="2"><span class="wz-dot">2</span>Local</div>
-              <div class="wz-line"></div>
-              <div class="wz-step" data-step="3"><span class="wz-dot">3</span>Detalhes</div>
-              <div class="wz-line"></div>
-              <div class="wz-step" data-step="4"><span class="wz-dot">4</span>Revisão</div>
+              <div class="wz-step active" data-step="1" role="button" tabindex="-1" onclick="wizardClicarEtapa(1)" onkeydown="if(event.key==='Enter')wizardClicarEtapa(1)"><span class="wz-dot"><span class="wz-num">1</span><span class="wz-adot"></span><svg class="wz-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span class="wz-lab">Categoria</span></div>
+              <div class="wz-line"><span></span></div>
+              <div class="wz-step" data-step="2" role="button" tabindex="-1" onclick="wizardClicarEtapa(2)" onkeydown="if(event.key==='Enter')wizardClicarEtapa(2)"><span class="wz-dot"><span class="wz-num">2</span><span class="wz-adot"></span><svg class="wz-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span class="wz-lab">Local</span></div>
+              <div class="wz-line"><span></span></div>
+              <div class="wz-step" data-step="3" role="button" tabindex="-1" onclick="wizardClicarEtapa(3)" onkeydown="if(event.key==='Enter')wizardClicarEtapa(3)"><span class="wz-dot"><span class="wz-num">3</span><span class="wz-adot"></span><svg class="wz-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span class="wz-lab">Detalhes</span></div>
+              <div class="wz-line"><span></span></div>
+              <div class="wz-step" data-step="4" role="button" tabindex="-1" onclick="wizardClicarEtapa(4)" onkeydown="if(event.key==='Enter')wizardClicarEtapa(4)"><span class="wz-dot"><span class="wz-num">4</span><span class="wz-adot"></span><svg class="wz-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span><span class="wz-lab">Revisão</span></div>
             </div>
           </div>
           <div id="form-error" class="auth-error" style="background:var(--red-50);border-color:var(--red-100);color:var(--red-600)"></div>
 
           <input type="hidden" id="f-categoria">
 
+          <div class="wz-stage" id="wz-stage">
                     <div class="wz-panel active" data-panel="1">
             <div class="wz-cat-grid">
               <button type="button" class="wz-cat-card" data-cat="Pavimentação" onclick="selectCategoria(this)"><span class="cat-icon-circle" style="--cat-color:#d97706"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5 15 14.5H1L8 1.5Z"/><rect x="7.25" y="6" width="1.5" height="4" rx=".75" fill="#fff"/><rect x="7.25" y="11" width="1.5" height="1.5" rx=".75" fill="#fff"/></svg></span>Pavimentação</button>
@@ -1518,6 +1551,7 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 
                     <div class="wz-panel" data-panel="4">
             <div id="wz-review"></div>
+          </div>
           </div>
 
           <div class="form-footer">
@@ -3257,15 +3291,46 @@ function wizardRenderReview() {
   `;
 }
 
+// Stepper (adaptado do React Bits, MIT + Commons Clause): o conteúdo desliza na direção do
+// avanço/retorno e a altura do card acompanha; os indicadores trocam número → ponto → check.
+function wizardTrocarPainel(step, dir) {
+  const stage = document.getElementById('wz-stage');
+  const from = stage ? stage.querySelector('.wz-panel.active') : null;
+  const to = stage ? stage.querySelector(`.wz-panel[data-panel="${step}"]`) : null;
+  if (!to) return;
+  if (!from || from === to || reduzMovimento()) {
+    document.querySelectorAll('.wz-panel').forEach(p => p.classList.toggle('active', p === to));
+    return;
+  }
+  clearTimeout(stage._t);
+  stage.querySelectorAll('.wz-leaving,.wz-entering').forEach(p => p.classList.remove('wz-leaving', 'wz-entering'));
+  const h0 = stage.offsetHeight;
+  stage.classList.add('animando');
+  stage.style.height = h0 + 'px';
+  stage.style.setProperty('--dir', dir);
+  from.classList.remove('active'); from.classList.add('wz-leaving');
+  to.classList.add('active', 'wz-entering');
+  const h1 = to.offsetHeight;
+  requestAnimationFrame(() => { stage.style.height = h1 + 'px'; });
+  stage._t = setTimeout(() => {
+    from.classList.remove('wz-leaving'); to.classList.remove('wz-entering');
+    stage.classList.remove('animando'); stage.style.height = '';
+  }, 450);
+}
+function wizardClicarEtapa(n) { if (n < wizardStep) wizardGoTo(n); }
+
 function wizardGoTo(step) {
+  const anterior = wizardStep;
   wizardStep = step;
   document.getElementById('wz-title').textContent = WZ_TITLES[step][0];
   document.getElementById('wz-sub').textContent = WZ_TITLES[step][1];
-  document.querySelectorAll('.wz-panel').forEach(p => p.classList.toggle('active', +p.dataset.panel === step));
+  wizardTrocarPainel(step, step >= anterior ? 1 : -1);
   document.querySelectorAll('.wz-step').forEach(s => {
     const n = +s.dataset.step;
     s.classList.toggle('active', n === step);
     s.classList.toggle('done', n < step);
+    s.tabIndex = n < step ? 0 : -1;
+    if (n === step) s.setAttribute('aria-current', 'step'); else s.removeAttribute('aria-current');
   });
   document.querySelectorAll('.wz-line').forEach((l, i) => l.classList.toggle('filled', i < step - 1));
   const backBtn = document.getElementById('wz-btn-back');
