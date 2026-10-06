@@ -1076,6 +1076,16 @@ tbody tr:hover{background:rgba(255,255,255,.04)!important}
 
 /* Textos em azul escuro ficam ilegíveis no fundo escuro: passam pro azul claro */
 .action-tab.active,.badge-atendimento,.btn-detail:hover,.btn-geo,.btn-icon:hover,.mapa-btn-apoiar,.perfil-nivel-pontos,.perfil-role-badge,.row-avatar,.tl-item.current .tl-title,.wz-cat-card.selected,.wz-step.active{color:#93c5fd!important}
+
+/* Minhas Ocorrências: espaço interno pros cards não encostarem na borda (e a sombra aparecer) */
+#m-lista-body{padding:20px}
+#m-lista-body>.ocorr-grid{gap:20px}
+#m-lista-body .empty{padding:40px 20px}
+/* Nova Ocorrência: cada categoria vira um cartão de vidro visível */
+.wz-cat-card{background:rgba(255,255,255,.035)!important;border:1px solid var(--glass-border)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px -14px rgba(0,0,0,.7)}
+.wz-cat-card:hover{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.18)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 32px -14px rgba(0,0,0,.8)!important}
+.wz-cat-card.selected{background:rgba(59,130,246,.12)!important;border-color:rgba(147,197,253,.6)!important;box-shadow:0 0 0 3px rgba(59,130,246,.15),0 18px 32px -14px rgba(0,0,0,.8)!important}
+@media (max-width:640px){#m-lista-body{padding:14px}}
 </style>
 </head>
 <body>
