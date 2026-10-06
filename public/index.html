@@ -813,8 +813,10 @@ body{font-family:var(--font-ui);-webkit-font-smoothing:antialiased;text-renderin
 @media (max-width:640px){.urbaninha-launcher{bottom:18px;right:16px}.urbaninha-panel{bottom:80px}}
 
 /* Nova ocorrência centralizada */
-.content > .back-link + .card[style*="max-width:720px"]{margin-left:auto;margin-right:auto;max-width:820px!important;width:100%}
-.content:has(> .back-link + .card[style*="max-width:720px"]) > .back-link{display:flex;width:fit-content;margin-left:max(0px,calc(50% - 410px))}
+/* Antes o seletor era .card[style*="max-width:720px"] — frágil: quando um script mexe no style do
+   card (ex.: a luz que segue o mouse), o navegador reescreve o atributo e o seletor deixa de casar. */
+.content > .back-link + .wz-card{margin-left:auto;margin-right:auto;max-width:820px!important;width:100%}
+.content:has(> .back-link + .wz-card) > .back-link{display:flex;width:fit-content;margin-left:max(0px,calc(50% - 410px))}
 .wizard-head{text-align:center}
 .wizard-steps{justify-content:center}
 
@@ -1542,7 +1544,7 @@ html{scrollbar-gutter:stable}
       <header class="topbar"><div><div class="topbar-title">Nova Ocorrência</div><div class="topbar-sub">Passo a passo, leva menos de 2 minutos</div></div></header>
       <div class="content">
         <button class="back-link" onclick="moradorNav('dash')"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/></svg>Voltar</button>
-        <div class="card" style="max-width:720px">
+        <div class="card wz-card" style="max-width:720px">
           <div class="wizard-head">
             <div class="wizard-title" id="wz-title">O que você quer relatar?</div>
             <div class="wizard-sub" id="wz-sub">Escolha a categoria que melhor descreve o problema</div>
