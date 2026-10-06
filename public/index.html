@@ -3298,7 +3298,7 @@ function wizardTrocarPainel(step, dir) {
   const from = stage ? stage.querySelector('.wz-panel.active') : null;
   const to = stage ? stage.querySelector(`.wz-panel[data-panel="${step}"]`) : null;
   if (!to) return;
-  if (!from || from === to || reduzMovimento()) {
+  if (!from || from === to || reduzMovimento() || wizardSemAnimacao || !stage.offsetParent) {
     document.querySelectorAll('.wz-panel').forEach(p => p.classList.toggle('active', p === to));
     return;
   }
@@ -3317,6 +3317,9 @@ function wizardTrocarPainel(step, dir) {
     stage.classList.remove('animando'); stage.style.height = '';
   }, 450);
 }
+// Ao abrir/reiniciar o formulário a etapa 1 aparece direto — sem isso, quem saía no meio do
+// formulário e voltava via o conteúdo "entrar pela esquerda", como se estivesse voltando uma etapa.
+let wizardSemAnimacao = false;
 function wizardClicarEtapa(n) { if (n < wizardStep) wizardGoTo(n); }
 
 function wizardGoTo(step) {
@@ -3374,7 +3377,8 @@ function wizardReset() {
   if (zone) zone.classList.remove('has-image');
   const err = document.getElementById('form-error');
   if (err) err.classList.remove('show');
-  wizardGoTo(1);
+  wizardSemAnimacao = true;
+  try { wizardGoTo(1); } finally { wizardSemAnimacao = false; }
 }
 
 async function usarLocalizacao() {
