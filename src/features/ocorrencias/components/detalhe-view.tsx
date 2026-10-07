@@ -45,6 +45,10 @@ export function DetalheView({ id }: { id: string }) {
     api('POST', `/api/ocorrencias/${encodeURIComponent(id)}/marcar-lida`)
       .then(() => mutateGlobal('/api/ocorrencias'))
       .catch(() => { /* a leitura não pode derrubar a tela */ });
+    // As notificações dessa ocorrência também ficam lidas (baixa o contador do sino).
+    api('POST', '/api/notificacoes/lidas', { ocorrenciaId: id })
+      .then(() => mutateGlobal('/api/notificacoes'))
+      .catch(() => { /* idem */ });
   }, [id, carregou, mutateGlobal]);
 
   if (error) {

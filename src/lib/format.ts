@@ -50,3 +50,19 @@ export function fmtMesAno(iso: Dateish): string {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString('pt-BR', { timeZone: TZ_BR, month: 'short', year: 'numeric' });
 }
+
+/** "agora", "há 5 min", "há 3 h", "ontem", "há 4 dias" e, depois de uma semana, a data. */
+export function tempoRelativo(iso: Dateish, agora: number = Date.now()): string {
+  if (!iso) return '–';
+  const ms = agora - new Date(iso).getTime();
+  if (!Number.isFinite(ms)) return '–';
+  const min = Math.floor(ms / 60_000);
+  if (min < 1) return 'agora';
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `há ${h} h`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'ontem';
+  if (d < 7) return `há ${d} dias`;
+  return fmtDate(iso);
+}
