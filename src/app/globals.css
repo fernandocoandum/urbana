@@ -17,6 +17,9 @@
   --primary-hover: #1745b3;
   --primary-soft: #e0e9ff;
   --primary-fg: #ffffff;
+  /* gradiente do painel da tela de entrada (texto branco >= 5,5:1) */
+  --auth-a: #1d56d6;
+  --auth-b: #123d9e;
   --success: #13713a;
   --success-soft: #dcf2e4;
   --warning: #a34a08;
@@ -73,6 +76,8 @@
   --primary-hover: #8aaeff;
   --primary-soft: #223159;
   --primary-fg: #0d1424;
+  --auth-a: #2a5bd0;
+  --auth-b: #16285c;
   --success: #4ade80;
   --success-soft: #1b3a30;
   --warning: #f5b13d;
@@ -334,6 +339,235 @@
   background-image:
     radial-gradient(60% 45% at 12% 8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
     radial-gradient(55% 45% at 92% 96%, color-mix(in srgb, #14b8a6 14%, transparent), transparent 70%);
+}
+
+/* ------------------------------------------- tela de entrada (Auth Switch) */
+/* Recriado a partir do "Auth Switch" (21st.dev): círculo azul gigante que desliza entre
+   "entrar" e "criar conta". --as-t multiplica todas as durações e atrasos. */
+.auth-switch {
+  --as-t: 1;
+  --as-band: 176px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 960px;
+  min-height: 620px;
+  margin-inline: auto;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--sh-lg);
+}
+.dark .auth-switch {
+  border: 1px solid var(--border);
+}
+.auth-switch::before {
+  content: '';
+  position: absolute;
+  z-index: 6;
+  top: -10%;
+  right: 48%;
+  width: 3200px;
+  height: 3200px;
+  border-radius: 50%;
+  background: linear-gradient(-45deg, var(--auth-a), var(--auth-b));
+  transform: translateY(-50%);
+  transition:
+    transform calc(1.8s * var(--as-t)) ease-in-out,
+    right calc(1.8s * var(--as-t)) ease-in-out;
+}
+.auth-switch[data-modo='cadastro']::before {
+  right: 52%;
+  transform: translate(100%, -50%);
+}
+
+.auth-switch__forms {
+  position: relative;
+  z-index: 5;
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  padding: 48px 56px;
+  transition: transform calc(1s * var(--as-t)) calc(0.7s * var(--as-t)) ease-in-out;
+}
+.auth-switch[data-modo='cadastro'] .auth-switch__forms {
+  transform: translateX(-100%);
+}
+.auth-switch__form {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: center;
+  width: 100%;
+  max-width: 380px;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  /* quem sai fica hidden depois de 0,9s; quem entra fica visível (e focável) na hora e aparece em 0,7s */
+  transition:
+    opacity calc(0.2s * var(--as-t)) calc(0.7s * var(--as-t)),
+    visibility 0s calc(0.9s * var(--as-t));
+}
+.auth-switch__form[data-ativo='true'] {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity calc(0.2s * var(--as-t)) calc(0.7s * var(--as-t)),
+    visibility 0s 0s;
+}
+
+.auth-switch__panels {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  pointer-events: none;
+}
+.auth-switch__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+}
+.auth-switch__panel--esq {
+  padding: 3rem 20% 2rem 10%;
+}
+.auth-switch__panel--dir {
+  padding: 3rem 10% 2rem 20%;
+}
+.auth-switch__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  pointer-events: none;
+  transition: transform calc(0.9s * var(--as-t)) calc(0.6s * var(--as-t)) ease-in-out;
+}
+.auth-switch__content[data-ativo='true'] {
+  pointer-events: auto;
+}
+.auth-switch__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.auth-switch__panel--dir .auth-switch__content {
+  transform: translateX(800px);
+}
+.auth-switch[data-modo='cadastro'] .auth-switch__panel--esq .auth-switch__content {
+  transform: translateX(-800px);
+}
+.auth-switch[data-modo='cadastro'] .auth-switch__panel--dir .auth-switch__content {
+  transform: none;
+}
+.auth-switch .auth-switch__btn:focus-visible {
+  outline-color: #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 869.98px) {
+  .auth-switch {
+    grid-template-columns: 1fr;
+    min-height: calc(100dvh - 24px);
+  }
+  .auth-switch::before {
+    right: auto;
+    left: 30%;
+    top: calc(var(--as-band) - 1500px);
+    width: 1500px;
+    height: 1500px;
+    transform: translateX(-50%);
+    transition: top calc(2s * var(--as-t)) ease-in-out;
+  }
+  .auth-switch[data-modo='cadastro']::before {
+    right: auto;
+    top: calc(100% - var(--as-band));
+    transform: translateX(-50%);
+  }
+  .auth-switch__forms {
+    grid-column: 1;
+    padding: 0 40px;
+    transition: transform calc(1s * var(--as-t)) calc(0.8s * var(--as-t)) ease-in-out;
+  }
+  .auth-switch[data-modo='cadastro'] .auth-switch__forms {
+    transform: translateY(calc(24px - var(--as-band)));
+  }
+  .auth-switch__form {
+    margin-top: var(--as-band);
+    margin-bottom: var(--as-band);
+  }
+  .auth-switch__panels {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--as-band) 1fr var(--as-band);
+  }
+  .auth-switch__panel {
+    grid-column: 1;
+    padding: 0 24px;
+  }
+  .auth-switch__panel--esq {
+    grid-row: 1;
+    padding: 0 24px;
+  }
+  .auth-switch__panel--dir {
+    grid-row: 3;
+    padding: 0 24px;
+  }
+  .auth-switch__content {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 16px;
+    text-align: left;
+    transition: transform calc(0.9s * var(--as-t)) calc(0.8s * var(--as-t)) ease-in-out;
+  }
+  .auth-switch__panel--dir .auth-switch__content {
+    transform: translateY(300px);
+  }
+  .auth-switch[data-modo='cadastro'] .auth-switch__panel--esq .auth-switch__content {
+    transform: translateY(-300px);
+  }
+  .auth-switch[data-modo='cadastro'] .auth-switch__panel--dir .auth-switch__content {
+    transform: none;
+  }
+  .auth-switch__so-desktop {
+    display: none !important;
+  }
+}
+@media (max-width: 569.98px) {
+  .auth-switch__forms {
+    padding: 0 24px;
+  }
+}
+
+/* Movimento reduzido: sem atrasos; círculo e translações trocam na hora; formulários e
+   painéis fazem só um fade de 150ms. (Seletores específicos para vencer a regra global com *.) */
+@media (prefers-reduced-motion: reduce) {
+  .auth-switch,
+  .auth-switch *,
+  .auth-switch::before {
+    transition-delay: 0s !important;
+  }
+  .auth-switch .auth-switch__form {
+    transition:
+      opacity 150ms linear 0s,
+      visibility 0s linear 150ms !important;
+  }
+  .auth-switch .auth-switch__form[data-ativo='true'] {
+    transition:
+      opacity 150ms linear 0s,
+      visibility 0s linear 0s !important;
+  }
+  .auth-switch .auth-switch__content {
+    opacity: 0;
+    transition: opacity 150ms linear 0s !important;
+  }
+  .auth-switch .auth-switch__content[data-ativo='true'] {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------- mapa da cidade (F) */

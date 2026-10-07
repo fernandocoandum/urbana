@@ -1,11 +1,13 @@
 'use client';
 
+import { Lock, Mail } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { api, ApiError } from '@/lib/api-client';
 import { Sound } from '@/lib/sound';
+import { PillField, pillClasses } from './pill-field';
 
 interface Props {
   emailInicial?: string;
@@ -14,6 +16,8 @@ interface Props {
   /** Botão do Google (já renderizado pelo pai quando disponível). */
   google?: React.ReactNode;
 }
+
+const BOTAO = 'w-full rounded-full hover:-translate-y-0.5 hover:shadow-[0_6px_16px_-4px_color-mix(in_srgb,var(--primary)_45%,transparent)]';
 
 export function LoginForm({ emailInicial = '', onSuccess, onEsqueci, google }: Props) {
   const [email, setEmail] = useState(emailInicial);
@@ -36,20 +40,18 @@ export function LoginForm({ emailInicial = '', onSuccess, onEsqueci, google }: P
   }
 
   return (
-    <form onSubmit={enviar} noValidate className="flex flex-col gap-5">
+    <form onSubmit={enviar} noValidate className="flex flex-col gap-3">
       {erro && <p id="login-error" role="alert" className="rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">{erro}</p>}
-      <Field label="E-mail" htmlFor="login-email">
-        <Input id="login-email" type="email" inputMode="email" placeholder="voce@email.com" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </Field>
-      <div className="flex flex-col gap-2">
-        <Field label="Senha" htmlFor="login-senha">
-          <PasswordInput id="login-senha" placeholder="Sua senha" autoComplete="current-password" value={senha} onChange={(e) => setSenha(e.target.value)} />
-        </Field>
-        <button type="button" onClick={onEsqueci} className="-my-1 inline-flex min-h-9 items-center self-end rounded-md px-1 text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-4 focus-visible:ring-primary/25">
-          Esqueceu a senha?
-        </button>
-      </div>
-      <Button type="submit" id="btn-login" size="lg" loading={carregando} className="w-full">
+      <PillField icon={Mail} label="E-mail" htmlFor="login-email">
+        <Input id="login-email" type="email" inputMode="email" placeholder="E-mail" autoComplete="username" className={pillClasses} value={email} onChange={(e) => setEmail(e.target.value)} />
+      </PillField>
+      <PillField icon={Lock} label="Senha" htmlFor="login-senha">
+        <PasswordInput id="login-senha" placeholder="Senha" autoComplete="current-password" className={pillClasses} value={senha} onChange={(e) => setSenha(e.target.value)} />
+      </PillField>
+      <button type="button" onClick={onEsqueci} className="-my-1 inline-flex min-h-9 items-center self-end rounded-md px-1 text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-4 focus-visible:ring-primary/25">
+        Esqueceu a senha?
+      </button>
+      <Button type="submit" id="btn-login" size="lg" loading={carregando} className={BOTAO}>
         Entrar
       </Button>
       {google}

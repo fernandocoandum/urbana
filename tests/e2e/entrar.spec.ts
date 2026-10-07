@@ -46,3 +46,19 @@ test('login com senha errada mostra o erro do servidor', async ({ page }) => {
   await page.click('#btn-login');
   await expect(page.locator('#login-error')).toHaveText('E-mail ou senha incorretos.');
 });
+
+test('alternar entre entrar e criar conta', async ({ page }) => {
+  await page.goto('/entrar');
+  await expect(page.locator('#cad-nome')).toBeHidden();
+  await expect(page.locator('#login-email')).toBeVisible();
+
+  await page.click('#tab-cadastro');
+  await expect(page.locator('#cad-nome')).toBeVisible();
+  await expect(page.locator('#login-email')).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Criar conta', exact: true })).toBeFocused();
+
+  await page.click('#tab-login');
+  await expect(page.locator('#login-email')).toBeVisible();
+  await expect(page.locator('#cad-nome')).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeFocused();
+});

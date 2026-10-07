@@ -13,10 +13,10 @@ import { fieldClasses } from './input';
 const cores = ['var(--danger)', 'var(--warning)', 'var(--primary)', 'var(--success)'];
 
 const itens = [
-  { chave: 'tamanho', texto: 'Pelo menos 8 caracteres' },
-  { chave: 'maiusculaMinuscula', texto: 'Letra maiúscula e minúscula' },
+  { chave: 'tamanho', texto: '8+ caracteres' },
+  { chave: 'maiusculaMinuscula', texto: 'Maiúscula e minúscula' },
   { chave: 'numero', texto: 'Um número' },
-  { chave: 'simbolo', texto: 'Um símbolo (!@#$…)' },
+  { chave: 'simbolo', texto: 'Um símbolo (!@#…)' },
 ] as const;
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> {
@@ -76,16 +76,16 @@ export function PasswordStrength({ value, onChange, contexto, semChecklist, clas
       </div>
 
       {!semChecklist && (
-        <ul className="grid gap-x-4 gap-y-2 sm:grid-cols-2" aria-label="Requisitos da senha">
+        <ul className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Requisitos da senha">
           {itens.map(({ chave, texto }) => {
             const ok = av.requisitos[chave];
             return (
-              <li key={chave} className={cn('flex items-center gap-2 text-sm transition-colors', ok ? 'text-fg' : 'text-fg-muted')}>
-                <span className={cn('grid size-5 shrink-0 place-items-center rounded-full border-2 transition-colors', ok ? 'border-success bg-success text-primary-fg' : 'border-border-strong')}>
+              <li key={chave} className={cn('inline-flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors', ok ? 'text-fg' : 'text-fg-muted')}>
+                <span className={cn('grid size-4 shrink-0 place-items-center rounded-full border-2 transition-colors', ok ? 'border-success bg-success text-primary-fg' : 'border-border-strong')}>
                   <AnimatePresence initial={false}>
                     {ok && (
-                      <motion.span key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={spring.bouncy}>
-                        <Check className="size-3" strokeWidth={3} aria-hidden />
+                      <motion.span key="check" className="grid place-items-center" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={spring.bouncy}>
+                        <Check className="size-2.5" strokeWidth={3} aria-hidden />
                       </motion.span>
                     )}
                   </AnimatePresence>
