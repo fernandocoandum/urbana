@@ -14,3 +14,14 @@ export function pedidoPendente(o: Pick<Ocorrencia, 'pedidosReabertura'>) {
   const ultimo = lista[lista.length - 1];
   return ultimo && !ultimo.atendido ? ultimo : null;
 }
+
+/** Próxima ação do ponto de vista da prefeitura (painel admin). */
+export function proximaAcaoAdminTexto(o: Pick<Ocorrencia, 'status' | 'avaliacao' | 'prazo' | 'responsavel' | 'setor' | 'pedidosReabertura'> & { atrasada?: boolean }): string {
+  if (pedidoPendente(o)) return 'O cidadão pediu a reabertura: reabra ou mantenha como resolvida, com justificativa.';
+  if (o.status === 'Resolvida') return o.avaliacao ? `Nada a fazer: o cidadão avaliou com ${o.avaliacao.nota} de 5.` : 'Resolvida. Aguardando a avaliação do cidadão.';
+  if (o.prazo && o.atrasada) return `Prazo vencido em ${fmtDate(o.prazo)}: atualize o status ou renegocie o prazo.`;
+  if (o.status === 'Recebida') return 'Faça a triagem: analise e encaminhe ao setor responsável.';
+  if (!o.responsavel && !o.setor) return 'Defina o setor ou o responsável pelo atendimento.';
+  if (!o.prazo) return 'Defina um prazo de retorno para o cidadão.';
+  return `Acompanhar até o prazo de ${fmtDate(o.prazo)}.`;
+}

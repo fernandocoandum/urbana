@@ -39,6 +39,11 @@
   --cat-parques: #16a34a;
   --cat-outros: #64748b;
 
+  /* gráficos (skill dataviz): slots categóricos 1 e 2, validados contra a superfície nos dois temas */
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-grid: #e4e7ec;
+
   --sh-xs: 0 1px 2px rgb(15 23 42 / 0.04);
   --sh-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
   --sh-md: 0 6px 20px -6px rgb(15 23 42 / 0.1);
@@ -68,6 +73,10 @@
   --warning-soft: #2b2110;
   --danger: #f36161;
   --danger-soft: #2e1416;
+
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-grid: #243045;
 
   /* no escuro, os tons do plano ficam com pouco contraste: versões mais claras */
   --st-recebida: #94a3b8;

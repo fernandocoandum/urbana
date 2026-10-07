@@ -1,4 +1,5 @@
-import { BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_ORDEM, STATUS_VALIDOS } from '@/lib/constants';
+import { BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_VALIDOS } from '@/lib/constants';
+import { ehRegressao, validarMudancaStatus } from '@/features/admin/validar-status';
 import { notificacaoDeMensagem, notificacaoDeReaberturaAtendida, notificacaoDeStatus } from '@/features/notificacoes/regras';
 import { notificarCidadao } from '@/features/notificacoes/service';
 import { getDb } from '@/lib/db';
@@ -54,25 +55,17 @@ export async function alterarStatus(user: User | null, id: string, readBody: Rea
   if (!STATUS_VALIDOS.has(status)) return j(400, { erro:'Status inválido.' });
   const atual = await db.getOcorrencia(id);
   if (!atual) return j(404, { erro:'Não encontrada.' });
-  const idxAtual = (STATUS_ORDEM as readonly string[]).indexOf(atual.status);
-  const idxNovo = (STATUS_ORDEM as readonly string[]).indexOf(status);
-  const isRegressao = idxAtual !== -1 && idxNovo !== -1 && idxNovo < idxAtual;
+  const isRegressao = ehRegressao(atual.status, status);
   const obsLimpa = cap(obs, 500);
-  if (isRegressao && (!obsLimpa || !obsLimpa.trim())) {
-    return j(400, { erro:'Para retroceder o status é preciso informar uma justificativa.' });
-  }
-  if (status === 'Resolvida' && atual.pedidosReabertura && atual.pedidosReabertura.length) {
-    const pendente = atual.pedidosReabertura[atual.pedidosReabertura.length - 1];
-    if (pendente && !pendente.atendido && !obsLimpa) {
-      return j(400, { erro:'Há um pedido de reabertura pendente — informe uma justificativa ao resolver novamente.' });
-    }
-  }
+  const evidenciaLimpa = evidencia !== undefined ? cap(evidencia, 500) : undefined;
+  const v = validarMudancaStatus({ atual, novo: status, obs: obsLimpa, evidencia: evidenciaLimpa });
+  if (!v.ok) return j(400, { erro: v.erro });
   const opts = {
     obs: obsLimpa,
     setor: setor !== undefined ? cap(setor, 100) : undefined,
     responsavel: responsavel !== undefined ? cap(responsavel, 100) : undefined,
     prazo: prazo !== undefined ? (prazo || null) : undefined,
-    evidencia: evidencia !== undefined ? cap(evidencia, 500) : undefined,
+    evidencia: evidenciaLimpa,
     tipoEvento: isRegressao ? 'reabertura' : undefined
   };
   const ok = await db.updateStatus(id, status, opts);

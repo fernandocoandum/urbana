@@ -85,5 +85,5 @@ test('mapa do admin: clusters, calor, "Só atrasadas" e popup com "Abrir na fila
   await expect(page.locator('.leaflet-popup')).toContainText(/ · .+ · PROT-/) // nome do cidadão visível só para o admin;
   await abrir.click();
   await expect(page).toHaveURL(/\/admin\/ocorrencias\/.+/);
-  expect(erros.filter((e) => !/404/.test(e))).toEqual([]);
+  expect(erros).toEqual([]);
 });

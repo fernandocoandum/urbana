@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import type { HistoricoEntry, OcorrenciaDerivada, PedidoReabertura } from '@/lib/db/types';
 import { MiniMapa } from '@/features/mapa/components/mini-mapa-lazy';
 import { MAPA_COR_STATUS } from '@/features/mapa/mapa-utils';
-import { proximaAcaoTexto } from '../proxima-acao';
+import { proximaAcaoAdminTexto, proximaAcaoTexto } from '../proxima-acao';
 
 const erroTexto = (e: unknown) => (e instanceof ApiError ? e.message : e instanceof Error ? e.message : 'Erro desconhecido');
 
@@ -28,7 +28,10 @@ function Dado({ rotulo, children }: { rotulo: string; children: React.ReactNode 
   );
 }
 
-export function ResumoCard({ o, pendente }: { o: OcorrenciaDerivada; pendente: PedidoReabertura | null }) {
+export type Perspectiva = 'cidadao' | 'admin';
+
+export function ResumoCard({ o, pendente, perspectiva = 'cidadao' }: { o: OcorrenciaDerivada; pendente: PedidoReabertura | null; perspectiva?: Perspectiva }) {
+  const admin = perspectiva === 'admin';
   return (
     <Card>
       <CardHeader>
@@ -36,7 +39,7 @@ export function ResumoCard({ o, pendente }: { o: OcorrenciaDerivada; pendente: P
       </CardHeader>
       <div className="rounded-xl bg-primary-soft p-4">
         <p className="text-sm font-medium text-primary">Próxima ação</p>
-        <p className="mt-1 text-base">{proximaAcaoTexto(o)}</p>
+        <p className="mt-1 text-base">{admin ? proximaAcaoAdminTexto(o) : proximaAcaoTexto(o)}</p>
       </div>
       <dl className="mt-6 grid gap-5 sm:grid-cols-2">
         <Dado rotulo="Responsável">{o.responsavel ? o.responsavel : o.setor ? o.setor : 'A definir'}</Dado>
@@ -53,7 +56,7 @@ export function ResumoCard({ o, pendente }: { o: OcorrenciaDerivada; pendente: P
         <div className="mt-6 flex gap-3 rounded-xl border border-warning/30 bg-warning-soft p-4 text-base">
           <TriangleAlert className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
           <p>
-            Você pediu a reabertura em {fmtDateTime(pendente.data)}: &ldquo;{pendente.motivo}&rdquo; — aguardando retorno da equipe.
+            {admin ? 'O cidadão' : 'Você'} pediu a reabertura em {fmtDateTime(pendente.data)}: &ldquo;{pendente.motivo}&rdquo; — {admin ? 'responda na aba Status.' : 'aguardando retorno da equipe.'}
           </p>
         </div>
       )}
@@ -195,16 +198,19 @@ function Estrelas({ valor, onChange }: { valor: number; onChange?: (n: number) =
 }
 
 /** Avaliação do atendimento (só em ocorrências resolvidas). */
-export function AvaliacaoCard({ o, onDone }: { o: OcorrenciaDerivada; onDone: () => void }) {
+export function AvaliacaoCard({ o, onDone, perspectiva = 'cidadao' }: { o: OcorrenciaDerivada; onDone?: () => void; perspectiva?: Perspectiva }) {
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState('');
   const [enviando, setEnviando] = useState(false);
   if (o.status !== 'Resolvida') return null;
+  const admin = perspectiva === 'admin';
+  // O admin só lê: avaliar é do cidadão (a API recusa o resto).
+  if (admin && !o.avaliacao) return null;
 
   if (o.avaliacao) {
     return (
       <Card>
-        <p className="text-sm font-medium text-primary">Sua avaliação</p>
+        <p className="text-sm font-medium text-primary">{admin ? 'Avaliação do cidadão' : 'Sua avaliação'}</p>
         <div className="mt-3"><Estrelas valor={o.avaliacao.nota} /></div>
         {o.avaliacao.comentario && <p className="mt-3 break-words text-base italic text-fg-muted">&ldquo;{o.avaliacao.comentario}&rdquo;</p>}
       </Card>
@@ -217,7 +223,7 @@ export function AvaliacaoCard({ o, onDone }: { o: OcorrenciaDerivada; onDone: ()
     try {
       await api('POST', `/api/ocorrencias/${o.id}/avaliar`, { nota, comentario: comentario.trim() });
       toast.success('Obrigado pela avaliação!');
-      onDone();
+      onDone?.();
     } catch (e) {
       toast.error(erroTexto(e));
     } finally {

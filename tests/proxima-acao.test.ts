@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pedidoPendente, proximaAcaoTexto } from '@/features/ocorrencias/proxima-acao';
+import { pedidoPendente, proximaAcaoAdminTexto, proximaAcaoTexto } from '@/features/ocorrencias/proxima-acao';
 
 describe('proximaAcaoTexto (port do legado)', () => {
   it('resolvida sem avaliação pede a avaliação', () => {
@@ -24,5 +24,22 @@ describe('pedidoPendente', () => {
     expect(pedidoPendente({ pedidosReabertura: [{ motivo: 'a', data: 'x', atendido: true }] })).toBeNull();
     const p = { motivo: 'b', data: 'y', atendido: false };
     expect(pedidoPendente({ pedidosReabertura: [{ motivo: 'a', data: 'x', atendido: true }, p] })).toBe(p);
+  });
+});
+
+describe('proximaAcaoAdminTexto', () => {
+  const base = { status: 'Em análise', avaliacao: null, prazo: null, responsavel: null, setor: null, pedidosReabertura: [] };
+  it('pedido de reabertura pendente vem primeiro', () => {
+    expect(proximaAcaoAdminTexto({ ...base, status: 'Resolvida', pedidosReabertura: [{ motivo: 'x', data: '2026-10-01T12:00:00Z', atendido: false }] })).toMatch(/reabertura/);
+  });
+  it('recebida pede triagem; sem responsável pede definição; sem prazo pede prazo', () => {
+    expect(proximaAcaoAdminTexto({ ...base, status: 'Recebida' })).toMatch(/triagem/);
+    expect(proximaAcaoAdminTexto(base)).toMatch(/setor ou o responsável/);
+    expect(proximaAcaoAdminTexto({ ...base, responsavel: 'João' })).toMatch(/prazo/);
+  });
+  it('atrasada e resolvida', () => {
+    expect(proximaAcaoAdminTexto({ ...base, prazo: '2026-09-01T15:00:00.000Z', atrasada: true })).toMatch(/vencido/);
+    expect(proximaAcaoAdminTexto({ ...base, status: 'Resolvida' })).toMatch(/avaliação/);
+    expect(proximaAcaoAdminTexto({ ...base, status: 'Resolvida', avaliacao: { nota: 4, comentario: '', data: '' } })).toMatch(/4 de 5/);
   });
 });

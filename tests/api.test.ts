@@ -365,6 +365,24 @@ describe('Rotas e perfil (Etapa B)', () => {
     expect(await (await get('/api/stats', auth)).json()).not.toHaveProperty('naoLidas');
   });
 
+  it('admin: resolver exige evidência (400) e com evidência passa (200); retroceder exige justificativa', async () => {
+    const login = await post('/api/login', { email: 'admin@prefeitura.gov.br', senha: 'admin' }, { 'x-forwarded-for': '10.20.30.43' });
+    const { token } = await login.json();
+    const adm = { Authorization: `Bearer ${token}` };
+    await post('/api/aceitar-termos', {}, auth);
+    const criada = await post('/api/ocorrencias', { titulo: 'Evidência obrigatória', categoria: 'Pavimentação', endereco: 'Rua X, 1', bairro: 'Centro' }, auth);
+    expect(criada.status).toBe(201);
+    const { id } = await criada.json();
+    const put = (body: unknown) => call('PUT', `/api/ocorrencias/${id}/status`, { body, headers: adm });
+    const semEvidencia = await put({ status: 'Resolvida', obs: 'Feito' });
+    expect(semEvidencia.status).toBe(400);
+    expect((await semEvidencia.json()).erro).toMatch(/evidência/i);
+    expect((await put({ status: 'Resolvida', obs: 'Feito', evidencia: '   ' })).status).toBe(400);
+    expect((await put({ status: 'Resolvida', evidencia: 'Foto do reparo concluído' })).status).toBe(200);
+    expect((await put({ status: 'Em análise' })).status).toBe(400);
+    expect((await put({ status: 'Em análise', obs: 'Voltou a falhar' })).status).toBe(200);
+  });
+
   it('upload de imagem e leitura pública em /api/arquivos/:id', async () => {
     const png = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0, 0, 0, 0, 0]);
     const up = await post('/api/upload', { data: 'data:image/png;base64,' + png.toString('base64') }, auth);

@@ -1,10 +1,10 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { ClipboardList, LayoutDashboard, Map as MapIcon, Menu as MenuIcon, MessagesSquare, PanelLeftClose, PanelLeftOpen, Search, UserRound, type LucideIcon } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, Map as MapIcon, Menu as MenuIcon, MessagesSquare, PanelLeftClose, PanelLeftOpen, Search, UserRound, X, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -88,6 +88,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
   const [busca, setBusca] = useState('');
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  const campoBusca = useRef<HTMLInputElement>(null);
   const { data: stats } = useSWR<{ naoLidas?: number }>('/api/stats', { refreshInterval: 20000 });
   const naoLidas = stats?.naoLidas ?? 0;
 
@@ -95,7 +97,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     e.preventDefault();
     const q = busca.trim();
     router.push(q ? `/admin/ocorrencias?busca=${encodeURIComponent(q)}` : '/admin/ocorrencias');
+    setBuscaAberta(false);
   }
+
+  useEffect(() => {
+    if (buscaAberta) campoBusca.current?.focus();
+  }, [buscaAberta]);
 
   return (
     <div className="flex min-h-dvh">
@@ -130,8 +137,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className="flex h-full items-center gap-3 px-5 sm:px-8 lg:px-10">
             <Sheet open={menuAberto} onOpenChange={setMenuAberto}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="-ml-2 lg:hidden" aria-label="Abrir menu">
+                <Button variant="ghost" size="icon" className={cn('relative -ml-2 lg:hidden', buscaAberta && 'hidden')} aria-label={naoLidas > 0 ? `Abrir menu (${naoLidas} não lidas)` : 'Abrir menu'}>
                   <MenuIcon />
+                  {naoLidas > 0 && <span aria-hidden className="absolute right-2 top-2 size-2.5 rounded-full bg-danger ring-2 ring-surface" />}
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" title="Menu do painel" hideTitle>
@@ -142,19 +150,30 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            <p className="min-w-0 flex-1 truncate text-lg font-semibold">{tituloDa(pathname)}</p>
+            {/* Celular: a busca abre no lugar do título; a partir de sm ela fica sempre visível. */}
+            <p className={cn('min-w-0 flex-1 truncate text-lg font-semibold tracking-[-.01em]', buscaAberta && 'hidden sm:block')}>{tituloDa(pathname)}</p>
 
-            <form onSubmit={buscar} role="search" className="relative hidden w-72 sm:block">
+            <form onSubmit={buscar} role="search" className={cn('relative w-full min-w-0 flex-1 sm:w-72 sm:flex-none', buscaAberta ? 'block' : 'hidden sm:block')}>
               <Search aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-fg-subtle" />
               <input
+                ref={campoBusca}
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 aria-label="Buscar por protocolo"
                 placeholder="Buscar por protocolo"
-                className="h-10 w-full rounded-full border-2 border-border bg-surface pl-10 pr-4 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-fg-subtle hover:border-border-strong focus:border-primary focus:ring-4 focus:ring-primary/15"
+                className="h-10 w-full rounded-full border-2 border-border bg-surface pl-10 pr-4 text-base outline-none transition-[border-color,box-shadow] placeholder:text-fg-subtle hover:border-border-strong focus:border-primary focus:ring-4 focus:ring-primary/15 sm:text-sm"
               />
             </form>
-            <UserMenu />
+            {buscaAberta ? (
+              <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Fechar busca" onClick={() => setBuscaAberta(false)}>
+                <X />
+              </Button>
+            ) : (
+              <Button variant="ghost" size="icon" className="sm:hidden" aria-label="Buscar" onClick={() => setBuscaAberta(true)}>
+                <Search />
+              </Button>
+            )}
+            <span className={cn(buscaAberta && 'hidden sm:block')}><UserMenu /></span>
           </div>
         </header>
         <main id="conteudo" className="min-w-0 flex-1">
