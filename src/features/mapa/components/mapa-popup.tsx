@@ -57,6 +57,11 @@ export function MapaPopup({ ponto: p, aproximado, admin, onVerDetalhes, onApoiar
           {total} apoio{total === 1 ? '' : 's'}
         </span>
       </div>
+      {admin && p.atrasada && (
+        <p className="mt-2.5 text-sm font-medium leading-5 text-danger">
+          Atrasada{typeof p.diasAberto === 'number' ? ` · ${p.diasAberto} ${p.diasAberto === 1 ? 'dia' : 'dias'} em aberto` : ''}
+        </p>
+      )}
       {aproximado && (
         <p className="mt-2.5 flex items-center gap-1.5 text-sm leading-5 text-fg-muted">
           <MapPin className="size-4 shrink-0" aria-hidden /> Localização aproximada
@@ -65,7 +70,7 @@ export function MapaPopup({ ponto: p, aproximado, admin, onVerDetalhes, onApoiar
       <div className="mt-3.5">
         {dono ? (
           <Button size="sm" className="w-full" onClick={() => onVerDetalhes(p.id)}>
-            Ver detalhes
+            {admin ? 'Abrir na fila' : 'Ver detalhes'}
           </Button>
         ) : (
           <Button size="sm" variant={apoiado ? 'secondary' : 'primary'} className="w-full" loading={enviando} aria-pressed={apoiado} onClick={apoiar}>

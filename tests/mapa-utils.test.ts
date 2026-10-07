@@ -57,12 +57,31 @@ describe('filtrarPontos', () => {
     ponto({ id: 'c', categoria: 'Limpeza urbana', status: 'Recebida', isMine: true }),
   ];
   it('sem filtros devolve tudo', () => {
-    expect(filtrarPontos(lista, { categorias: [], status: 'todos', soMinhas: false })).toHaveLength(3);
+    expect(filtrarPontos(lista, { categorias: [], status: 'todos', soMinhas: false, soAtrasadas: false })).toHaveLength(3);
   });
   it('filtra por categoria (multi), status e "só as minhas" em conjunto', () => {
-    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana'], status: 'todos', soMinhas: false }).map((p) => p.id)).toEqual(['b', 'c']);
-    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana', 'Pavimentação'], status: 'Recebida', soMinhas: false }).map((p) => p.id)).toEqual(['a', 'c']);
-    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana'], status: 'Recebida', soMinhas: true }).map((p) => p.id)).toEqual(['c']);
+    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana'], status: 'todos', soMinhas: false, soAtrasadas: false }).map((p) => p.id)).toEqual(['b', 'c']);
+    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana', 'Pavimentação'], status: 'Recebida', soMinhas: false, soAtrasadas: false }).map((p) => p.id)).toEqual(['a', 'c']);
+    expect(filtrarPontos(lista, { categorias: ['Limpeza urbana'], status: 'Recebida', soMinhas: true, soAtrasadas: false }).map((p) => p.id)).toEqual(['c']);
+  });
+});
+
+describe('filtrarPontos: só atrasadas e lista vazia', () => {
+  const lista = [
+    ponto({ id: 'a', atrasada: true, diasAberto: 12 }),
+    ponto({ id: 'b', atrasada: false, diasAberto: 2 }),
+    ponto({ id: 'c' }), // cidadão: a chave nem existe
+  ];
+  const base = { categorias: [], status: 'todos', soMinhas: false, soAtrasadas: false };
+  it('soAtrasadas mantém só quem tem atrasada === true', () => {
+    expect(filtrarPontos(lista, { ...base, soAtrasadas: true }).map((p) => p.id)).toEqual(['a']);
+  });
+  it('combina com os outros filtros', () => {
+    expect(filtrarPontos(lista, { ...base, soAtrasadas: true, status: 'Resolvida' })).toEqual([]);
+  });
+  it('lista vazia devolve lista vazia e o ranking não quebra', () => {
+    expect(filtrarPontos([], { ...base, soAtrasadas: true })).toEqual([]);
+    expect(rankingBairros([])).toEqual([]);
   });
 });
 

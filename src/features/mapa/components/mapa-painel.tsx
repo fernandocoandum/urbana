@@ -80,7 +80,12 @@ export function PainelConteudo({ filtros, onFiltros, modo, onModo, admin, rankin
         </Select>
       </div>
 
-      {!admin && (
+      {admin ? (
+        <div className="flex items-center justify-between gap-4">
+          <Rotulo htmlFor="mapa-atrasadas">Só atrasadas</Rotulo>
+          <Switch id="mapa-atrasadas" checked={filtros.soAtrasadas} onCheckedChange={(v) => onFiltros({ ...filtros, soAtrasadas: v })} />
+        </div>
+      ) : (
         <div className="flex items-center justify-between gap-4">
           <Rotulo htmlFor="mapa-minhas">Só as minhas</Rotulo>
           <Switch id="mapa-minhas" checked={filtros.soMinhas} onCheckedChange={(v) => onFiltros({ ...filtros, soMinhas: v })} />

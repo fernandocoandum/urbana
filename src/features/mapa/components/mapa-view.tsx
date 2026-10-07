@@ -34,7 +34,7 @@ export function MapaView({ admin }: { admin: boolean }) {
   );
   const filtrados = useMemo(() => filtrarPontos(base, filtros), [base, filtros]);
   const ranking = useMemo(() => rankingBairros(filtrados, 5), [filtrados]);
-  const filtrosAtivos = filtros.categorias.length + (filtros.status !== 'todos' ? 1 : 0) + (filtros.soMinhas ? 1 : 0);
+  const filtrosAtivos = filtros.categorias.length + (filtros.status !== 'todos' ? 1 : 0) + (filtros.soMinhas ? 1 : 0) + (filtros.soAtrasadas ? 1 : 0);
 
   const verDetalhes = useCallback((id: string) => router.push(admin ? `/admin/ocorrencias/${id}` : `/ocorrencias/${id}`), [router, admin]);
   const apoiar = useCallback(async (id: string) => {

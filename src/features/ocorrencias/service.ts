@@ -150,7 +150,9 @@ export async function mapa(user: User): Promise<ServiceResult> {
     apoiado: (o.apoios||[]).includes(user.id), isMine: o.userId === user.id,
     nomeUsuario: user.role === 'admin' ? o.nomeUsuario : null,
     precisaoLocal: o.precisaoLocal || 'manual',
-    criadoEm: o.criadoEm
+    criadoEm: o.criadoEm,
+    // Dados operacionais: só o admin enxerga (o cidadão nunca recebe a chave).
+    ...(user.role === 'admin' ? { atrasada: o.atrasada, diasAberto: o.diasAberto } : {})
   }));
   return j(200, pontos);
 }

@@ -39,3 +39,51 @@ test('mapa: abre, mostra pontos, alterna para calor e filtra sem erros no consol
   await expect(page.getByText('Nenhuma ocorrência com esses filtros.').first()).toBeVisible();
   expect(erros).toEqual([]);
 });
+
+test('mapa do admin: clusters, calor, "Só atrasadas" e popup com "Abrir na fila" sem erros no console', async ({ page, request }) => {
+  const erros: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') erros.push(m.text()); });
+  page.on('pageerror', (e) => erros.push(e.message));
+  await page.route(/tile\.openstreetmap\.org/, (r) => r.fulfill({ contentType: 'image/png', body: TILE }));
+  // Garante ao menos um ponto no banco (o cidadão cria uma ocorrência) e depois entra como admin.
+  await entrar(page, request);
+  await page.context().clearCookies();
+  const login = await request.post('/api/login', { data: { email: 'admin@prefeitura.gov.br', senha: 'admin' }, headers: { 'x-forwarded-for': '7.7.8.' + Math.floor(Math.random() * 200) } });
+  const { token } = await login.json();
+  await page.context().addCookies([{ name: 'urbana_token', value: token, url: 'http://localhost:3099' }]);
+
+  await page.goto('/admin/mapa');
+  await expect(page.locator('.leaflet-container')).toBeVisible();
+  const marcador = page.locator('.urbana-dot, .urbana-cluster').first();
+  await expect(marcador).toBeVisible();
+
+  // Calor e volta.
+  await page.getByRole('tab', { name: 'Calor' }).click();
+  await expect(page.locator('canvas.leaflet-heatmap-layer')).toBeVisible();
+  await page.getByRole('tab', { name: 'Pontos' }).click();
+  await expect(page.locator('.urbana-dot, .urbana-cluster').first()).toBeVisible();
+
+  // Calor com zero pontos (nenhuma ocorrência atrasada): não estoura e não deixa canvas órfão.
+  await page.getByLabel('Só atrasadas').click();
+  await expect(page.getByText('Nenhuma ocorrência com esses filtros.').first()).toBeVisible();
+  await page.getByRole('tab', { name: 'Calor' }).click();
+  await expect(page.locator('canvas.leaflet-heatmap-layer')).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Pontos' }).click();
+  await page.getByLabel('Só atrasadas').click();
+  await expect(page.locator('.urbana-dot, .urbana-cluster').first()).toBeVisible();
+
+  // Popup: se o primeiro marcador for um cluster, clica até chegar a um ponto individual.
+  for (let i = 0; i < 6; i++) {
+    const dot = page.locator('.urbana-dot').first();
+    if (await dot.isVisible().catch(() => false)) break;
+    await page.locator('.urbana-cluster').first().click();
+    await page.waitForTimeout(400);
+  }
+  await page.locator('.urbana-dot').first().click({ force: true });
+  const abrir = page.getByRole('button', { name: 'Abrir na fila' });
+  await expect(abrir).toBeVisible();
+  await expect(page.locator('.leaflet-popup')).toContainText(/ · .+ · PROT-/) // nome do cidadão visível só para o admin;
+  await abrir.click();
+  await expect(page).toHaveURL(/\/admin\/ocorrencias\/.+/);
+  expect(erros.filter((e) => !/404/.test(e))).toEqual([]);
+});

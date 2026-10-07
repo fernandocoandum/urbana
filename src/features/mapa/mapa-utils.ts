@@ -41,6 +41,9 @@ export interface PontoMapa {
   nomeUsuario: string | null;
   precisaoLocal: string;
   criadoEm?: string;
+  /** Só vem para o admin (`/api/mapa`). */
+  atrasada?: boolean;
+  diasAberto?: number;
 }
 
 /** Deslocamento determinístico (±amount graus) a partir do id: pontos sem coordenada não se empilham. Port de `jitterFromId`. */
@@ -78,15 +81,18 @@ export interface FiltrosMapa {
   /** 'todos' ou um status. */
   status: string;
   soMinhas: boolean;
+  /** Só o admin: pontos com prazo vencido. */
+  soAtrasadas: boolean;
 }
-export const FILTROS_PADRAO: FiltrosMapa = { categorias: [], status: 'todos', soMinhas: false };
+export const FILTROS_PADRAO: FiltrosMapa = { categorias: [], status: 'todos', soMinhas: false, soAtrasadas: false };
 
 export function filtrarPontos(pontos: readonly PontoMapa[], f: FiltrosMapa): PontoMapa[] {
   return pontos.filter(
     (p) =>
       (f.categorias.length === 0 || f.categorias.includes(p.categoria)) &&
       (f.status === 'todos' || p.status === f.status) &&
-      (!f.soMinhas || p.isMine),
+      (!f.soMinhas || p.isMine) &&
+      (!f.soAtrasadas || p.atrasada === true),
   );
 }
 
