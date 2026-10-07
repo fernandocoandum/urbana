@@ -2,29 +2,250 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ------------------------------------------------------------------ tokens */
 :root {
   --bg: #f7f8fa;
   --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --border: #e4e7ec;
+  --border-strong: #cbd2dc;
   --fg: #0f172a;
+  --fg-muted: #556070;
+  --fg-subtle: #8a94a6;
   --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #eef3ff;
+  --primary-fg: #ffffff;
+  --success: #16a34a;
+  --success-soft: #ecfdf3;
+  --warning: #d97706;
+  --warning-soft: #fff7e6;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+
+  /* status (texto/ponto). O fundo "soft" sai de color-mix sobre a superfície */
+  --st-recebida: #64748b;
+  --st-analise: #d97706;
+  --st-encaminhada: #7c3aed;
+  --st-atendimento: #2563eb;
+  --st-resolvida: #16a34a;
+
+  /* categorias (CATEGORIA_INFO do app legado) */
+  --cat-pavimentacao: #d97706;
+  --cat-iluminacao: #ca8a04;
+  --cat-limpeza: #0d9488;
+  --cat-sinalizacao: #dc2626;
+  --cat-drenagem: #0284c7;
+  --cat-parques: #16a34a;
+  --cat-outros: #64748b;
+
+  --sh-xs: 0 1px 2px rgb(15 23 42 / 0.04);
+  --sh-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
+  --sh-md: 0 6px 20px -6px rgb(15 23 42 / 0.1);
+  --sh-lg: 0 16px 40px -12px rgb(15 23 42 / 0.16);
+
+  --banner-from: #eef3ff;
+  --banner-via: #e0f2fe;
+  --banner-to: #ecfdf3;
 }
 
 .dark {
   --bg: #0b0f17;
   --surface: #111723;
+  --surface-2: #172031;
+  --border: #243045;
+  --border-strong: #33405a;
   --fg: #e8ecf3;
+  --fg-muted: #9aa5b8;
+  --fg-subtle: #6b778c;
   --primary: #5b8cff;
+  --primary-hover: #7aa2ff;
+  --primary-soft: #172447;
+  --primary-fg: #0b0f17;
+  --success: #3fcf7a;
+  --success-soft: #10291c;
+  --warning: #f5a524;
+  --warning-soft: #2b2110;
+  --danger: #f36161;
+  --danger-soft: #2e1416;
+
+  /* no escuro, os tons do plano ficam com pouco contraste: versões mais claras */
+  --st-recebida: #94a3b8;
+  --st-analise: #f5a524;
+  --st-encaminhada: #a78bfa;
+  --st-atendimento: #5b8cff;
+  --st-resolvida: #3fcf7a;
+
+  /* no escuro a sombra vira borda + brilho interno */
+  --sh-xs: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --sh-sm: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --sh-md: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --sh-lg: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 0 0 1px rgb(255 255 255 / 0.03);
+
+  --banner-from: #172447;
+  --banner-via: #0f2a3a;
+  --banner-to: #10291c;
 }
 
 @theme inline {
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --color-bg: var(--bg);
   --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-fg: var(--primary-fg);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --color-st-recebida: var(--st-recebida);
+  --color-st-analise: var(--st-analise);
+  --color-st-encaminhada: var(--st-encaminhada);
+  --color-st-atendimento: var(--st-atendimento);
+  --color-st-resolvida: var(--st-resolvida);
+
+  --color-cat-pavimentacao: var(--cat-pavimentacao);
+  --color-cat-iluminacao: var(--cat-iluminacao);
+  --color-cat-limpeza: var(--cat-limpeza);
+  --color-cat-sinalizacao: var(--cat-sinalizacao);
+  --color-cat-drenagem: var(--cat-drenagem);
+  --color-cat-parques: var(--cat-parques);
+  --color-cat-outros: var(--cat-outros);
+
+  /* raios: sm 8, md 12 (botões/inputs), lg 16, xl 20 (cards), 2xl 28 (sheets/dialogs) */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-xs: var(--sh-xs);
+  --shadow-sm: var(--sh-sm);
+  --shadow-md: var(--sh-md);
+  --shadow-lg: var(--sh-lg);
+
+  /* escala tipográfica: base 16px, nada legível abaixo de 14px (12px só overline/legenda) */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.375rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.75rem;
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ------------------------------------------------------------------- base */
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 1rem;
+    line-height: 1.625rem;
+    font-weight: 400;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  button,
+  [role='button'],
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* o cabeçalho das páginas respira: títulos com tracking levemente negativo */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Protocolo e IDs: pilha monoespaçada do sistema, sem webfont */
+@utility font-protocol {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+}
+
+/* Shimmer só do skeleton é a única animação infinita permitida */
+@utility skeleton-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    color-mix(in srgb, var(--border) 70%, var(--surface-2)) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Textura de pontos do banner do perfil (6% de opacidade) */
+@utility bg-dots {
+  background-image: radial-gradient(color-mix(in srgb, var(--fg) 6%, transparent) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------------------------------------------------------- reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton-shimmer {
+    animation: none;
+  }
 }

@@ -55,3 +55,12 @@ export async function getAuth(req: NextRequest): Promise<Auth | null> {
 export async function getAuthUser(req: NextRequest): Promise<User | null> {
   return (await getAuth(req))?.user ?? null;
 }
+
+/** Usuário de um token de sessão (para Server Components, que não têm NextRequest). */
+export async function getUserByToken(token: string | undefined | null): Promise<User | null> {
+  if (!token) return null;
+  const db = await getDb();
+  const session = await db.getSession(token);
+  if (!session) return null;
+  return db.findUserById(session.userId);
+}

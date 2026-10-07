@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
+import { Providers } from '@/components/providers';
 import './globals.css';
 
 const figtree = localFont({
@@ -50,7 +51,7 @@ export const viewport: Viewport = { themeColor: '#F7F8FA' };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${figtree.variable} font-sans antialiased`}>{children}</body>
+      <body className={`${figtree.variable} font-sans antialiased`}><Providers>{children}</Providers></body>
     </html>
   );
 }
