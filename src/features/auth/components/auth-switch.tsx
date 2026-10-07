@@ -3,7 +3,7 @@
 // Recriado a partir do "Auth Switch" (21st.dev): um círculo azul gigante desliza entre os dois
 // lados do cartão. Os estilos ficam em globals.css (.auth-switch). Os dois formulários ficam
 // sempre montados; o inativo fica inert + hidden.
-import { MapPin } from 'lucide-react';
+import { UrbanaLogo } from '@/components/shell/brand';
 import { useReducedMotion } from 'motion/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 
@@ -59,10 +59,7 @@ export function AuthSwitch({ modo, onModo, login, cadastro, painel }: Props) {
       <div className="auth-switch__panels">
         <div className="auth-switch__panel auth-switch__panel--esq">
           <div className="auth-switch__content" data-ativo={login_} inert={!login_}>
-            <div className="auth-switch__so-desktop flex items-center gap-2.5">
-              <span className="grid size-9 place-items-center rounded-full bg-white/15"><MapPin className="size-5" aria-hidden /></span>
-              <span className="text-lg font-semibold">Urbana</span>
-            </div>
+            <UrbanaLogo tone="inverse" className="auth-switch__so-desktop" />
             <div className="auth-switch__texto">
               <p className="text-2xl font-semibold leading-tight max-[869.98px]:text-xl">Novo por aqui?</p>
               <p className="text-balance text-[0.95rem] text-white/90 max-[869.98px]:text-sm">Crie sua conta e registre problemas da sua rua em poucos passos.</p>
@@ -77,10 +74,7 @@ export function AuthSwitch({ modo, onModo, login, cadastro, painel }: Props) {
 
         <div className="auth-switch__panel auth-switch__panel--dir">
           <div className="auth-switch__content" data-ativo={!login_} inert={login_}>
-            <div className="auth-switch__so-desktop flex items-center gap-2.5">
-              <span className="grid size-9 place-items-center rounded-full bg-white/15"><MapPin className="size-5" aria-hidden /></span>
-              <span className="text-lg font-semibold">Urbana</span>
-            </div>
+            <UrbanaLogo tone="inverse" className="auth-switch__so-desktop" />
             <div className="auth-switch__texto">
               <p className="text-2xl font-semibold leading-tight max-[869.98px]:text-xl">Já tem conta?</p>
               <p className="text-balance text-[0.95rem] text-white/90 max-[869.98px]:text-sm">Entre para acompanhar suas ocorrências.</p>

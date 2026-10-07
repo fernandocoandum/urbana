@@ -21,6 +21,16 @@ const figtree = localFont({
   display: 'swap',
 });
 
+const bricolage = localFont({
+  src: [
+    { path: './fonts/bricolage-grotesque-latin-ext-wght-normal.woff2', weight: '200 800', style: 'normal' },
+    { path: './fonts/bricolage-grotesque-latin-wght-normal.woff2', weight: '200 800', style: 'normal' },
+  ],
+  variable: '--font-bricolage',
+  weight: '200 800',
+  display: 'swap',
+});
+
 const ORIGIN = 'https://urbana-five.vercel.app';
 const DESC = 'Registre e acompanhe ocorrências urbanas em Braço do Norte.';
 
@@ -51,7 +61,7 @@ export const viewport: Viewport = { themeColor: '#F7F8FA' };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${figtree.variable} font-sans antialiased`}><Providers>{children}</Providers></body>
+      <body className={`${figtree.variable} ${bricolage.variable} font-sans antialiased`}><Providers>{children}</Providers></body>
     </html>
   );
 }
