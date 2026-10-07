@@ -1,5 +1,5 @@
-import { EmConstrucao } from '@/components/layout/em-construcao';
+import { PerfilView } from '@/features/perfil/components/perfil-view';
 
 export default function Page() {
-  return <EmConstrucao size="column" titulo="Meu perfil" descricao="Seus dados, conquistas e progresso." />;
+  return <PerfilView />;
 }

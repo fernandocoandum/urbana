@@ -38,3 +38,15 @@ export function initials(nome: string | null | undefined): string {
     .join('')
     .toUpperCase() || '?';
 }
+
+/** "14:32" no fuso de Braço do Norte. */
+export function fmtHora(iso: Dateish): string {
+  if (!iso) return '–';
+  return new Date(iso).toLocaleTimeString('pt-BR', { timeZone: TZ_BR, hour: '2-digit', minute: '2-digit' });
+}
+
+/** "out. de 2026" — para "Membro desde". */
+export function fmtMesAno(iso: Dateish): string {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('pt-BR', { timeZone: TZ_BR, month: 'short', year: 'numeric' });
+}

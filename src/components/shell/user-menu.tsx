@@ -4,11 +4,10 @@ import { LogOut, Moon, Sun, UserRound, Volume2, VolumeX } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useSyncExternalStore } from 'react';
-import { useSWRConfig } from 'swr';
 import { Avatar } from '@/components/ui/avatar';
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } from '@/components/ui/menu';
 import { useSession } from '@/features/auth/session-context';
-import { api } from '@/lib/api-client';
+import { useSair } from '@/features/auth/use-sair';
 import { Sound } from '@/lib/sound';
 
 const noopSubscribe = () => () => {};
@@ -20,18 +19,12 @@ function useMounted() {
 export function UserMenu() {
   const user = useSession();
   const router = useRouter();
-  const { mutate } = useSWRConfig();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
   const mudo = useSyncExternalStore(Sound.subscribe, Sound.isMuted, () => false);
   const escuro = mounted && resolvedTheme === 'dark';
 
-  async function sair() {
-    try { await api('POST', '/api/logout'); } catch { /* sessão já inválida: segue */ }
-    // Descarta o cache do SWR (dados do usuário anterior) antes de ir ao login.
-    await mutate(() => true, undefined, { revalidate: false });
-    router.replace('/entrar');
-  }
+  const sair = useSair();
 
   return (
     <Menu>

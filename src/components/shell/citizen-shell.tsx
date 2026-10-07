@@ -47,9 +47,11 @@ const mobileTabs: ExpandableItem[] = [
 export function CitizenShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   // Uma ação primária por tela: no Início o CTA do próprio conteúdo é a ação; no wizard é o "Próximo".
-  const semBotaoNova = pathname === '/inicio' || pathname === '/ocorrencias/nova';
+  const semBotaoNova = pathname === '/inicio' || pathname === '/ocorrencias/nova' || pathname === '/perfil';
   // O wizard é uma tela de foco: sem barra inferior (a barra de ações dele fica no rodapé) e sem Urbaninha.
   const foco = pathname === '/ocorrencias/nova';
+  // A conversa ocupa a altura toda (o compositor fica logo acima da barra inferior): sem respiro extra nem Urbaninha por cima.
+  const altura = pathname === '/conversa';
   return (
     <div className="min-h-dvh">
       <a href="#conteudo" className="sr-only z-[70] rounded-md bg-surface px-4 py-2 font-medium focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
@@ -73,7 +75,7 @@ export function CitizenShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="conteudo" className={cn(!foco && 'pb-[calc(72px+env(safe-area-inset-bottom)+1.5rem)] md:pb-0')}>
+      <main id="conteudo" className={cn(!foco && !altura && 'pb-[calc(72px+env(safe-area-inset-bottom)+1.5rem)] md:pb-0', altura && 'pb-[calc(72px+env(safe-area-inset-bottom))] md:pb-0')}>
         {children}
       </main>
 
@@ -84,7 +86,7 @@ export function CitizenShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
-      {!foco && <UrbaninhaLauncher />}
+      {!foco && !altura && <UrbaninhaLauncher />}
     </div>
   );
 }

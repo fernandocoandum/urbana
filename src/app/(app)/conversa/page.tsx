@@ -1,5 +1,5 @@
-import { EmConstrucao } from '@/components/layout/em-construcao';
+import { ConversaView } from '@/features/chat/components/conversa-view';
 
 export default function Page() {
-  return <EmConstrucao titulo="Conversa da cidade" descricao="Moradores de Braço do Norte · mensagens públicas." />;
+  return <ConversaView />;
 }

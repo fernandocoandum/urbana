@@ -47,9 +47,11 @@ interface ContentProps {
   stickyFooter?: boolean;
   /** id do elemento do diálogo (seletor estável nos testes). */
   id?: string;
+  /** Sem padding: o conteúdo vai até as bordas (ex.: cartão de perfil com banner). Implica título oculto. */
+  bare?: boolean;
 }
 
-export function DialogContent({ title, description, hideTitle, dismissible = true, showClose, className, children, footer, stickyFooter, id }: ContentProps) {
+export function DialogContent({ title, description, hideTitle, dismissible = true, showClose, className, children, footer, stickyFooter, id, bare }: ContentProps) {
   const open = useContext(OpenContext);
   const close = showClose ?? dismissible;
   return (
@@ -84,8 +86,8 @@ export function DialogContent({ title, description, hideTitle, dismissible = tru
                 exit={{ opacity: 0, scale: 0.97, y: 6, transition: { duration: duration.fast } }}
                 transition={spring.smooth}
               >
-                <div className="overflow-y-auto p-6 sm:p-8">
-                  <div className={cn('flex flex-col gap-1', hideTitle && 'sr-only')}>
+                <div className={cn('overflow-y-auto', !bare && 'p-6 sm:p-8')}>
+                  <div className={cn('flex flex-col gap-1', (hideTitle || bare) && 'sr-only')}>
                     <DialogPrimitive.Title className="pr-8 text-2xl font-semibold tracking-[-.01em]">{title}</DialogPrimitive.Title>
                     {description ? (
                       <DialogPrimitive.Description className="text-base text-fg-muted">{description}</DialogPrimitive.Description>
@@ -93,7 +95,7 @@ export function DialogContent({ title, description, hideTitle, dismissible = tru
                       <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
                     )}
                   </div>
-                  <div className={cn(!hideTitle && 'mt-6')}>{children}</div>
+                  <div className={cn(!hideTitle && !bare && 'mt-6')}>{children}</div>
                   {footer && !stickyFooter && <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">{footer}</div>}
                 </div>
                 {footer && stickyFooter && (
@@ -102,7 +104,7 @@ export function DialogContent({ title, description, hideTitle, dismissible = tru
                 {close && (
                   <DialogPrimitive.Close
                     aria-label="Fechar"
-                    className="absolute right-4 top-4 grid size-11 place-items-center rounded-full text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+                    className={cn('absolute right-4 top-4 grid size-11 place-items-center rounded-full text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg', bare && 'bg-surface/70 text-fg backdrop-blur')}
                   >
                     <X className="size-5" />
                   </DialogPrimitive.Close>

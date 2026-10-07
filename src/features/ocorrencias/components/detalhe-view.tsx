@@ -2,7 +2,7 @@
 
 import { ArrowLeft, SearchX } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import { useMediaQuery } from 'usehooks-ts';
 import { Container } from '@/components/layout/page';
@@ -33,6 +33,11 @@ export function DetalheView({ id }: { id: string }) {
   const desktop = useMediaQuery('(min-width: 1024px)', { initializeWithValue: false, defaultValue: false });
   const [aba, setAba] = useState('resumo');
   const carregou = !!o;
+  const mensagensBrutas = o?.mensagens;
+  const thread = useMemo(
+    () => (mensagensBrutas || []).map((m) => ({ id: m.id, autor: m.de, nome: m.de === 'prefeitura' ? 'Prefeitura' : 'Você', texto: m.texto, data: m.data })),
+    [mensagensBrutas],
+  );
 
   // Ao abrir, marca como lida (e atualiza o ponto azul da lista).
   useEffect(() => {
@@ -75,7 +80,7 @@ export function DetalheView({ id }: { id: string }) {
   };
   const atualizar = () => { void mutate(); void mutateGlobal('/api/ocorrencias'); };
 
-  const conversa = <MessageThread mensagens={o.mensagens || []} ladoProprio="cidadao" onSend={enviarMensagem} inputId="mdet-msg-input" />;
+  const conversa = <MessageThread variant="ocorrencia" mensagens={thread} ladoProprio="cidadao" onSend={enviarMensagem} inputId="mdet-msg-input" />;
 
   return (
     <Container>

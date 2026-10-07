@@ -48,7 +48,7 @@ export function AnimatedTabs({ tabs, value, defaultValue, onValueChange, variant
         aria-label={rest['aria-label']}
         className={cn(
           'relative inline-flex max-w-full items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-          pill ? 'gap-1 rounded-full bg-surface-2 p-1' : 'gap-6 border-b border-border',
+          pill ? 'gap-1 rounded-full bg-surface-2 p-1' : 'flex w-full gap-6 border-b border-border',
           fullWidth && 'flex w-full',
           fullWidth && !pill && 'gap-0',
         )}
@@ -62,7 +62,7 @@ export function AnimatedTabs({ tabs, value, defaultValue, onValueChange, variant
               value={t.value}
               id={t.id}
               className={cn(
-                'relative flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium outline-none transition-colors duration-150 focus-visible:ring-4 focus-visible:ring-primary/25',
+                'relative flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40',
                 pill ? 'h-9 shrink-0 rounded-full px-3 sm:px-4' : 'h-12 shrink-0 px-1',
                 fullWidth && 'flex-1',
                 active ? 'text-fg' : 'text-fg-muted hover:text-fg',

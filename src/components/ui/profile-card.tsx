@@ -1,8 +1,8 @@
 'use client';
 
 // Recriado a partir do "freelancer-profile-card" de @lavikatiyar (21st.dev, MIT): banner, avatar
-// sobreposto, nome, título, linha de métricas, badges e dois botões. O conteúdo real do perfil
-// (conquistas, níveis) entra na Etapa E; aqui fica o componente genérico.
+// sobreposto, nome, título, linha de métricas, badges e dois botões. O conteúdo (níveis, conquistas)
+// vem de features/perfil.
 import { motion } from 'motion/react';
 import { Camera, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -38,6 +38,7 @@ interface Props {
 export function ProfileCard({ nome, foto, titulo, meta, metricas, badges, acoes, onEditPhoto, variant = 'full', className, nomeId }: Props) {
   const compact = variant === 'compact';
   const bloco = (i: number) => ({ initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { ...spring.gentle, delay: 0.12 + staggerDelay(i) } });
+  const ganhas = badges?.filter((b) => !b.locked).length ?? 0;
 
   return (
     <div className={cn('overflow-hidden rounded-xl border border-border bg-surface shadow-xs', className)}>
@@ -53,8 +54,14 @@ export function ProfileCard({ nome, foto, titulo, meta, metricas, badges, acoes,
         transition={{ duration: 0.5 }}
       />
 
-      <div className="px-6 pb-6 sm:px-8 sm:pb-8">
-        <motion.div className={cn('relative w-fit', compact ? '-mt-10' : '-mt-14')} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={spring.smooth}>
+      <div
+        className={cn(
+          'grid gap-x-6 px-6 pb-6 sm:px-8 sm:pb-8',
+          // mobile: tudo em coluna, ações por último; ≥sm: ações à direita, na altura do avatar
+          "[grid-template-areas:'avatar'_'info'_'metrics'_'badges'_'actions'] sm:grid-cols-[1fr_auto] sm:[grid-template-areas:'avatar_actions'_'info_info'_'metrics_metrics'_'badges_badges']",
+        )}
+      >
+        <motion.div className={cn('relative w-fit [grid-area:avatar]', compact ? '-mt-10' : '-mt-14')} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={spring.smooth}>
           <Avatar nome={nome} foto={foto} size="xl" className={cn('ring-4 ring-surface', compact && 'size-20 text-3xl')} />
           {onEditPhoto && (
             <Tip label="Trocar foto">
@@ -70,56 +77,67 @@ export function ProfileCard({ nome, foto, titulo, meta, metricas, badges, acoes,
           )}
         </motion.div>
 
-        <motion.div className="mt-4" {...bloco(0)}>
-          <h2 id={nomeId} data-testid="perfil-nome" className="break-words text-4xl font-[650] tracking-[-.015em]">
+        {acoes && !compact && (
+          <motion.div className="mt-8 flex flex-col gap-3 [grid-area:actions] sm:mt-4 sm:flex-row sm:items-start" {...bloco(3)}>
+            {acoes}
+          </motion.div>
+        )}
+
+        <motion.div className="mt-5 min-w-0 [grid-area:info]" {...bloco(0)}>
+          <h2 id={nomeId} data-testid="perfil-nome" className="break-words text-3xl font-[650] tracking-[-.015em] sm:text-4xl">
             {nome}
           </h2>
-          {titulo && <div className="mt-1 flex items-center gap-2 text-lg font-medium text-primary">{titulo}</div>}
+          {titulo && <div className="mt-2 flex items-center gap-2 text-lg font-medium text-primary [&_svg]:size-5">{titulo}</div>}
           {meta && <p className="mt-2 text-sm text-fg-muted">{meta}</p>}
         </motion.div>
 
         {metricas && metricas.length > 0 && (
-          <motion.dl className="mt-6 grid divide-x divide-border rounded-xl bg-surface-2/60 py-4" style={{ gridTemplateColumns: `repeat(${metricas.length}, minmax(0, 1fr))` }} {...bloco(1)}>
+          <motion.dl className="mt-6 grid divide-x divide-border rounded-xl bg-surface-2/60 py-5 [grid-area:metrics]" style={{ gridTemplateColumns: `repeat(${metricas.length}, minmax(0, 1fr))` }} {...bloco(1)}>
             {metricas.map((m) => (
-              <div key={m.rotulo} className="px-3 text-center">
-                <dd className="tabular text-2xl font-semibold">
+              <div key={m.rotulo} className="flex flex-col-reverse justify-end gap-1 px-2 text-center sm:px-4">
+                <dt className="text-sm text-fg-muted">{m.rotulo}</dt>
+                <dd className="tabular text-2xl font-semibold leading-8">
                   <CountUp to={m.valor} duration={1.2} />
                 </dd>
-                <dt className="mt-0.5 text-sm text-fg-muted">{m.rotulo}</dt>
               </div>
             ))}
           </motion.dl>
         )}
 
         {badges && badges.length > 0 && (
-          <motion.ul className="mt-6 flex flex-wrap gap-2" aria-label="Conquistas" {...bloco(2)}>
-            {badges.map((b) => {
-              const Icon = b.icon;
-              const chip = (
-                <li
-                  key={b.label}
-                  tabIndex={b.locked ? 0 : undefined}
-                  className={cn('inline-flex h-9 items-center gap-2 rounded-full border border-border bg-surface px-3.5 text-sm font-medium', b.locked && 'opacity-40')}
-                >
-                  <Icon className="size-4 text-primary" aria-hidden />
-                  {b.label}
-                  {b.locked && <span className="sr-only"> (bloqueada)</span>}
-                </li>
-              );
-              return b.locked && b.hint ? (
-                <Tip key={b.label} label={b.hint}>
-                  {chip}
-                </Tip>
-              ) : (
-                chip
-              );
-            })}
-          </motion.ul>
-        )}
-
-        {acoes && !compact && (
-          <motion.div className="mt-8 flex flex-col gap-3 sm:flex-row" {...bloco(3)}>
-            {acoes}
+          <motion.div className="mt-8 [grid-area:badges]" {...bloco(2)}>
+            <div className="flex items-baseline justify-between gap-4">
+              <h3 className="text-lg font-semibold">Conquistas</h3>
+              <p className="tabular text-sm text-fg-muted">
+                {ganhas} de {badges.length}
+              </p>
+            </div>
+            <ul className="mt-4 flex flex-wrap gap-2.5" aria-label="Conquistas">
+              {badges.map((b) => {
+                const Icon = b.icon;
+                const chip = (
+                  <li
+                    key={b.label}
+                    tabIndex={b.locked ? 0 : undefined}
+                    className={cn(
+                      'inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium outline-none focus-visible:ring-4 focus-visible:ring-primary/25',
+                      b.locked ? 'border-border bg-surface text-fg opacity-40' : 'border-primary/20 bg-primary-soft text-primary',
+                    )}
+                  >
+                    <Icon className="size-4" aria-hidden />
+                    {b.label}
+                    {b.locked && <span className="sr-only"> (bloqueada)</span>}
+                  </li>
+                );
+                return b.locked && b.hint ? (
+                  <Tip key={b.label} label={b.hint}>
+                    {chip}
+                  </Tip>
+                ) : (
+                  chip
+                );
+              })}
+            </ul>
           </motion.div>
         )}
       </div>
