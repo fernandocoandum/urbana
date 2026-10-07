@@ -29,5 +29,7 @@ export function GoogleButton({ clientId, text, onCredential }: { clientId: strin
     id.renderButton(el, { theme: resolvedTheme === 'dark' ? 'filled_black' : 'outline', size: 'large', shape: 'pill', text, locale: 'pt-BR', width: largura });
   }, [clientId, text, resolvedTheme]);
 
-  return <div ref={slot} className="flex min-h-11 w-full justify-center" />;
+  // color-scheme light: o iframe do GIS é um documento claro; sob a página em `dark` o navegador
+  // pintaria um fundo branco opaco atrás dele (o retângulo branco em volta da pílula no modo noturno).
+  return <div ref={slot} className="flex min-h-11 w-full justify-center [color-scheme:light]" />;
 }
