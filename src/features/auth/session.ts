@@ -8,7 +8,7 @@ import { HttpError } from '@/lib/http';
 // testes in-process (sem contexto de request do Next) quebram.
 
 export type AuthVia = 'bearer' | 'cookie';
-export interface Credential { token: string; via: AuthVia; hasCookie: boolean }
+export interface Credential { token: string; via: AuthVia; hasCookie: boolean; cookieToken: string }
 export interface Auth extends Credential { user: User }
 
 // Mesma extração do servidor legado: remove o prefixo "Bearer " e aparas.
@@ -20,8 +20,8 @@ function bearerToken(req: NextRequest): string {
 export function readCredential(req: NextRequest): Credential | null {
   const cookie = req.cookies.get(SESSION_COOKIE)?.value || '';
   const bearer = bearerToken(req);
-  if (bearer) return { token: bearer, via: 'bearer', hasCookie: !!cookie };
-  if (cookie) return { token: cookie, via: 'cookie', hasCookie: true };
+  if (bearer) return { token: bearer, via: 'bearer', hasCookie: !!cookie, cookieToken: cookie };
+  if (cookie) return { token: cookie, via: 'cookie', hasCookie: true, cookieToken: cookie };
   return null;
 }
 

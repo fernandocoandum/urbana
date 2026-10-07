@@ -140,6 +140,11 @@ describe('isOwnUploadUrl (evita que o campo "foto" vire vetor de XSS/URL arbitr�
     expect(isOwnUploadUrl(undefined)).toBe(true);
     expect(isOwnUploadUrl('/api/arquivos/img1a2b3c')).toBe(true);
   });
+  it('rejeita valores que não são string (número, array, objeto)', () => {
+    expect(isOwnUploadUrl(123)).toBe(false);
+    expect(isOwnUploadUrl(['/api/arquivos/abc'])).toBe(false);
+    expect(isOwnUploadUrl({})).toBe(false);
+  });
   it('rejeita URLs externas, javascript: e payloads de XSS', () => {
     expect(isOwnUploadUrl('https://evil.com/malware.png')).toBe(false);
     expect(isOwnUploadUrl('javascript:alert(1)')).toBe(false);

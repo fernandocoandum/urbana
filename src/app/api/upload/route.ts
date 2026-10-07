@@ -8,5 +8,5 @@ export const dynamic = 'force-dynamic';
 export const POST = route(async (req) => {
   const auth = await getAuth(req);
   if (!auth) return respond(req, UNAUTHENTICATED);
-  return respond(req, await enviarImagem(auth.user, await parseBody(req)));
+  return respond(req, await enviarImagem(auth.user, () => parseBody(req)));
 });

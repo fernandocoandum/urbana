@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db';
 import type { User } from '@/lib/db/types';
 import { env, isProdIntent } from '@/lib/env';
 import { verificarTokenGoogle } from '@/lib/google';
-import type { Body, ServiceResult } from '@/lib/http';
+import type { ReadBody, ServiceResult } from '@/lib/http';
 import { enviarEmailRecuperacaoGmail, enviarEmailRecuperacaoResend } from '@/lib/mail';
 import { rateLimit } from '@/lib/rate-limit';
 import { cap, EMAIL_RE } from '@/lib/validation';
@@ -17,11 +17,11 @@ function sessaoBody(token: string, user: User) {
   return { token, role:user.role, nome:user.nome, email:user.email, id:user.id, termosAceitos: !!user.termosAceitosEm, foto:user.foto||null };
 }
 
-export async function cadastrar(ip: string, body: Body): Promise<ServiceResult> {
+export async function cadastrar(ip: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('cadastro:' + ip, 8, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro: `Muitas tentativas. Tente novamente em ${Math.ceil(rl.retryAfter!/60)} min.` });
-  const { nome, email, senha, bairro } = body;
+  const { nome, email, senha, bairro } = await readBody();
   if (typeof nome !== 'string' || !nome.trim() || typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return j(400, { erro:'Preencha todos os campos.' });
   if (email.length > 254 || nome.length > 300) return j(400, { erro:'Campo excede o tamanho máximo.' });
   const emailNorm = email.trim().toLowerCase();
@@ -37,11 +37,11 @@ export async function cadastrar(ip: string, body: Body): Promise<ServiceResult> 
   return j(201, { ok:true });
 }
 
-export async function login(ip: string, body: Body): Promise<ServiceResult> {
+export async function login(ip: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('login:' + ip, 10, 15 * 60 * 1000);
   if (rl.limited) return j(429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter!/60)} min.` });
-  const { email, senha } = body;
+  const { email, senha } = await readBody();
   if (typeof email !== 'string' || !email.trim() || typeof senha !== 'string' || !senha) return j(400, { erro:'Preencha e-mail e senha.' });
   // Limite de tamanho ANTES de gastar CPU com scrypt: sem isso, um payload de senha
   // gigante (o body aceita até 20MB) força o servidor a derivar hash de uma entrada enorme
@@ -62,13 +62,13 @@ export function config(): ServiceResult {
 // Login com Google (Google Identity Services): o front manda o ID token assinado pelo
 // Google e o servidor valida com o próprio Google (audiência, emissor, e-mail verificado)
 // antes de criar a sessão. Se o e-mail ainda não tem conta, cria uma de morador.
-export async function loginGoogle(ip: string, body: Body): Promise<ServiceResult> {
+export async function loginGoogle(ip: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const clientId = env.GOOGLE_CLIENT_ID;
   if (!clientId) return j(404, { erro:'Login com Google não configurado.' });
   const rl = rateLimit('login:' + ip, 10, 15 * 60 * 1000);
   if (rl.limited) return j(429, { erro: `Muitas tentativas de login. Tente novamente em ${Math.ceil(rl.retryAfter!/60)} min.` });
-  const { credential } = body;
+  const { credential } = await readBody();
   if (typeof credential !== 'string' || !credential || credential.length > 4096) return j(400, { erro:'Credencial inválida.' });
   const info = await verificarTokenGoogle(credential);
   const emissorOk = info && (info.iss === 'accounts.google.com' || info.iss === 'https://accounts.google.com');
@@ -100,7 +100,7 @@ export function me(auth: Auth): ServiceResult {
   const { senha, resetToken, resetExpiraEm, ...safe } = auth.user;
   const body = { ...safe, termosAceitos: !!auth.user.termosAceitosEm };
   // Migra quem já está logado só com o token no localStorage: grava o cookie na resposta.
-  return j(200, body, auth.via === 'bearer' && !auth.hasCookie ? { setSession: auth.token } : {});
+  return j(200, body, auth.via === 'bearer' && auth.cookieToken !== auth.token ? { setSession: auth.token } : {});
 }
 
 export async function aceitarTermos(user: User): Promise<ServiceResult> {
@@ -109,11 +109,11 @@ export async function aceitarTermos(user: User): Promise<ServiceResult> {
   return j(200, { ok:true });
 }
 
-export async function recuperarSenha(ip: string, baseUrl: string, body: Body): Promise<ServiceResult> {
+export async function recuperarSenha(ip: string, baseUrl: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('recuperar:' + ip, 6, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro:'Muitas solicitações. Tente novamente mais tarde.' });
-  const { email } = body;
+  const { email } = await readBody();
   const emailNorm = typeof email === 'string' ? email.trim().toLowerCase() : '';
   const resposta: { ok: boolean; mensagem: string; tokenDemo?: string } = { ok:true, mensagem:'Se o e-mail existir em nossa base, enviaremos as instruções de redefinição.' };
   if (!emailNorm) return j(200, resposta);
@@ -159,11 +159,11 @@ export async function recuperarSenha(ip: string, baseUrl: string, body: Body): P
   return j(200, resposta);
 }
 
-export async function redefinirSenha(ip: string, body: Body): Promise<ServiceResult> {
+export async function redefinirSenha(ip: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('redefinir:' + ip, 10, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro:'Muitas tentativas. Tente novamente mais tarde.' });
-  const { token, senha } = body;
+  const { token, senha } = await readBody();
   if (typeof token !== 'string' || !token.trim()) return j(400, { erro:'Token inválido.' });
   if (typeof senha !== 'string' || senha.length < 6) return j(400, { erro:'A nova senha precisa ter ao menos 6 caracteres.' });
   const tokenHash = crypto.createHash('sha256').update(token.trim()).digest('hex');

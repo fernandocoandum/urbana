@@ -1,5 +1,5 @@
 export function isOwnUploadUrl(v: unknown): boolean {
-  return v === null || v === undefined || /^\/api\/arquivos\/[A-Za-z0-9]+$/.test(v as string);
+  return v === null || v === undefined || (typeof v === 'string' && /^\/api\/arquivos\/[A-Za-z0-9]+$/.test(v));
 }
 export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function cap<T>(str: T, max: number): T | string {

@@ -100,11 +100,18 @@ export class JsonDb implements Db {
 
     if (existente) return; // conta já existe e nenhuma senha nova foi solicitada — não mexe nela
 
-    const senhaGerada = isProdIntent() ? crypto.randomBytes(9).toString('base64url') : 'admin';
+    const senhaGerada = isProdIntent() || env.VERCEL ? crypto.randomBytes(9).toString('base64url') : 'admin';
     const hash = hashPassword(senhaGerada);
     const novo: User = { id:'u1', nome, email, senha:hash, role:'admin', bairro:'', foto:null };
     novo.criadoEm = new Date().toISOString(); novo.termosAceitosEm = novo.criadoEm; jsonDB.users.push(novo); this.saveJsonDB();
-    console.log(`Modo de desenvolvimento: conta administrativa ${email} / senha "admin" (apenas local).`);
+    if (isProdIntent() || env.VERCEL) {
+      console.log('========================================================');
+      console.log(`Conta administrativa criada automaticamente (banco JSON efêmero em /tmp): ${email}`);
+      console.log(`Senha temporária gerada (defina ADMIN_SENHA para fixar uma própria): ${senhaGerada}`);
+      console.log('========================================================');
+    } else {
+      console.log(`Modo de desenvolvimento: conta administrativa ${email} / senha "admin" (apenas local).`);
+    }
   }
 
   async gerarProtocolo() {
@@ -153,7 +160,7 @@ export class JsonDb implements Db {
     return this.jsonDB.ocorrencias.filter(o => (o.apoios||[]).includes(userId)).length;
   }
   async createUser(user: User) {
-    this.jsonDB.users.push(user); this.saveJsonDB();
+    this.jsonDB.users.push({ ...user, criadoEm: user.criadoEm ?? new Date().toISOString() }); this.saveJsonDB();
   }
   async aceitarTermos(userId: string) {
     const agora = new Date().toISOString();

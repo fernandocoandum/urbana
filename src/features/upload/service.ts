@@ -2,17 +2,17 @@ import crypto from 'node:crypto';
 import { ALLOWED_IMAGE_MIME, MAX_IMAGE_BYTES } from '@/lib/constants';
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/db/types';
-import type { Body, ServiceResult } from '@/lib/http';
+import type { ReadBody, ServiceResult } from '@/lib/http';
 import { rateLimit } from '@/lib/rate-limit';
 import { assinaturaImagemValida } from '@/lib/validation';
 
 const j = (status: number, body: unknown): ServiceResult => ({ status, body });
 
-export async function enviarImagem(user: User, body: Body): Promise<ServiceResult> {
+export async function enviarImagem(user: User, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('upload:' + user.id, 40, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro: 'Muitos envios de imagem em pouco tempo. Tente novamente mais tarde.' });
-  const { data } = body;
+  const { data } = await readBody();
   if (!data || typeof data !== 'string') return j(400, { erro:'Sem dados.' });
   const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/.exec(data);
   if (!match) return j(400, { erro:'Formato de imagem inválido.' });

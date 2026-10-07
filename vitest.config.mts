@@ -11,6 +11,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    env: { NODE_ENV: 'test', URBANA_DB_FILE: '.tmp/test-db.json' },
+    env: { NODE_ENV: 'test', URBANA_DB_FILE: '.tmp/test-db.json', DATABASE_URL: '' },
   },
 });

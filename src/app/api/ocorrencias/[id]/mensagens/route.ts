@@ -9,5 +9,5 @@ export const POST = route(async (req, ctx: { params: Promise<{ id: string }> }) 
   const { id } = await ctx.params;
   const auth = await getAuth(req);
   if (!auth) return respond(req, UNAUTHENTICATED);
-  return respond(req, await enviarMensagem(auth.user, id, await parseBody(req)));
+  return respond(req, await enviarMensagem(auth.user, id, () => parseBody(req)));
 });

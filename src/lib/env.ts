@@ -3,6 +3,7 @@
 export const env = {
   get DATABASE_URL() { return process.env.DATABASE_URL; },
   get VERCEL() { return process.env.VERCEL; },
+  get VERCEL_ENV() { return process.env.VERCEL_ENV; },
   get URBANA_DB_FILE() { return process.env.URBANA_DB_FILE; },
   get ADMIN_EMAIL() { return process.env.ADMIN_EMAIL; },
   get ADMIN_NOME() { return process.env.ADMIN_NOME; },

@@ -13,7 +13,8 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
   'Content-Security-Policy': [
     "default-src 'self'",
-    "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
+    "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://tile.openstreetmap.org",
+    "worker-src 'self' blob:",
     "media-src 'self'",
     "script-src 'self' 'unsafe-inline' https://accounts.google.com",
     'frame-src https://accounts.google.com',
@@ -101,6 +102,8 @@ class PayloadTooLarge extends Error {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Body = Record<string, any>;
+
+export type ReadBody = () => Promise<Body>;
 
 const MAX_BODY = 20e6;
 /** Lê o corpo JSON (limite de 20MB → 413). JSON inválido ou vazio vira {}. */

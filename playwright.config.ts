@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: `node -e "require('fs').rmSync('.tmp/e2e-db.json',{force:true})" && next start -p 3099`,
     url: 'http://localhost:3099/api/config',
-    env: { URBANA_DB_FILE: '.tmp/e2e-db.json' },
+    env: { URBANA_DB_FILE: '.tmp/e2e-db.json', DATABASE_URL: '' },
     reuseExistingServer: false,
     timeout: 120_000,
   },

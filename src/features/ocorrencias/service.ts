@@ -1,7 +1,7 @@
 import { BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_ORDEM, STATUS_VALIDOS } from '@/lib/constants';
 import { getDb } from '@/lib/db';
 import type { Ocorrencia, User } from '@/lib/db/types';
-import type { Body, ServiceResult } from '@/lib/http';
+import type { ReadBody, ServiceResult } from '@/lib/http';
 import { rateLimit } from '@/lib/rate-limit';
 import { cap, isCoordenadaValida, isOwnUploadUrl } from '@/lib/validation';
 
@@ -15,12 +15,12 @@ export async function listar(user: User, sp: URLSearchParams): Promise<ServiceRe
   return j(200, await db.listOcorrencias(filters));
 }
 
-export async function criar(user: User, body: Body): Promise<ServiceResult> {
+export async function criar(user: User, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   if (!user.termosAceitosEm) return j(403, { erro:'É preciso aceitar os termos de uso antes de registrar uma ocorrência.' });
   const rl = rateLimit('ocorrencia:' + user.id, 20, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro: 'Muitas denúncias em pouco tempo. Tente novamente mais tarde.' });
-  const { titulo, descricao, categoria, endereco, bairro, referencia, foto, lat, lng, precisao } = body;
+  const { titulo, descricao, categoria, endereco, bairro, referencia, foto, lat, lng, precisao } = await readBody();
   if (typeof titulo !== 'string' || !titulo.trim() || !categoria || typeof endereco !== 'string' || !endereco.trim() || !bairro) return j(400, { erro:'Preencha os campos obrigatórios.' });
   if (!CATEGORIAS_VALIDAS.has(categoria)) return j(400, { erro:'Categoria inválida.' });
   if (!BAIRROS_VALIDOS.has(bairro)) return j(400, { erro:'Bairro inválido.' });
@@ -45,10 +45,10 @@ export async function detalhe(user: User, id: string): Promise<ServiceResult> {
   return j(200, oc);
 }
 
-export async function alterarStatus(user: User | null, id: string, body: Body): Promise<ServiceResult> {
+export async function alterarStatus(user: User | null, id: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   if (!user || user.role !== 'admin') return j(403, { erro:'Acesso negado.' });
-  const { status, obs, setor, responsavel, prazo, evidencia } = body;
+  const { status, obs, setor, responsavel, prazo, evidencia } = await readBody();
   if (!STATUS_VALIDOS.has(status)) return j(400, { erro:'Status inválido.' });
   const atual = await db.getOcorrencia(id);
   if (!atual) return j(404, { erro:'Não encontrada.' });
@@ -79,14 +79,14 @@ export async function alterarStatus(user: User | null, id: string, body: Body): 
   return j(200, { ok:true });
 }
 
-export async function enviarMensagem(user: User, id: string, body: Body): Promise<ServiceResult> {
+export async function enviarMensagem(user: User, id: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const oc = await db.getOcorrencia(id);
   if (!oc) return j(404, { erro:'Não encontrada.' });
   if (user.role !== 'admin' && oc.userId !== user.id) return j(403, { erro:'Sem permissão.' });
   const rl = rateLimit('mensagem:' + user.id, 60, 60 * 60 * 1000);
   if (rl.limited) return j(429, { erro: 'Muitas mensagens em pouco tempo. Tente novamente mais tarde.' });
-  const { texto } = body;
+  const { texto } = await readBody();
   const textoLimpo = cap(texto, 1000);
   if (!textoLimpo || !textoLimpo.trim()) return j(400, { erro:'Mensagem vazia.' });
   const de = user.role === 'admin' ? 'prefeitura' : 'cidadao';
@@ -104,13 +104,13 @@ export async function marcarLida(user: User, id: string): Promise<ServiceResult>
   return j(200, { ok:true });
 }
 
-export async function reabrir(user: User, id: string, body: Body): Promise<ServiceResult> {
+export async function reabrir(user: User, id: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const oc = await db.getOcorrencia(id);
   if (!oc) return j(404, { erro:'Não encontrada.' });
   if (oc.userId !== user.id) return j(403, { erro:'Sem permissão.' });
   if (oc.status !== 'Resolvida') return j(400, { erro:'Só é possível pedir reabertura de ocorrências resolvidas.' });
-  const { motivo } = body;
+  const { motivo } = await readBody();
   const motivoLimpo = cap(motivo, 500);
   if (!motivoLimpo || !motivoLimpo.trim()) return j(400, { erro:'Descreva o motivo do pedido de reabertura.' });
   const pedido = await db.pedirReabertura(id, motivoLimpo);
@@ -127,14 +127,14 @@ export async function apoiar(user: User, id: string): Promise<ServiceResult> {
   return j(200, r);
 }
 
-export async function avaliar(user: User, id: string, body: Body): Promise<ServiceResult> {
+export async function avaliar(user: User, id: string, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const oc = await db.getOcorrencia(id);
   if (!oc) return j(404, { erro:'Não encontrada.' });
   if (oc.userId !== user.id) return j(403, { erro:'Sem permissão.' });
   if (oc.status !== 'Resolvida') return j(400, { erro:'Só é possível avaliar ocorrências resolvidas.' });
   if (oc.avaliacao) return j(400, { erro:'Ocorrência já avaliada.' });
-  const { nota, comentario } = body;
+  const { nota, comentario } = await readBody();
   const n = parseInt(nota);
   if (!n || n < 1 || n > 5) return j(400, { erro:'Nota inválida.' });
   const avaliacao = await db.avaliar(id, n, cap(comentario,500));

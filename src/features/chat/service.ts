@@ -1,6 +1,6 @@
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/db/types';
-import type { Body, ServiceResult } from '@/lib/http';
+import type { ReadBody, ServiceResult } from '@/lib/http';
 import { rateLimit } from '@/lib/rate-limit';
 import { cap } from '@/lib/validation';
 
@@ -20,11 +20,11 @@ export async function listarChat(): Promise<ServiceResult> {
   }));
 }
 
-export async function enviarChat(user: User, body: Body): Promise<ServiceResult> {
+export async function enviarChat(user: User, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
   const rl = rateLimit('chat:' + user.id, 30, 60 * 1000);
   if (rl.limited) return j(429, { erro: 'Você está enviando mensagens rápido demais. Espere um pouco.' });
-  const { texto } = body;
+  const { texto } = await readBody();
   if (typeof texto !== 'string' || !texto.trim()) return j(400, { erro:'Mensagem vazia.' });
   const msg = { id:'msg'+Date.now()+Math.random().toString(36).slice(2,7), userId:user.id, nome:user.nome, texto:cap(texto,500) as string, criadoEm:new Date().toISOString() };
   await db.addChatMensagem(msg);

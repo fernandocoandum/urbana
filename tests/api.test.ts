@@ -278,6 +278,24 @@ describe('Sessão em cookie httpOnly (Etapa B)', () => {
     expect(res.status).toBe(200);
   });
 
+  it('CSRF de login: POST /api/login com Origin de outro host → 403, mesmo sem cookie; sem Origin ou com o próprio host passa', async () => {
+    const hostil = await post('/api/login', { email: conta.email, senha: conta.senha }, { ...ip, origin: 'http://evil.example', host: 'localhost' });
+    expect(hostil.status).toBe(403);
+    expect((await hostil.json()).erro).toBe('Origem não permitida.');
+    for (const rota of ['/api/cadastro', '/api/recuperar-senha', '/api/redefinir-senha', '/api/login/google']) {
+      expect((await post(rota, {}, { ...ip, origin: 'http://evil.example', host: 'localhost' })).status).toBe(403);
+    }
+    const proprio = await post('/api/login', { email: conta.email, senha: conta.senha }, { ...ip, origin: 'http://localhost', host: 'localhost' });
+    expect(proprio.status).toBe(200);
+  });
+
+  it('/api/me com Bearer diferente do cookie atual regrava o cookie', async () => {
+    const outro = await (await post('/api/login', { email: conta.email, senha: conta.senha }, ip)).json();
+    const res = await get('/api/me', { Authorization: `Bearer ${outro.token}`, cookie: `urbana_token=${token}` });
+    expect(res.status).toBe(200);
+    expect(cookieDe(res)!.valor).toBe(outro.token);
+  });
+
   it('logout apaga a sessão (cookie) e limpa o cookie', async () => {
     const res = await post('/api/logout', {}, { cookie: `urbana_token=${token}` });
     expect(res.status).toBe(200);

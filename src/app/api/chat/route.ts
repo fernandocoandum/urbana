@@ -14,5 +14,5 @@ export const GET = route(async (req) => {
 export const POST = route(async (req) => {
   const auth = await getAuth(req);
   if (!auth) return respond(req, UNAUTHENTICATED);
-  return respond(req, await enviarChat(auth.user, await parseBody(req)));
+  return respond(req, await enviarChat(auth.user, () => parseBody(req)));
 });

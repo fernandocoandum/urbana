@@ -25,6 +25,12 @@ async function initDb(): Promise<Db> {
       throw new DbUnavailable(msg);
     }
   }
+  // Produção na Vercel sem DATABASE_URL: o modo JSON ficaria em /tmp (efêmero) — recusa com 503
+  // em vez de "funcionar" perdendo dados. Preview/dev na Vercel continuam no modo JSON.
+  if (env.VERCEL_ENV === 'production') {
+    console.error('ERRO CRÍTICO: DATABASE_URL ausente em produção (VERCEL_ENV=production).');
+    throw new DbUnavailable('DATABASE_URL ausente em produção');
+  }
   return JsonDb.init();
 }
 

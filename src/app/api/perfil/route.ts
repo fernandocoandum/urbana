@@ -14,5 +14,5 @@ export const GET = route(async (req) => {
 export const PUT = route(async (req) => {
   const auth = await getAuth(req);
   if (!auth) return respond(req, UNAUTHENTICATED);
-  return respond(req, await atualizarPerfil(auth.user, await parseBody(req)));
+  return respond(req, await atualizarPerfil(auth.user, () => parseBody(req)));
 });

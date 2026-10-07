@@ -1,7 +1,7 @@
 import { BAIRROS_VALIDOS } from '@/lib/constants';
 import { getDb } from '@/lib/db';
 import type { User } from '@/lib/db/types';
-import type { Body, ServiceResult } from '@/lib/http';
+import type { ReadBody, ServiceResult } from '@/lib/http';
 import { cap, isOwnUploadUrl } from '@/lib/validation';
 
 const j = (status: number, body: unknown): ServiceResult => ({ status, body });
@@ -20,9 +20,9 @@ export async function getPerfil(user: User): Promise<ServiceResult> {
   });
 }
 
-export async function atualizarPerfil(user: User, body: Body): Promise<ServiceResult> {
+export async function atualizarPerfil(user: User, readBody: ReadBody): Promise<ServiceResult> {
   const db = await getDb();
-  const { nome, foto, bairro } = body;
+  const { nome, foto, bairro } = await readBody();
   const upd: { nome?: string; foto?: string | null; bairro?: string } = {};
   if (nome !== undefined) {
     if (typeof nome !== 'string' || !nome.trim()) return j(400, { erro:'Nome não pode ficar em branco.' });
