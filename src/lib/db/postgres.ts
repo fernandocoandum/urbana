@@ -3,10 +3,10 @@ import { Pool } from 'pg';
 import { computeDerivedFields } from '@/features/ocorrencias/derived';
 import { env, isProdIntent } from '@/lib/env';
 import { hashPassword } from '@/lib/crypto';
-import { APOIOS_TABLE_SQL, SCHEMA_SQL } from './schema';
+import { APOIOS_TABLE_SQL, NOTIFICACOES_TABLE_SQL, SCHEMA_SQL } from './schema';
 import { anoAtualBR } from './util';
 import type {
-  Avaliacao, ChatMsg, Db, ListFilters, Mensagem, Ocorrencia, OcorrenciaDerivada, PedidoReabertura,
+  Avaliacao, ChatMsg, Db, ListFilters, Mensagem, Notificacao, Ocorrencia, OcorrenciaDerivada, PedidoReabertura,
   Stats, StatusOpts, User,
 } from './types';
 
@@ -46,6 +46,7 @@ export class PgDb implements Db {
       await pool.query(SCHEMA_SQL);
       const db = new PgDb(pool);
       await db.ensureApoiosTable();
+      await pool.query(NOTIFICACOES_TABLE_SQL);
       await db.ensureAdminAccount();
       await pool.query(`INSERT INTO config (key,value) VALUES ('next_protocolo','4') ON CONFLICT (key) DO NOTHING`);
       await db.seedExamples();
@@ -304,6 +305,38 @@ export class PgDb implements Db {
     pedidos.push(pedido);
     await this.pool.query('UPDATE ocorrencias SET pedidos_reabertura=$1, admin_nao_lido=true WHERE id=$2', [JSON.stringify(pedidos), id]);
     return pedido;
+  }
+  async atenderPedidoReabertura(id: string): Promise<void> {
+    const r = await this.pool.query('SELECT pedidos_reabertura FROM ocorrencias WHERE id=$1', [id]);
+    const pedidos: PedidoReabertura[] | undefined = r.rows[0]?.pedidos_reabertura;
+    if (!pedidos || !pedidos.some(p => !p.atendido)) return;
+    const novos = pedidos.map(p => ({ ...p, atendido: true }));
+    await this.pool.query('UPDATE ocorrencias SET pedidos_reabertura=$1 WHERE id=$2', [JSON.stringify(novos), id]);
+  }
+  async criarNotificacao(n: Notificacao): Promise<void> {
+    await this.pool.query(
+      'INSERT INTO notificacoes (id,user_id,ocorrencia_id,tipo,titulo,texto,lida,criado_em) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)',
+      [n.id, n.userId, n.ocorrenciaId, n.tipo, n.titulo, n.texto, n.lida, new Date(n.criadoEm).toISOString()],
+    );
+  }
+  async listarNotificacoes(userId: string, limit = 30): Promise<Notificacao[]> {
+    const r = await this.pool.query(
+      'SELECT id,user_id,ocorrencia_id,tipo,titulo,texto,lida,criado_em FROM notificacoes WHERE user_id=$1 ORDER BY criado_em DESC, id DESC LIMIT $2',
+      [userId, limit],
+    );
+    return r.rows.map((x: Row) => ({
+      id: x.id, userId: x.user_id, ocorrenciaId: x.ocorrencia_id, tipo: x.tipo, titulo: x.titulo,
+      texto: x.texto || '', lida: !!x.lida, criadoEm: new Date(x.criado_em).toISOString(),
+    }));
+  }
+  async contarNotificacoesNaoLidas(userId: string): Promise<number> {
+    const r = await this.pool.query('SELECT COUNT(*) FROM notificacoes WHERE user_id=$1 AND lida=false', [userId]);
+    return parseInt(r.rows[0].count);
+  }
+  async marcarNotificacoesLidas(userId: string, ids?: string[]): Promise<void> {
+    if (ids && ids.length === 0) return;
+    if (ids) await this.pool.query('UPDATE notificacoes SET lida=true WHERE user_id=$1 AND lida=false AND id = ANY($2::text[])', [userId, ids]);
+    else await this.pool.query('UPDATE notificacoes SET lida=true WHERE user_id=$1 AND lida=false', [userId]);
   }
   async getStats(): Promise<Stats> {
     const pool = this.pool;

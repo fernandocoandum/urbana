@@ -91,3 +91,19 @@ export const APOIOS_TABLE_SQL = `
       PRIMARY KEY (ocorrencia_id, user_id)
     );
   `;
+
+// Notificações ao cidadão (status, resposta da prefeitura, reabertura). Só aditivo: não faz parte
+// do SCHEMA_SQL, que é o DDL do legado reproduzido literalmente.
+export const NOTIFICACOES_TABLE_SQL = `
+    CREATE TABLE IF NOT EXISTS notificacoes (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      ocorrencia_id TEXT NOT NULL,
+      tipo TEXT NOT NULL,
+      titulo TEXT NOT NULL,
+      texto TEXT DEFAULT '',
+      lida BOOLEAN DEFAULT false,
+      criado_em TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS notificacoes_user_idx ON notificacoes (user_id, lida, criado_em DESC);
+  `;

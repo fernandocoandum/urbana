@@ -1,4 +1,6 @@
 import { BAIRROS_VALIDOS, CATEGORIAS_VALIDAS, STATUS_ORDEM, STATUS_VALIDOS } from '@/lib/constants';
+import { notificacaoDeMensagem, notificacaoDeReaberturaAtendida, notificacaoDeStatus } from '@/features/notificacoes/regras';
+import { notificarCidadao } from '@/features/notificacoes/service';
 import { getDb } from '@/lib/db';
 import type { Ocorrencia, User } from '@/lib/db/types';
 import type { ReadBody, ServiceResult } from '@/lib/http';
@@ -75,7 +77,19 @@ export async function alterarStatus(user: User | null, id: string, readBody: Rea
   };
   const ok = await db.updateStatus(id, status, opts);
   if (!ok) return j(404, { erro:'Não encontrada.' });
+  // Pedido de reabertura pendente: some da fila quando a ocorrência volta a andar (regressão) ou
+  // é resolvida de novo com justificativa. Antes `atendido` nunca virava true.
+  const ultimo = atual.pedidosReabertura && atual.pedidosReabertura[atual.pedidosReabertura.length - 1];
+  const havia = !!(ultimo && !ultimo.atendido);
+  const atende = havia && (isRegressao || (status === 'Resolvida' && !!obsLimpa));
+  if (atende) await db.atenderPedidoReabertura(id);
   await db.marcarLida(id, 'admin');
+  // Avisa o cidadão (nunca quebra a mudança de status; admin que é dono da ocorrência não se notifica).
+  if (atual.userId !== user.id) {
+    await notificarCidadao(atual, atende
+      ? notificacaoDeReaberturaAtendida(atual, status, obsLimpa)
+      : notificacaoDeStatus(atual, status, obsLimpa, opts.setor));
+  }
   return j(200, { ok:true });
 }
 
@@ -92,6 +106,7 @@ export async function enviarMensagem(user: User, id: string, readBody: ReadBody)
   const de = user.role === 'admin' ? 'prefeitura' : 'cidadao';
   const msg = await db.addMensagem(id, de, textoLimpo);
   if (!msg) return j(404, { erro:'Não encontrada.' });
+  if (de === 'prefeitura' && oc.userId !== user.id) await notificarCidadao(oc, notificacaoDeMensagem(oc, textoLimpo));
   return j(201, { ok:true, mensagem: msg });
 }
 

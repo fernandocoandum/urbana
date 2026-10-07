@@ -23,6 +23,8 @@ const ROUTES: [RegExp, string[], () => Promise<RouteModule>][] = [
   [/^\/api\/ocorrencias\/([^/]+)\/reabrir$/, ['id'], () => import('@/app/api/ocorrencias/[id]/reabrir/route')],
   [/^\/api\/ocorrencias\/([^/]+)\/apoiar$/, ['id'], () => import('@/app/api/ocorrencias/[id]/apoiar/route')],
   [/^\/api\/ocorrencias\/([^/]+)\/avaliar$/, ['id'], () => import('@/app/api/ocorrencias/[id]/avaliar/route')],
+  [/^\/api\/notificacoes$/, [], () => import('@/app/api/notificacoes/route')],
+  [/^\/api\/notificacoes\/lidas$/, [], () => import('@/app/api/notificacoes/lidas/route')],
   [/^\/api\/mapa$/, [], () => import('@/app/api/mapa/route')],
   [/^\/api\/geocode$/, [], () => import('@/app/api/geocode/route')],
   [/^\/api\/recuperar-senha$/, [], () => import('@/app/api/recuperar-senha/route')],

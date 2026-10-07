@@ -15,6 +15,7 @@ export const env = {
   get RESEND_FROM() { return process.env.RESEND_FROM; },
   get PUBLIC_ORIGIN() { return process.env.PUBLIC_ORIGIN; },
   get VERCEL_URL() { return process.env.VERCEL_URL; },
+  get NOTIFICACOES_EMAIL() { return process.env.NOTIFICACOES_EMAIL; },
   get DEBUG_EXPOSE_RESET_TOKEN() { return process.env.DEBUG_EXPOSE_RESET_TOKEN; },
 };
 

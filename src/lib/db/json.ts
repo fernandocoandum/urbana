@@ -7,7 +7,7 @@ import { env, isProdIntent } from '@/lib/env';
 import { hashPassword } from '@/lib/crypto';
 import { anoAtualBR } from './util';
 import type {
-  Avaliacao, ChatMsg, Db, ListFilters, Mensagem, Ocorrencia, PedidoReabertura, Stats, StatusOpts, User,
+  Avaliacao, ChatMsg, Db, ListFilters, Mensagem, Notificacao, Ocorrencia, PedidoReabertura, Stats, StatusOpts, User,
 } from './types';
 
 interface JsonData {
@@ -17,7 +17,10 @@ interface JsonData {
   nextProtocolo: number;
   chatMensagens: ChatMsg[];
   arquivos: { id: string; mime: string; dados: string; criadoEm: string }[];
+  notificacoes: Notificacao[];
 }
+
+const MAX_NOTIFICACOES = 500;
 
 // URBANA_DB_FILE isola o banco de teste/E2E; na Vercel o disco só é gravável em /tmp.
 export function jsonDbFile(): string {
@@ -37,7 +40,8 @@ function seedData(): JsonData {
     sessions: {},
     nextProtocolo: 4,
     chatMensagens: [],
-    arquivos: []
+    arquivos: [],
+    notificacoes: []
   };
 }
 
@@ -59,6 +63,7 @@ export class JsonDb implements Db {
         const data = JSON.parse(fs.readFileSync(this.file, 'utf8'));
         if (!data.chatMensagens) data.chatMensagens = [];
         if (!data.arquivos) data.arquivos = [];
+        if (!data.notificacoes) data.notificacoes = [];
         if (!data.users) data.users = [];
         if (!data.sessions) data.sessions = {};
         if (typeof data.nextProtocolo !== 'number') data.nextProtocolo = (data.ocorrencias?.length || 0) + 1;
@@ -277,6 +282,39 @@ export class JsonDb implements Db {
     oc.naoLidoAdmin = true;
     this.saveJsonDB();
     return pedido;
+  }
+  async atenderPedidoReabertura(id: string): Promise<void> {
+    const oc = this.jsonDB.ocorrencias.find(o => o.id === id);
+    if (!oc || !oc.pedidosReabertura?.some(p => !p.atendido)) return;
+    oc.pedidosReabertura.forEach(p => { p.atendido = true; });
+    this.saveJsonDB();
+  }
+  async criarNotificacao(n: Notificacao): Promise<void> {
+    this.jsonDB.notificacoes.push({ ...n, criadoEm: new Date(n.criadoEm).toISOString() });
+    // Poda: mantém só as mais recentes para o arquivo não crescer sem limite.
+    if (this.jsonDB.notificacoes.length > MAX_NOTIFICACOES) this.jsonDB.notificacoes = this.jsonDB.notificacoes.slice(-MAX_NOTIFICACOES);
+    this.saveJsonDB();
+  }
+  async listarNotificacoes(userId: string, limit = 30): Promise<Notificacao[]> {
+    return this.jsonDB.notificacoes
+      .map((n, i) => ({ n, i }))
+      .filter(({ n }) => n.userId === userId)
+      .sort((a, b) => String(b.n.criadoEm).localeCompare(String(a.n.criadoEm)) || b.i - a.i)
+      .slice(0, limit)
+      .map(({ n }) => ({ ...n }));
+  }
+  async contarNotificacoesNaoLidas(userId: string): Promise<number> {
+    return this.jsonDB.notificacoes.filter(n => n.userId === userId && !n.lida).length;
+  }
+  async marcarNotificacoesLidas(userId: string, ids?: string[]): Promise<void> {
+    const alvo = ids ? new Set(ids) : null;
+    let mudou = false;
+    for (const n of this.jsonDB.notificacoes) {
+      if (n.userId !== userId || n.lida) continue;
+      if (alvo && !alvo.has(n.id)) continue;
+      n.lida = true; mudou = true;
+    }
+    if (mudou) this.saveJsonDB();
   }
   async getStats(): Promise<Stats> {
     const ocs = this.jsonDB.ocorrencias;

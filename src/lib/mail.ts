@@ -37,24 +37,21 @@ async function obterTransportadorGmail(): Promise<Transporter> {
   return g.__urbanaGmail;
 }
 
-export async function enviarEmailRecuperacaoGmail(destinatario: string, link: string): Promise<void> {
+const ASSUNTO_RECUPERACAO = 'Recuperação de senha - Urbana';
+
+async function enviarGmail(destinatario: string, assunto: string, html: string): Promise<void> {
   const transportador = await obterTransportadorGmail();
-  await transportador.sendMail({
-    from: `"Urbana" <${env.GMAIL_USER}>`,
-    to: destinatario,
-    subject: 'Recuperação de senha - Urbana',
-    html: htmlEmailRecuperacao(link),
-  });
+  await transportador.sendMail({ from: `"Urbana" <${env.GMAIL_USER}>`, to: destinatario, subject: assunto, html });
 }
 
-export async function enviarEmailRecuperacaoResend(destinatario: string, link: string): Promise<boolean> {
+async function enviarResend(destinatario: string, assunto: string, html: string): Promise<boolean> {
   const apiKey = env.RESEND_API_KEY;
   if (!apiKey) throw new Error('RESEND_API_KEY não configurada.');
   const payload = JSON.stringify({
     from: env.RESEND_FROM || 'Urbana <onboarding@resend.dev>',
     to: [destinatario],
-    subject: 'Recuperação de senha - Urbana',
-    html: htmlEmailRecuperacao(link),
+    subject: assunto,
+    html,
   });
   let resp: Response;
   try {
@@ -66,11 +63,57 @@ export async function enviarEmailRecuperacaoResend(destinatario: string, link: s
     });
   } catch (e) {
     if (e instanceof Error && (e.name === 'TimeoutError' || e.name === 'AbortError')) {
-      throw new Error('Tempo esgotado ao enviar e-mail de recuperação.');
+      throw new Error('Tempo esgotado ao enviar e-mail.');
     }
     throw e;
   }
   if (resp.status >= 200 && resp.status < 300) return true;
   const dataStr = await resp.text();
   throw new Error(`Resend respondeu ${resp.status}: ${dataStr.slice(0, 300)}`);
+}
+
+/**
+ * Envia um e-mail pelo canal configurado: Gmail > Resend. Sem nenhum dos dois devolve `false`
+ * (nada enviado); falhas de envio lançam, e quem chama decide o que fazer.
+ */
+export async function enviarEmail(destinatario: string, assunto: string, html: string): Promise<boolean> {
+  if (env.GMAIL_USER && env.GMAIL_APP_PASSWORD) {
+    await enviarGmail(destinatario, assunto, html);
+    return true;
+  }
+  if (env.RESEND_API_KEY) return enviarResend(destinatario, assunto, html);
+  return false;
+}
+
+export async function enviarEmailRecuperacaoGmail(destinatario: string, link: string): Promise<void> {
+  await enviarGmail(destinatario, ASSUNTO_RECUPERACAO, htmlEmailRecuperacao(link));
+}
+
+export async function enviarEmailRecuperacaoResend(destinatario: string, link: string): Promise<boolean> {
+  return enviarResend(destinatario, ASSUNTO_RECUPERACAO, htmlEmailRecuperacao(link));
+}
+
+/** Escapa texto vindo de dados (título, observação do admin) antes de entrar no HTML do e-mail. */
+export function escaparHtml(texto: string): string {
+  return String(texto)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** E-mail de notificação ao cidadão. `link` é opcional (sem origem pública conhecida, é omitido). */
+export function htmlEmailNotificacao(titulo: string, texto: string, link?: string | null): string {
+  const t = escaparHtml(titulo);
+  const x = escaparHtml(texto).replace(/\n/g, '<br>');
+  const botao = link
+    ? `<p><a href="${escaparHtml(link)}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;padding:10px 18px;border-radius:100px;font-weight:600">Ver ocorrência</a></p>`
+    : '';
+  return `<div style="font-family:sans-serif;font-size:14px;color:#1f2937;line-height:1.6">
+    <p style="font-size:16px;font-weight:600;margin:0 0 8px">${t}</p>
+    <p style="margin:0 0 16px">${x}</p>
+    ${botao}
+    <p style="font-size:12px;color:#6b7280">Você recebeu este e-mail porque registrou uma ocorrência no Urbana, o sistema de ocorrências urbanas de Braço do Norte.</p>
+  </div>`;
 }

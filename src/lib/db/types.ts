@@ -58,6 +58,18 @@ export interface Ocorrencia {
 }
 export type OcorrenciaDerivada = Ocorrencia & { atrasada: boolean; diasAberto: number; criticidade: number };
 
+export type TipoNotificacao = 'status' | 'mensagem' | 'reabertura';
+export interface Notificacao {
+  id: string;
+  userId: string;
+  ocorrenciaId: string;
+  tipo: TipoNotificacao;
+  titulo: string;
+  texto: string;
+  lida: boolean;
+  criadoEm: Ts;
+}
+
 export interface ChatMsg { id: string; userId: string; nome: string; texto: string; criadoEm: Ts }
 
 export interface ListFilters {
@@ -116,6 +128,13 @@ export interface Db {
   marcarLida(id: string, lado: 'admin' | 'cidadao'): Promise<void>;
   contarNaoLidasAdmin(): Promise<number>;
   pedirReabertura(id: string, motivo: string): Promise<PedidoReabertura | null>;
+  /** Marca como atendidos os pedidos de reabertura pendentes (quando a ocorrência é resolvida de novo). */
+  atenderPedidoReabertura(id: string): Promise<void>;
+  criarNotificacao(n: Notificacao): Promise<void>;
+  listarNotificacoes(userId: string, limit?: number): Promise<Notificacao[]>;
+  contarNotificacoesNaoLidas(userId: string): Promise<number>;
+  /** Sem `ids`, marca todas as do usuário. Ids de outro usuário são ignorados (o filtro é sempre por userId). */
+  marcarNotificacoesLidas(userId: string, ids?: string[]): Promise<void>;
   getStats(): Promise<Stats>;
   listChatMensagens(limit?: number): Promise<ChatMsg[]>;
   addChatMensagem(msg: ChatMsg): Promise<void>;
