@@ -13,3 +13,9 @@ for (const caminho of ['/entrar', '/api/me']) {
     expect(h['x-powered-by']).toBeUndefined();
   });
 }
+
+// A vitrine de componentes não aparece em produção: com `next start` sem URBANA_DEV_UI, é 404.
+test('/dev/ui responde 404 em build de produção', async ({ request }) => {
+  const res = await request.get('/dev/ui');
+  expect(res.status()).toBe(404);
+});
