@@ -8,6 +8,8 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 
 type BlurTextProps = {
   text?: string;
+  /** Elemento HTML do texto (padrão `p`); use `h1`/`h2` quando for um título. */
+  as?: 'p' | 'h1' | 'h2' | 'h3' | 'div';
   delay?: number;
   className?: string;
   animateBy?: 'words' | 'letters';
@@ -36,6 +38,7 @@ const buildKeyframes = (
 
 const BlurText: React.FC<BlurTextProps> = ({
   text = '',
+  as = 'p',
   delay = 200,
   className = '',
   animateBy = 'words',
@@ -52,6 +55,7 @@ const BlurText: React.FC<BlurTextProps> = ({
   const elements = animateBy === 'words' ? text.split(' ') : text.split('');
   const [inView, setInView] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
+  const Tag = as as 'p';
 
   useEffect(() => {
     if (!ref.current) return;
@@ -94,10 +98,10 @@ const BlurText: React.FC<BlurTextProps> = ({
   const times = Array.from({ length: stepCount }, (_, i) => (stepCount === 1 ? 0 : i / (stepCount - 1)));
 
   // Reduced motion: texto estático, sem blur nem deslocamento.
-  if (reduced) return <p className={`blur-text ${className}`}>{text}</p>;
+  if (reduced) return <Tag className={`blur-text ${className}`}>{text}</Tag>;
 
   return (
-    <p ref={ref} className={`blur-text ${className} flex flex-wrap`}>
+    <Tag ref={ref} className={`blur-text ${className} flex flex-wrap`}>
       {elements.map((segment, index) => {
         const animateKeyframes = buildKeyframes(fromSnapshot, toSnapshots);
 
@@ -125,7 +129,7 @@ const BlurText: React.FC<BlurTextProps> = ({
           </motion.span>
         );
       })}
-    </p>
+    </Tag>
   );
 };
 

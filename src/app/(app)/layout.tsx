@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { AdminShell } from '@/components/shell/admin-shell';
 import { CitizenShell } from '@/components/shell/citizen-shell';
 import { getCurrentUser } from '@/features/auth/server';
+import { TermosGate } from '@/features/auth/components/termos-gate';
 import { SessionProvider } from '@/features/auth/session-context';
 
 // Lê o cookie de sessão a cada request: sem sessão, /entrar; com sessão, o shell do papel.
@@ -15,6 +16,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   return (
     <SessionProvider user={user}>
       <Shell>{children}</Shell>
+      <TermosGate />
     </SessionProvider>
   );
 }

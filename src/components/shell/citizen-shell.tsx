@@ -2,10 +2,13 @@
 
 import { ClipboardList, Home, Map as MapIcon, MessagesSquare, Plus } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { ExpandableTabs, type ExpandableItem } from '@/components/ui/expandable-tabs';
 import { Tip } from '@/components/ui/tooltip';
+import { UrbaninhaLauncher } from '@/features/urbaninha/urbaninha-launcher';
+import { cn } from '@/lib/utils';
 import { Brand } from './brand';
 import { NotificationBell } from './notification-bell';
 import { UserMenu } from './user-menu';
@@ -42,6 +45,11 @@ const mobileTabs: ExpandableItem[] = [
 
 /** Shell do cidadão: header sticky de 64px + navegação (topo no desktop, barra inferior no mobile). */
 export function CitizenShell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  // Uma ação primária por tela: no Início o CTA do próprio conteúdo é a ação; no wizard é o "Próximo".
+  const semBotaoNova = pathname === '/inicio' || pathname === '/ocorrencias/nova';
+  // O wizard é uma tela de foco: sem barra inferior (a barra de ações dele fica no rodapé) e sem Urbaninha.
+  const foco = pathname === '/ocorrencias/nova';
   return (
     <div className="min-h-dvh">
       <a href="#conteudo" className="sr-only z-[70] rounded-md bg-surface px-4 py-2 font-medium focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
@@ -53,7 +61,7 @@ export function CitizenShell({ children }: { children: ReactNode }) {
           <Brand />
           <ExpandableTabs mode="nav" tabs={desktopTabs} aria-label="Navegação principal" className="hidden md:flex" />
           <div className="flex items-center justify-end gap-1">
-            <Button asChild className="mr-2 hidden max-lg:size-11 max-lg:px-0 md:inline-flex">
+            <Button asChild className={cn('mr-2 hidden max-lg:size-11 max-lg:px-0 md:inline-flex', semBotaoNova && 'md:hidden')}>
               <Link href="/ocorrencias/nova" aria-label="Nova ocorrência">
                 <Plus aria-hidden />
                 <span className="max-lg:sr-only">Nova ocorrência</span>
@@ -65,15 +73,18 @@ export function CitizenShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="conteudo" className="pb-[calc(72px+env(safe-area-inset-bottom)+1.5rem)] md:pb-0">
+      <main id="conteudo" className={cn(!foco && 'pb-[calc(72px+env(safe-area-inset-bottom)+1.5rem)] md:pb-0')}>
         {children}
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 pb-safe backdrop-blur md:hidden">
-        <div className="flex h-[72px] items-center px-3">
-          <ExpandableTabs mode="nav" tabs={mobileTabs} aria-label="Navegação principal" className="w-full justify-between border-0 bg-transparent p-0 shadow-none" />
+      {!foco && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 pb-safe backdrop-blur md:hidden">
+          <div className="flex h-[72px] items-center px-3">
+            <ExpandableTabs mode="nav" tabs={mobileTabs} aria-label="Navegação principal" className="w-full justify-between border-0 bg-transparent p-0 shadow-none" />
+          </div>
         </div>
-      </div>
+      )}
+      {!foco && <UrbaninhaLauncher />}
     </div>
   );
 }

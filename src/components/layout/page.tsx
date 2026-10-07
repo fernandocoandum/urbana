@@ -34,8 +34,8 @@ export function Section({ title, action, children, className }: { title?: string
     <section className={cn('mt-10 first:mt-0', className)}>
       {(title || action) && (
         <div className="mb-4 flex items-center justify-between gap-4">
-          {title && <h2 className="text-2xl font-semibold tracking-[-.01em]">{title}</h2>}
-          {action}
+          {title && <h2 className="min-w-0 text-xl font-semibold tracking-[-.01em] sm:text-2xl">{title}</h2>}
+          {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
       {children}

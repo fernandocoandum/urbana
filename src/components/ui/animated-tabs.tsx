@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 export interface TabItem {
   value: string;
   label: string;
+  /** id do gatilho (útil para seletores estáveis nos testes e para aria-labelledby no painel). */
+  id?: string;
   icon?: ComponentType<{ className?: string }>;
   /** Contagem/ badge opcional ao lado do rótulo. */
   count?: number;
@@ -58,6 +60,7 @@ export function AnimatedTabs({ tabs, value, defaultValue, onValueChange, variant
             <TabsPrimitive.Trigger
               key={t.value}
               value={t.value}
+              id={t.id}
               className={cn(
                 'relative flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium outline-none transition-colors duration-150 focus-visible:ring-4 focus-visible:ring-primary/25',
                 pill ? 'h-9 shrink-0 rounded-full px-3 sm:px-4' : 'h-12 shrink-0 px-1',
@@ -77,7 +80,7 @@ export function AnimatedTabs({ tabs, value, defaultValue, onValueChange, variant
                 {Icon && <Icon className="size-4" />}
                 {t.label}
                 {t.count !== undefined && (
-                  <span className={cn('tabular min-w-5 rounded-full px-1.5 text-center text-sm', active ? 'bg-primary-soft text-primary' : 'bg-border/60 text-fg-muted')}>{t.count}</span>
+                  <span className={cn('tabular min-w-5 rounded-full px-1.5 text-center text-sm max-[420px]:hidden', active ? 'bg-primary-soft text-primary' : 'bg-border/60 text-fg-muted')}>{t.count}</span>
                 )}
               </span>
             </TabsPrimitive.Trigger>
@@ -89,9 +92,9 @@ export function AnimatedTabs({ tabs, value, defaultValue, onValueChange, variant
   );
 }
 
-export function AnimatedTabsPanel({ value, className, children }: { value: string; className?: string; children: ReactNode }) {
+export function AnimatedTabsPanel({ value, className, children, labelledBy }: { value: string; className?: string; children: ReactNode; /** use o `id` do gatilho quando ele foi definido em TabItem */ labelledBy?: string }) {
   return (
-    <TabsPrimitive.Content value={value} className={cn('outline-none', className)}>
+    <TabsPrimitive.Content value={value} aria-labelledby={labelledBy} className={cn('outline-none', className)}>
       {children}
     </TabsPrimitive.Content>
   );

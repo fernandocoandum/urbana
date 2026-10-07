@@ -249,3 +249,60 @@
     animation: none;
   }
 }
+
+/* ------------------------------------------------------------------ mapa */
+.leaflet-container {
+  font-family: inherit;
+  background: var(--surface-2);
+}
+/* no escuro, os tiles do OSM ganham o mesmo filtro do app legado */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
+}
+.dark .leaflet-container {
+  background: #0b0f1a;
+}
+.dark .leaflet-bar a,
+.dark .leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--border);
+}
+.dark .leaflet-control-attribution {
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  color: var(--fg-muted);
+}
+.dark .leaflet-control-attribution a {
+  color: var(--fg-muted);
+}
+.urbana-pin-wrap {
+  background: none;
+  border: 0;
+}
+.urbana-pin {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--pin, #2563eb);
+  box-shadow: 0 4px 10px rgb(15 23 42 / 0.3);
+  transform: rotate(-45deg);
+}
+.urbana-pin span {
+  position: absolute;
+  inset: 0;
+  width: 10px;
+  height: 10px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* Fundo da tela de entrada: dois gradientes radiais suaves (primary e teal), sem canvas */
+@utility bg-auth {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(60% 45% at 12% 8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 92% 96%, color-mix(in srgb, #14b8a6 14%, transparent), transparent 70%);
+}

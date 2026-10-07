@@ -1,5 +1,11 @@
-import { EmConstrucao } from '@/components/layout/em-construcao';
+import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/features/auth/server';
+import { ListaView } from '@/features/ocorrencias/components/lista-view';
 
-export default function Page() {
-  return <EmConstrucao titulo="Minhas ocorrências" descricao="Acompanhe o andamento de cada registro." />;
+export const metadata: Metadata = { title: 'Minhas ocorrências · Urbana' };
+
+export default async function Page() {
+  if ((await getCurrentUser())?.role === 'admin') redirect('/admin/ocorrencias');
+  return <ListaView />;
 }

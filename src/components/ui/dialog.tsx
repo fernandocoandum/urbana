@@ -43,9 +43,13 @@ interface ContentProps {
   className?: string;
   children?: ReactNode;
   footer?: ReactNode;
+  /** Rodapé numa barra fixa abaixo da área rolável (textos longos, como os termos de uso). */
+  stickyFooter?: boolean;
+  /** id do elemento do diálogo (seletor estável nos testes). */
+  id?: string;
 }
 
-export function DialogContent({ title, description, hideTitle, dismissible = true, showClose, className, children, footer }: ContentProps) {
+export function DialogContent({ title, description, hideTitle, dismissible = true, showClose, className, children, footer, stickyFooter, id }: ContentProps) {
   const open = useContext(OpenContext);
   const close = showClose ?? dismissible;
   return (
@@ -70,6 +74,7 @@ export function DialogContent({ title, description, hideTitle, dismissible = tru
               onInteractOutside={dismissible ? undefined : (e) => e.preventDefault()}
             >
               <motion.div
+                id={id}
                 className={cn(
                   'pointer-events-auto relative flex max-h-[calc(100dvh-2rem)] w-full max-w-[480px] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-lg',
                   className,
@@ -89,8 +94,11 @@ export function DialogContent({ title, description, hideTitle, dismissible = tru
                     )}
                   </div>
                   <div className={cn(!hideTitle && 'mt-6')}>{children}</div>
-                  {footer && <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">{footer}</div>}
+                  {footer && !stickyFooter && <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">{footer}</div>}
                 </div>
+                {footer && stickyFooter && (
+                  <div className="flex flex-col-reverse gap-3 border-t border-border px-6 py-4 sm:flex-row sm:justify-end sm:px-8">{footer}</div>
+                )}
                 {close && (
                   <DialogPrimitive.Close
                     aria-label="Fechar"
