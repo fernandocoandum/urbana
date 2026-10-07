@@ -4,31 +4,32 @@
 
 /* ------------------------------------------------------------------ tokens */
 :root {
-  --bg: #f7f8fa;
+  /* claro com tom azul-acinzentado: o card branco destaca do fundo */
+  --bg: #e8edf5;
   --surface: #ffffff;
-  --surface-2: #f1f3f6;
-  --border: #e4e7ec;
-  --border-strong: #cbd2dc;
+  --surface-2: #f1f4f9;
+  --border: #d6dde8;
+  --border-strong: #bcc6d4;
   --fg: #0f172a;
-  --fg-muted: #556070;
-  --fg-subtle: #8a94a6;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-soft: #eef3ff;
+  --fg-muted: #475467;
+  --fg-subtle: #5d687b;
+  --primary: #1d56d6;
+  --primary-hover: #1745b3;
+  --primary-soft: #e0e9ff;
   --primary-fg: #ffffff;
-  --success: #16a34a;
-  --success-soft: #ecfdf3;
-  --warning: #d97706;
-  --warning-soft: #fff7e6;
-  --danger: #dc2626;
-  --danger-soft: #fef2f2;
+  --success: #13713a;
+  --success-soft: #dcf2e4;
+  --warning: #a34a08;
+  --warning-soft: #fcefd3;
+  --danger: #c42525;
+  --danger-soft: #fbe4e4;
 
   /* status (texto/ponto). O fundo "soft" sai de color-mix sobre a superfície */
-  --st-recebida: #64748b;
-  --st-analise: #d97706;
-  --st-encaminhada: #7c3aed;
-  --st-atendimento: #2563eb;
-  --st-resolvida: #16a34a;
+  --st-recebida: #475569;
+  --st-analise: #a34a08;
+  --st-encaminhada: #6d28d9;
+  --st-atendimento: #1d4fc9;
+  --st-resolvida: #13713a;
 
   /* categorias (CATEGORIA_INFO do app legado) */
   --cat-pavimentacao: #d97706;
@@ -42,58 +43,66 @@
   /* gráficos (skill dataviz): slots categóricos 1 e 2, validados contra a superfície nos dois temas */
   --viz-1: #2a78d6;
   --viz-2: #eb6834;
-  --viz-grid: #e4e7ec;
+  --viz-grid: #d6dde8;
 
-  --sh-xs: 0 1px 2px rgb(15 23 42 / 0.04);
-  --sh-sm: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
-  --sh-md: 0 6px 20px -6px rgb(15 23 42 / 0.1);
-  --sh-lg: 0 16px 40px -12px rgb(15 23 42 / 0.16);
+  --sh-xs: 0 1px 2px rgb(30 41 70 / 0.06);
+  --sh-sm: 0 1px 3px rgb(30 41 70 / 0.1), 0 1px 2px rgb(30 41 70 / 0.06);
+  --sh-md: 0 8px 24px -8px rgb(30 41 70 / 0.16);
+  --sh-lg: 0 20px 44px -14px rgb(30 41 70 / 0.24);
 
-  --banner-from: #eef3ff;
-  --banner-via: #e0f2fe;
-  --banner-to: #ecfdf3;
+  --banner-from: #dbe6ff;
+  --banner-via: #d3ecf8;
+  --banner-to: #d9f1e3;
+
+  /* fundo ambiente (body::before): azul no topo, teal num canto */
+  --amb-1: color-mix(in srgb, #2563eb 13%, transparent);
+  --amb-2: color-mix(in srgb, #14b8a6 11%, transparent);
 }
 
 .dark {
-  --bg: #0b0f17;
-  --surface: #111723;
-  --surface-2: #172031;
-  --border: #243045;
-  --border-strong: #33405a;
-  --fg: #e8ecf3;
-  --fg-muted: #9aa5b8;
-  --fg-subtle: #6b778c;
-  --primary: #5b8cff;
-  --primary-hover: #7aa2ff;
-  --primary-soft: #172447;
-  --primary-fg: #0b0f17;
-  --success: #3fcf7a;
-  --success-soft: #10291c;
-  --warning: #f5a524;
-  --warning-soft: #2b2110;
-  --danger: #f36161;
-  --danger-soft: #2e1416;
+  /* escuro em azul-ardósia médio, não quase preto */
+  --bg: #151c2a;
+  --surface: #1d2638;
+  --surface-2: #253047;
+  --border: #303c54;
+  --border-strong: #3e4b66;
+  --fg: #eef2f8;
+  --fg-muted: #a8b3c6;
+  --fg-subtle: #8c98ad;
+  --primary: #6b97ff;
+  --primary-hover: #8aaeff;
+  --primary-soft: #223159;
+  --primary-fg: #0d1424;
+  --success: #4ade80;
+  --success-soft: #1b3a30;
+  --warning: #f5b13d;
+  --warning-soft: #3b3120;
+  --danger: #f87777;
+  --danger-soft: #402630;
 
   --viz-1: #3987e5;
   --viz-2: #d95926;
-  --viz-grid: #243045;
+  --viz-grid: #303c54;
 
   /* no escuro, os tons do plano ficam com pouco contraste: versões mais claras */
-  --st-recebida: #94a3b8;
-  --st-analise: #f5a524;
-  --st-encaminhada: #a78bfa;
-  --st-atendimento: #5b8cff;
-  --st-resolvida: #3fcf7a;
+  --st-recebida: #aab6c8;
+  --st-analise: #f5b13d;
+  --st-encaminhada: #b69cff;
+  --st-atendimento: #7ba3ff;
+  --st-resolvida: #4ade80;
 
-  /* no escuro a sombra vira borda + brilho interno */
-  --sh-xs: inset 0 1px 0 rgb(255 255 255 / 0.04);
-  --sh-sm: inset 0 1px 0 rgb(255 255 255 / 0.04);
-  --sh-md: inset 0 1px 0 rgb(255 255 255 / 0.04);
-  --sh-lg: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 0 0 1px rgb(255 255 255 / 0.03);
+  /* no escuro: brilho interno de 1px + sombra suave de verdade */
+  --sh-xs: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px rgb(0 0 0 / 0.22);
+  --sh-sm: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 2px 8px rgb(0 0 0 / 0.26);
+  --sh-md: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 10px 28px -10px rgb(0 0 0 / 0.5);
+  --sh-lg: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 22px 48px -14px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.03);
 
-  --banner-from: #172447;
-  --banner-via: #0f2a3a;
-  --banner-to: #10291c;
+  --banner-from: #243766;
+  --banner-via: #1d3a5a;
+  --banner-to: #1d3f3a;
+
+  --amb-1: color-mix(in srgb, #5b8cff 15%, transparent);
+  --amb-2: color-mix(in srgb, #2dd4bf 8%, transparent);
 }
 
 @theme inline {
@@ -191,6 +200,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* fundo ambiente: gradientes radiais fixos atrás de tudo (um pseudo-elemento, para não pesar no scroll do iOS) */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(60% 45% at 12% 0%, var(--amb-1), transparent 70%),
+      radial-gradient(55% 45% at 100% 100%, var(--amb-2), transparent 70%);
+  }
   ::selection {
     background: color-mix(in srgb, var(--primary) 25%, transparent);
   }
@@ -269,7 +289,7 @@
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.6);
 }
 .dark .leaflet-container {
-  background: #0b0f1a;
+  background: var(--bg);
 }
 .dark .leaflet-bar a,
 .dark .leaflet-bar a:hover {
