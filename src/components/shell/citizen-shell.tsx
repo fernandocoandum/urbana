@@ -50,8 +50,8 @@ export function CitizenShell({ children }: { children: ReactNode }) {
   const semBotaoNova = pathname === '/inicio' || pathname === '/ocorrencias/nova' || pathname === '/perfil';
   // O wizard é uma tela de foco: sem barra inferior (a barra de ações dele fica no rodapé) e sem Urbaninha.
   const foco = pathname === '/ocorrencias/nova';
-  // A conversa ocupa a altura toda (o compositor fica logo acima da barra inferior): sem respiro extra nem Urbaninha por cima.
-  const altura = pathname === '/conversa';
+  // A conversa e o mapa ocupam a altura toda (o compositor fica logo acima da barra inferior): sem respiro extra nem Urbaninha por cima.
+  const altura = pathname === '/conversa' || pathname === '/mapa';
   return (
     <div className="min-h-dvh">
       <a href="#conteudo" className="sr-only z-[70] rounded-md bg-surface px-4 py-2 font-medium focus:not-sr-only focus:fixed focus:left-4 focus:top-4">

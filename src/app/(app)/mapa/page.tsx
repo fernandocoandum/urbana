@@ -1,5 +1,5 @@
-import { EmConstrucao } from '@/components/layout/em-construcao';
+import { MapaView } from '@/features/mapa/components/mapa-view';
 
 export default function Page() {
-  return <EmConstrucao titulo="Mapa da cidade" descricao="Ocorrências por região, com filtros e mapa de calor." />;
+  return <MapaView admin={false} />;
 }

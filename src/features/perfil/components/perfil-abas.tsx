@@ -51,6 +51,7 @@ export function AbaAtividade({ recentes }: { recentes: PerfilData['recentes'] })
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-base font-semibold">{o.titulo}</span>
                 <span className="tabular mt-0.5 block text-sm text-fg-muted">{fmtDate(o.criadoEm)}</span>
+                <StatusBadge status={o.status} className="mt-2 sm:hidden" />
               </span>
               <StatusBadge status={o.status} className="max-sm:hidden" />
             </Link>

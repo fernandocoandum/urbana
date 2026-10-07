@@ -149,7 +149,8 @@ export async function mapa(user: User): Promise<ServiceResult> {
     bairro:o.bairro, lat:o.lat, lng:o.lng, apoios:(o.apoios||[]).length,
     apoiado: (o.apoios||[]).includes(user.id), isMine: o.userId === user.id,
     nomeUsuario: user.role === 'admin' ? o.nomeUsuario : null,
-    precisaoLocal: o.precisaoLocal || 'manual'
+    precisaoLocal: o.precisaoLocal || 'manual',
+    criadoEm: o.criadoEm
   }));
   return j(200, pontos);
 }

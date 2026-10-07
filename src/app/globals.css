@@ -306,3 +306,99 @@
     radial-gradient(60% 45% at 12% 8%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%),
     radial-gradient(55% 45% at 92% 96%, color-mix(in srgb, #14b8a6 14%, transparent), transparent 70%);
 }
+
+/* ------------------------------------------------- mapa da cidade (F) */
+.urbana-dot-wrap,
+.urbana-cluster-wrap {
+  background: none;
+  border: 0;
+}
+.urbana-dot {
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--dot, #2563eb);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.3);
+  transition: transform 160ms var(--ease-out-expo);
+}
+.leaflet-marker-icon:hover .urbana-dot {
+  transform: scale(1.18);
+}
+.urbana-dot--aprox {
+  border-style: dashed;
+  opacity: 0.55;
+}
+.urbana-cluster {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  box-sizing: border-box;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-fg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--primary) 22%, transparent),
+    0 4px 12px rgb(15 23 42 / 0.28);
+}
+.dark .urbana-cluster {
+  border-color: var(--surface);
+}
+.dark .urbana-dot {
+  border-color: var(--surface);
+}
+
+/* popup do Leaflet no padrão do app (cartão limpo, sem o branco padrão) */
+.leaflet-popup-content-wrapper {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--sh-lg);
+}
+.leaflet-popup-tip {
+  background: var(--surface);
+  box-shadow: none;
+}
+.leaflet-popup-content {
+  margin: 16px 18px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+.leaflet-popup-content p {
+  margin: 0;
+}
+.leaflet-container a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 9999px;
+  color: var(--fg-muted);
+  font: 20px/28px inherit;
+  text-align: center;
+}
+.leaflet-container a.leaflet-popup-close-button:hover {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+.leaflet-bar {
+  border: 1px solid var(--border) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--sh-md) !important;
+  overflow: hidden;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: var(--surface);
+  color: var(--fg);
+  border-color: var(--border);
+}
