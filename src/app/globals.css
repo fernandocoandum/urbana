@@ -465,6 +465,9 @@
 .auth-switch[data-modo='cadastro'] .auth-switch__panel--dir .auth-switch__content {
   transform: none;
 }
+.auth-switch__so-mobile {
+  display: none !important;
+}
 .auth-switch .auth-switch__btn:focus-visible {
   outline-color: #fff;
   outline-offset: 3px;
@@ -536,6 +539,9 @@
   }
   .auth-switch__so-desktop {
     display: none !important;
+  }
+  .auth-switch__so-mobile {
+    display: flex !important;
   }
 }
 @media (max-width: 569.98px) {

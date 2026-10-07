@@ -47,10 +47,12 @@ export function AuthSwitch({ modo, onModo, login, cadastro, painel }: Props) {
 
       <div className="auth-switch__forms">
         <section id="form-login" aria-labelledby="titulo-login" data-ativo={login_} inert={!login_} aria-hidden={!login_} className="auth-switch__form">
+          <UrbanaLogo className="auth-switch__so-mobile mb-6 justify-center" />
           <h2 id="titulo-login" ref={tituloLogin} tabIndex={-1} className={titulo}>Entrar</h2>
           {login}
         </section>
         <section id="form-cadastro" aria-labelledby="titulo-cadastro" data-ativo={!login_} inert={login_} aria-hidden={login_} className="auth-switch__form">
+          <UrbanaLogo className="auth-switch__so-mobile mb-6 justify-center" />
           <h2 id="titulo-cadastro" ref={tituloCadastro} tabIndex={-1} className={titulo}>Criar conta</h2>
           {cadastro}
         </section>
