@@ -49,13 +49,13 @@ function Tabela({ itens }: { itens: OcorrenciaDerivada[] }) {
         <caption className="sr-only">Fila de ocorrências</caption>
         <thead className="bg-surface-2 text-fg-muted">
           <tr>
-            <th scope="col" className="px-5 py-3.5 whitespace-nowrap font-medium">Protocolo</th>
-            <th scope="col" className="px-3 py-3.5 whitespace-nowrap font-medium">Ocorrência</th>
-            <th scope="col" className="hidden px-3 py-3.5 whitespace-nowrap font-medium 2xl:table-cell">Categoria</th>
-            <th scope="col" className="px-3 py-3.5 whitespace-nowrap font-medium">Aberta há</th>
-            <th scope="col" className="px-3 py-3.5 whitespace-nowrap font-medium">Prazo</th>
-            <th scope="col" className="px-3 py-3.5 whitespace-nowrap font-medium">Status</th>
-            <th scope="col" className="hidden px-5 py-3.5 whitespace-nowrap font-medium 2xl:table-cell">Criticidade</th>
+            <th scope="col" className="px-5 py-4 whitespace-nowrap font-medium">Protocolo</th>
+            <th scope="col" className="px-3 py-4 whitespace-nowrap font-medium">Ocorrência</th>
+            <th scope="col" className="hidden px-3 py-4 whitespace-nowrap font-medium 2xl:table-cell">Categoria</th>
+            <th scope="col" className="px-3 py-4 whitespace-nowrap font-medium">Aberta há</th>
+            <th scope="col" className="px-3 py-4 whitespace-nowrap font-medium">Prazo</th>
+            <th scope="col" className="px-3 py-4 whitespace-nowrap font-medium">Status</th>
+            <th scope="col" className="hidden px-5 py-4 whitespace-nowrap font-medium 2xl:table-cell">Criticidade</th>
           </tr>
         </thead>
         <tbody>
@@ -216,7 +216,7 @@ export function FilaView() {
             <EmptyState icon={ClipboardList} title="Não foi possível carregar" description={error.message} action={<Button variant="secondary" onClick={() => mutate()}>Tentar de novo</Button>} />
           </Card>
         ) : !data ? (
-          <div className="flex flex-col gap-4" aria-hidden>
+          <div className="flex flex-col gap-6" aria-hidden>
             {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[72px] rounded-xl" />)}
           </div>
         ) : data.length === 0 ? (
@@ -230,7 +230,7 @@ export function FilaView() {
         ) : desktop ? (
           <Tabela itens={itens} />
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             {itens.map((o) => <OcorrenciaAdminCard key={o.id} o={o} />)}
           </div>
         )}

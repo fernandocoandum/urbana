@@ -146,17 +146,17 @@
   --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
   --text-sm: 0.875rem;
-  --text-sm--line-height: 1.25rem;
+  --text-sm--line-height: 1.375rem;
   --text-base: 1rem;
-  --text-base--line-height: 1.625rem;
+  --text-base--line-height: 1.7rem;
   --text-lg: 1.125rem;
-  --text-lg--line-height: 1.75rem;
+  --text-lg--line-height: 1.8rem;
   --text-xl: 1.25rem;
-  --text-xl--line-height: 1.75rem;
+  --text-xl--line-height: 1.85rem;
   --text-2xl: 1.5rem;
-  --text-2xl--line-height: 2rem;
+  --text-2xl--line-height: 2.1rem;
   --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.375rem;
+  --text-3xl--line-height: 2.4rem;
   --text-4xl: 2.25rem;
   --text-4xl--line-height: 2.75rem;
 
@@ -184,7 +184,7 @@
     background: var(--bg);
     color: var(--fg);
     font-size: 1rem;
-    line-height: 1.625rem;
+    line-height: 1.7rem;
     font-weight: 400;
     font-optical-sizing: auto;
     text-rendering: optimizeLegibility;

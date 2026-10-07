@@ -14,7 +14,7 @@ interface TooltipLinha { chave: string; rotulo: string; valor: number; cor?: str
 
 function CaixaTooltip({ titulo, linhas }: { titulo: string; linhas: TooltipLinha[] }) {
   return (
-    <div className="rounded-lg border border-border bg-surface px-3 py-2.5 shadow-md">
+    <div className="rounded-lg border border-border bg-surface px-3 py-3 shadow-md">
       <p className="text-sm text-fg-muted">{titulo}</p>
       <ul className="mt-1.5 flex flex-col gap-1">
         {linhas.map((l) => (
@@ -39,12 +39,12 @@ function TabelaDados({ legenda, colunas, linhas }: { legenda: string; colunas: s
         <table className="w-full text-left text-sm">
           <caption className="sr-only">{legenda}</caption>
           <thead className="sticky top-0 bg-surface-2 text-fg-muted">
-            <tr>{colunas.map((c) => <th key={c} scope="col" className="px-4 py-2.5 font-medium">{c}</th>)}</tr>
+            <tr>{colunas.map((c) => <th key={c} scope="col" className="px-4 py-3 font-medium">{c}</th>)}</tr>
           </thead>
           <tbody>
             {linhas.map((l, i) => (
               <tr key={i} className="border-t border-border">
-                {l.map((v, j) => <td key={j} className={j === 0 ? 'px-4 py-2.5' : 'tabular px-4 py-2.5'}>{v}</td>)}
+                {l.map((v, j) => <td key={j} className={j === 0 ? 'px-4 py-3' : 'tabular px-4 py-3'}>{v}</td>)}
               </tr>
             ))}
           </tbody>

@@ -42,12 +42,12 @@ export function PainelConteudo({ filtros, onFiltros, modo, onModo, admin, rankin
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <AnimatedTabs tabs={MODOS} value={modo} onValueChange={(v) => onModo(v as ModoMapa)} fullWidth aria-label="Modo do mapa" />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         <Rotulo>Categoria</Rotulo>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar por categoria">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por categoria">
           {CATEGORIAS.map((cat) => {
             const on = filtros.categorias.includes(cat);
             const { cssVar, curta } = categoriaInfo(cat);
@@ -70,7 +70,7 @@ export function PainelConteudo({ filtros, onFiltros, modo, onModo, admin, rankin
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2.5">
         <Rotulo htmlFor="mapa-status">Status</Rotulo>
         <Select id="mapa-status" className="h-11 md:h-10" value={filtros.status} onChange={(e) => onFiltros({ ...filtros, status: e.target.value })}>
           <option value="todos">Todos os status</option>
@@ -103,7 +103,7 @@ export function PainelConteudo({ filtros, onFiltros, modo, onModo, admin, rankin
                 <button
                   type="button"
                   onClick={() => onBairro(b)}
-                  className="group flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left md:min-h-9 outline-none transition-colors hover:bg-surface-2 focus-visible:ring-4 focus-visible:ring-primary/25"
+                  className="group flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left md:min-h-10 outline-none transition-colors hover:bg-surface-2 focus-visible:ring-4 focus-visible:ring-primary/25"
                 >
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{b.bairro}</span>
@@ -119,7 +119,7 @@ export function PainelConteudo({ filtros, onFiltros, modo, onModo, admin, rankin
         )}
       </div>
 
-      <div className="border-t border-border pt-3">
+      <div className="border-t border-border pt-4">
         <p className="sr-only">Legenda das cores de status</p>
         <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-caption font-medium text-fg-muted">
           {STATUS_LISTA.map((s) => (

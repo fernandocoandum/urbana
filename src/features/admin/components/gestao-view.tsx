@@ -178,7 +178,7 @@ function Gestao({ o, mutate }: { o: OcorrenciaDerivada; mutate: () => Promise<un
             <div className="flex min-w-0 flex-col gap-6">{principal}</div>
             <aside className="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto" aria-label="Gestão da ocorrência">
               <Card>
-                <CardHeader><CardTitle className="tracking-[-.01em]">Gestão</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Gestão</CardTitle></CardHeader>
                 <AnimatedTabs tabs={tabsPainel} value={abaPainel} onValueChange={(v) => setAba(v as Aba)} fullWidth aria-label="Ações de gestão">
                   <AnimatedTabsPanel value="status" className="mt-6">{painelStatus}</AnimatedTabsPanel>
                   <AnimatedTabsPanel value="encaminhar" className="mt-6">{painelEncaminhar}</AnimatedTabsPanel>

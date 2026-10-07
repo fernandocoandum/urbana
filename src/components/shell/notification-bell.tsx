@@ -66,7 +66,7 @@ function Lista({ dados, carregando, erro, onAbrir, onTodas }: { dados?: Resposta
                   <span className="min-w-0 flex-1">
                     <span className={cn('block text-sm leading-snug', n.lida ? 'font-medium' : 'font-semibold')}>{n.titulo}</span>
                     {n.texto && <span className="mt-1 line-clamp-2 block text-sm leading-snug text-fg-muted">{n.texto}</span>}
-                    <span className="mt-1.5 block text-xs text-fg-subtle">{tempoRelativo(n.criadoEm)}</span>
+                    <span className="mt-1.5 block text-caption text-fg-subtle">{tempoRelativo(n.criadoEm)}</span>
                   </span>
                   {!n.lida && <span className="mt-2 size-2.5 shrink-0 rounded-full bg-primary" aria-label="Não lida" />}
                 </button>

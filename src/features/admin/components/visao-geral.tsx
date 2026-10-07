@@ -57,7 +57,7 @@ function CartaoAtencao({ href, icone: Icone, titulo, valor, texto, destaque }: {
 function Carregando() {
   return (
     <div aria-hidden className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[158px] rounded-xl" />)}
       </div>
       <Skeleton className="h-24 rounded-xl" />
@@ -92,7 +92,7 @@ export function VisaoGeral() {
   const tempo = resumo.tempoMedioResolucaoDias;
   return (
     <div>
-      <section aria-label="Indicadores" className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+      <section aria-label="Indicadores" className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         <Indicador icone={ClipboardList} rotulo="Total" valor={resumo.total} sub="ocorrências registradas" />
         <Indicador icone={Hourglass} rotulo="Pendentes" valor={resumo.pendentes} sub="ainda sem resolução" tom="warning" />
         <Indicador icone={Wrench} rotulo="Em atendimento" valor={resumo.emAtendimento} sub="equipe em campo" />
@@ -106,7 +106,7 @@ export function VisaoGeral() {
       </section>
 
       <Section title="Atenção" className="mt-10">
-        <div className="grid gap-4 md:grid-cols-3 md:gap-6">
+        <div className="grid gap-6 md:grid-cols-3">
           <CartaoAtencao href="/admin/ocorrencias?atrasadas=1" icone={TriangleAlert} titulo="Atrasadas" texto="passaram do prazo" valor={resumo.atrasadas} destaque={resumo.atrasadas > 0} />
           <CartaoAtencao href="/admin/ocorrencias?naolidas=1" icone={BellRing} titulo="Não lidas" texto="novidades do cidadão" valor={resumo.naoLidas} destaque={resumo.naoLidas > 0} />
           <CartaoAtencao href="/admin/ocorrencias?reabertura=1" icone={Clock} titulo="Reabertura pedida" texto="aguardando retorno" valor={resumo.comReabertura} destaque={resumo.comReabertura > 0} />
@@ -117,7 +117,7 @@ export function VisaoGeral() {
         <div className="flex flex-col gap-6">
           <Card>
             <div className="mb-5">
-              <CardTitle className="tracking-[-.01em]">Criadas e resolvidas</CardTitle>
+              <CardTitle>Criadas e resolvidas</CardTitle>
               <CardDescription className="mt-1">Por dia, nos últimos 30 dias</CardDescription>
             </div>
             <GraficoSerie serie={resumo.serie} />
@@ -125,14 +125,14 @@ export function VisaoGeral() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <div className="mb-5">
-                <CardTitle className="tracking-[-.01em]">Por categoria</CardTitle>
+                <CardTitle>Por categoria</CardTitle>
                 <CardDescription className="mt-1">Total de ocorrências em cada tipo de problema</CardDescription>
               </div>
               <GraficoBarras itens={categorias} unidade="ocorrências" legenda="Ocorrências por categoria" />
             </Card>
             <Card>
               <div className="mb-5">
-                <CardTitle className="tracking-[-.01em]">Por bairro</CardTitle>
+                <CardTitle>Por bairro</CardTitle>
                 <CardDescription className="mt-1">Onde os problemas se concentram</CardDescription>
               </div>
               <GraficoBarras itens={bairros} unidade="ocorrências" legenda="Ocorrências por bairro" />
@@ -151,7 +151,7 @@ export function VisaoGeral() {
             <EmptyState icon={CheckCircle2} title="Tudo em dia" description="Não há ocorrências abertas no momento." />
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+          <div className="grid gap-6 md:grid-cols-2">
             {atencao.map((o) => <OcorrenciaAdminCard key={o.id} o={o} />)}
           </div>
         )}
