@@ -1,4 +1,9 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
+
+// Chromium pré-instalado do ambiente de nuvem (Linux). Fora dele (ex.: Windows), usa o navegador
+// do Playwright ou o canal de PW_CHANNEL (ex.: PW_CHANNEL=chrome para o Chrome instalado).
+const CHROMIUM_NUVEM = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 
 // Os specs sobem o próprio servidor de produção (`next start`, porta 3099) com um banco JSON
 // isolado em .tmp/e2e-db.json (apagado a cada execução) — não precisam de Postgres.
@@ -14,9 +19,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     ...devices['Desktop Chrome'],
-    // Este ambiente já traz um Chromium pré-instalado numa revisão própria — sem isso o
-    // Playwright tenta baixar a revisão que ele mesmo espera, e não há acesso de rede para isso.
-    launchOptions: { executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' },
+    // O ambiente de nuvem já traz um Chromium numa revisão própria — sem isso o Playwright tenta
+    // baixar a revisão que ele mesmo espera, e lá não há acesso de rede para isso.
+    ...(existsSync(CHROMIUM_NUVEM) ? { launchOptions: { executablePath: CHROMIUM_NUVEM } } : {}),
+    ...(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {}),
   },
   webServer: {
     command: `node -e "require('fs').rmSync('.tmp/e2e-db.json',{force:true})" && next start -p 3099`,
