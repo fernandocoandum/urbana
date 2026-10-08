@@ -28,8 +28,8 @@ const variantes = {
 
 const msgErro = (e: unknown) => (e instanceof ApiError || e instanceof Error ? e.message : 'Erro desconhecido');
 
-export function NovaOcorrenciaWizard() {
-  const [s, dispatch] = useReducer(reducer, estadoInicial);
+export function NovaOcorrenciaWizard({ categoriaInicial }: { categoriaInicial?: string }) {
+  const [s, dispatch] = useReducer(reducer, categoriaInicial, (categoria) => (categoria ? { ...estadoInicial, categoria, step: 2 as const } : estadoInicial));
   const { mutate } = useSWRConfig();
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
