@@ -25,7 +25,6 @@ export const URBANINHA_REGRAS: RegraUrbaninha[] = [
 
 export const URBANINHA_FALLBACK = ['Hmm, ainda não tenho uma resposta pronta pra isso 😅 Tenta perguntar sobre: registrar ocorrência, status, senha, fotos ou mensagens.'];
 export const URBANINHA_SUGESTOES = ['Como registro uma ocorrência?', 'Esqueci minha senha', 'Como vejo o status?', 'Posso anexar fotos?'];
-export const URBANINHA_BOAS_VINDAS = 'Oi! 👋 Eu sou a Urbaninha, assistente de suporte do Urbana. Escolhe um tópico abaixo ou digita sua pergunta que eu tento ajudar!';
 
 /** Primeira regra que casa com o texto (a ordem importa); `random` é injetável para os testes. */
 export function responderUrbaninha(texto: string, random: () => number = Math.random): string {
