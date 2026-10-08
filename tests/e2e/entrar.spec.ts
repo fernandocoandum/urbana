@@ -62,3 +62,20 @@ test('alternar entre entrar e criar conta', async ({ page }) => {
   await expect(page.locator('#cad-nome')).toBeHidden();
   await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeFocused();
 });
+
+test('requisitos da senha só aparecem quando faltam', async ({ page }) => {
+  await page.goto('/entrar');
+  await page.click('#tab-cadastro');
+  const requisitos = page.getByRole('list', { name: 'Requisitos pendentes da senha' });
+  await expect(requisitos).toBeHidden();
+
+  await page.fill('#cad-senha', 'abc');
+  await expect(requisitos).toBeVisible();
+  await expect(requisitos.getByRole('listitem')).toHaveText(['8+ caracteres', 'Maiúscula e minúscula', 'Um número', 'Um símbolo (!@#…)']);
+
+  await page.fill('#cad-senha', 'Abcdefgh1');
+  await expect(requisitos.getByRole('listitem')).toHaveText(['Um símbolo (!@#…)']);
+
+  await page.fill('#cad-senha', 'Abcdefgh1!');
+  await expect(requisitos).toBeHidden();
+});
