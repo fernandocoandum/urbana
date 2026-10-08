@@ -1,9 +1,9 @@
 'use client';
 
 // Recriado a partir do "password-strength" de @ddoemonn (21st.dev, MIT): campo com olho,
-// 4 barras segmentadas animadas por nível, checklist ao vivo e avisos de padrões comuns.
+// 4 barras segmentadas animadas por nível, lista dos requisitos ainda não cumpridos e avisos de padrões comuns.
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Eye, EyeOff, TriangleAlert } from 'lucide-react';
+import { Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import { useMemo, useState, type InputHTMLAttributes } from 'react';
 import { avaliarSenha, type SenhaContexto } from '@/features/auth/password-strength';
 import { ease, spring } from '@/lib/motion';
@@ -31,6 +31,7 @@ export function PasswordStrength({ value, onChange, contexto, semChecklist, clas
   const [visivel, setVisivel] = useState(false);
   const av = useMemo(() => avaliarSenha(value, contexto), [value, contexto]);
   const cor = av.nivel ? cores[av.nivel - 1] : undefined;
+  const pendentes = value ? itens.filter(({ chave }) => !av.requisitos[chave]) : [];
 
   return (
     <div className="flex flex-col gap-3">
@@ -75,27 +76,38 @@ export function PasswordStrength({ value, onChange, contexto, semChecklist, clas
         </span>
       </div>
 
+      {/* Só os requisitos ainda não cumpridos, e só depois que a pessoa começa a digitar. */}
       {!semChecklist && (
-        <ul className="flex flex-wrap gap-x-4 gap-y-2" aria-label="Requisitos da senha">
-          {itens.map(({ chave, texto }) => {
-            const ok = av.requisitos[chave];
-            return (
-              <li key={chave} className={cn('inline-flex items-center gap-1.5 whitespace-nowrap text-sm transition-colors', ok ? 'text-fg' : 'text-fg-muted')}>
-                <span className={cn('grid size-4 shrink-0 place-items-center rounded-full border-2 transition-colors', ok ? 'border-success bg-success text-primary-fg' : 'border-border-strong')}>
-                  <AnimatePresence initial={false}>
-                    {ok && (
-                      <motion.span key="check" className="grid place-items-center" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={spring.bouncy}>
-                        <Check className="size-2.5" strokeWidth={3} aria-hidden />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </span>
-                {texto}
-                <span className="sr-only">{ok ? ' (atendido)' : ' (pendente)'}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <AnimatePresence initial={false}>
+          {pendentes.length > 0 && (
+            <motion.ul
+              key="requisitos"
+              className="flex flex-wrap gap-x-4 gap-y-2 overflow-hidden"
+              aria-label="Requisitos pendentes da senha"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: ease.easeOut }}
+            >
+              <AnimatePresence initial={false}>
+                {pendentes.map(({ chave, texto }) => (
+                  <motion.li
+                    key={chave}
+                    layout
+                    className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-fg-muted"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={spring.bouncy}
+                  >
+                    <span className="size-4 shrink-0 rounded-full border-2 border-border-strong" aria-hidden />
+                    {texto}
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </motion.ul>
+          )}
+        </AnimatePresence>
       )}
 
       {av.avisos.length > 0 && (
