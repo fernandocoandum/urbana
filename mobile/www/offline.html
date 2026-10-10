@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Urbana · sem conexão</title>
+  <style>
+    :root { --bg: #eef2f8; --fg: #0f172a; --muted: #475467; --primary: #1d56d6; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #151c2a; --fg: #eef2f8; --muted: #a8b3c6; --primary: #6b97ff; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--bg); color: var(--fg);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; text-align: center; }
+    main { max-width: 320px; }
+    svg { width: 112px; height: 126px; animation: flutua 3.2s ease-in-out infinite; }
+    @keyframes flutua { 50% { transform: translateY(-4px); } }
+    h1 { margin: 20px 0 8px; font-size: 1.5rem; letter-spacing: -.02em; }
+    p { margin: 0; color: var(--muted); line-height: 1.5; }
+    button { margin-top: 28px; height: 48px; padding: 0 28px; border: 0; border-radius: 14px; background: var(--primary); color: #fff;
+      font: inherit; font-weight: 600; font-size: 1rem; }
+    button:active { transform: scale(.97); }
+    @media (prefers-reduced-motion: reduce) { svg { animation: none; } }
+  </style>
+</head>
+<body>
+  <main>
+    <!-- Urbaninha "pensando" (mesmo desenho de src/features/urbaninha/urbaninha-mascote.tsx) -->
+    <svg viewBox="0 0 64 72" aria-hidden="true">
+      <defs><linearGradient id="c" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#1d4fc9"/></linearGradient></defs>
+      <path d="M32 17V9.5" stroke="#1d4fc9" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="32" cy="7" r="4" fill="#94a3b8"/>
+      <ellipse cx="54.5" cy="44" rx="4.6" ry="4.2" fill="#1d4fc9"/>
+      <path d="M32 70C25 61 12 50 12 36a20 20 0 0 1 40 0c0 14-13 25-20 34Z" fill="url(#c)"/>
+      <ellipse cx="22" cy="23" rx="5" ry="3" fill="#fff" opacity=".28" transform="rotate(-30 22 23)"/>
+      <ellipse cx="32" cy="37.5" rx="14.5" ry="12" fill="#f5f8ff"/>
+      <g transform="translate(1.2 -1.4)">
+        <ellipse cx="26.5" cy="36" rx="2.3" ry="3" fill="#0f172a"/><circle cx="27.3" cy="34.9" r=".8" fill="#fff"/>
+        <ellipse cx="37.5" cy="36" rx="2.3" ry="3" fill="#0f172a"/><circle cx="38.3" cy="34.9" r=".8" fill="#fff"/>
+      </g>
+      <ellipse cx="22.2" cy="41.5" rx="2.4" ry="1.6" fill="#ff8fa3" opacity=".75"/>
+      <ellipse cx="41.8" cy="41.5" rx="2.4" ry="1.6" fill="#ff8fa3" opacity=".75"/>
+      <circle cx="33.5" cy="43" r="1.5" fill="#0f172a"/>
+    </svg>
+    <h1>Sem conexão</h1>
+    <p>A Urbaninha não conseguiu falar com o servidor. Confira sua internet e tente de novo.</p>
+    <button type="button" onclick="location.replace('https://urbana-five.vercel.app/inicio')">Tentar de novo</button>
+  </main>
+</body>
+</html>

@@ -78,6 +78,16 @@ O deploy é automático a cada push no `main`. O `vercel.json` já define `frame
 - Defina `ADMIN_SENHA`, `PUBLIC_ORIGIN` e, se quiser e-mail, `GMAIL_*` ou `RESEND_*`.
 - O schema do banco é aditivo: tabelas são criadas com `CREATE TABLE IF NOT EXISTS` na inicialização, sem `ALTER` nem `DROP` em tabelas existentes, então é seguro apontar para um banco que já tem dados.
 
+## App Android
+
+A pasta `mobile/` tem o app Android, feito com [Capacitor](https://capacitorjs.com). Ele abre o site de produção (https://urbana-five.vercel.app) em tela cheia, com ícone e tela de abertura da Urbaninha, permissões de câmera e GPS e uma tela própria quando não há internet (`mobile/www/offline.html`).
+
+- **Baixar o APK:** https://github.com/fernandocoandum/urbana/releases/tag/android-latest (abra no celular, baixe `urbana.apk` e permita "instalar apps desconhecidos").
+- **Quando gerar de novo:** o workflow `.github/workflows/android.yml` monta o APK no GitHub Actions sempre que algo em `mobile/` muda no `main` (ou manualmente, em Actions → App Android). Mudanças no site **não** precisam de APK novo: o app sempre carrega a versão publicada na Vercel.
+- **Ícone e tela de abertura:** `node mobile/assets/gerar-fontes.mjs` e depois `npm run assets` dentro de `mobile/`.
+- **Login com Google:** fica escondido dentro do app (o Google bloqueia login em WebView); no app vale e-mail e senha. O site reconhece o app pelo `UrbanaApp/` no user agent (`src/lib/app-nativo.ts`).
+- O APK atual é de **teste** (assinado com chave de debug, gerada a cada build). Para atualizar, desinstale o anterior. Para a Play Store é preciso uma chave de assinatura própria, guardada nos segredos do GitHub.
+
 ## Estrutura
 
 ```
@@ -86,6 +96,7 @@ src/features/      regras e telas por assunto (ocorrencias, admin, mapa, notific
 src/components/    UI compartilhada (shells, tabs, popover, sheet...)
 src/lib/           banco (JSON e PostgreSQL), e-mail, formatação, movimento
 tests/             Vitest e E2E (Playwright)
+mobile/            app Android (Capacitor)
 legacy/            versão original (servidor Node e HTML único), mantida só como referência
 ```
 

@@ -1,0 +1,19 @@
+{
+  "appId": "com.urbana.app",
+  "appName": "Urbana",
+  "webDir": "www",
+  "backgroundColor": "#1d4fc9",
+  "appendUserAgent": "UrbanaApp/1.0",
+  "server": {
+    "url": "https://urbana-five.vercel.app/inicio",
+    "allowNavigation": ["urbana-five.vercel.app"],
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "native", "style": "DARK" }
+  }
+}

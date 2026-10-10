@@ -1,0 +1,65 @@
+# Gera o APK do app Android (mobile/) e publica no release "android-latest":
+# https://github.com/fernandocoandum/urbana/releases/tag/android-latest
+# O app carrega o site da Vercel, então mudanças no site NÃO precisam de APK novo;
+# este workflow só roda quando algo em mobile/ muda (ou manualmente, em Actions).
+name: App Android
+
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - run: npm ci
+      - run: npx cap sync android
+
+      - name: Compilar APK
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/urbana.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: urbana-apk
+          path: urbana.apk
+
+      - name: Publicar no release android-latest
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-latest --yes --cleanup-tag || true
+          gh release create android-latest urbana.apk \
+            --title "App Android (última versão)" \
+            --notes "APK gerado do commit ${GITHUB_SHA::7}. Abra este link no celular, baixe o urbana.apk e instale (permita \"instalar apps desconhecidos\" quando o Android pedir)." \
+            --prerelease --target "$GITHUB_SHA"

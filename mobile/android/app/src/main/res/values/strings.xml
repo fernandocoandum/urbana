@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Urbana</string>
+    <string name="title_activity_main">Urbana</string>
+    <string name="package_name">com.urbana.app</string>
+    <string name="custom_url_scheme">com.urbana.app</string>
+</resources>
