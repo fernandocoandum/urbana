@@ -261,3 +261,18 @@ describe('computeDerivedFields (atraso e criticidade)', () => {
     expect(d.status).toBe('Em análise');
   });
 });
+
+describe('noAppNativo', () => {
+  it('reconhece o user agent do app Android', async () => {
+    const { noAppNativo } = await import('@/lib/app-nativo');
+    const ua = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    try {
+      Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 (Linux; Android 15) Chrome/140 Mobile UrbanaApp/1.0' }, configurable: true });
+      expect(noAppNativo()).toBe(true);
+      Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'Mozilla/5.0 (Linux; Android 15) Chrome/140 Mobile' }, configurable: true });
+      expect(noAppNativo()).toBe(false);
+    } finally {
+      if (ua) Object.defineProperty(globalThis, 'navigator', ua);
+    }
+  });
+});

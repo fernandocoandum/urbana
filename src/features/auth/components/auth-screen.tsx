@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import useSWR, { useSWRConfig } from 'swr';
 import { CountUp } from '@/components/bits';
 import { api, ApiError } from '@/lib/api-client';
+import { noAppNativo } from '@/lib/app-nativo';
 import { spring } from '@/lib/motion';
 import { Sound } from '@/lib/sound';
 import { AuthSwitch, type Modo } from './auth-switch';
@@ -32,7 +33,8 @@ export function AuthScreen({ resetToken }: { resetToken?: string }) {
   const [redefinir, setRedefinir] = useState<{ aberto: boolean; token: string }>({ aberto: !!resetToken, token: resetToken ?? '' });
   const [gsiPronto, setGsiPronto] = useState(false);
   const { data: config } = useSWR<{ googleClientId: string | null }>('/api/config');
-  const clientId = config?.googleClientId ?? null;
+  // O Google bloqueia login em WebView (erro disallowed_useragent): no app fica só e-mail e senha.
+  const clientId = config?.googleClientId && !noAppNativo() ? config.googleClientId : null;
 
   // Migração da sessão antiga: quem estava logado só com o token no localStorage ganha o cookie.
   useEffect(() => {
