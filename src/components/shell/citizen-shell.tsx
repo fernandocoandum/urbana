@@ -58,7 +58,7 @@ export function CitizenShell({ children }: { children: ReactNode }) {
         Pular para o conteúdo
       </a>
 
-      <header className="sticky top-0 z-40 h-16 border-b border-border bg-surface/80 backdrop-blur">
+      <header className="sticky top-0 z-40 h-16 border-b border-border bg-surface/80 backdrop-blur app:bg-surface">
         <div className="mx-auto grid h-full max-w-[1120px] grid-cols-[1fr_auto] items-center gap-4 px-5 sm:px-8 md:grid-cols-[1fr_auto_1fr] lg:px-10">
           <Brand />
           <ExpandableTabs mode="nav" tabs={desktopTabs} aria-label="Navegação principal" className="hidden md:flex" />
@@ -80,7 +80,7 @@ export function CitizenShell({ children }: { children: ReactNode }) {
       </main>
 
       {!foco && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 pb-safe backdrop-blur md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 pb-safe backdrop-blur app:bg-surface md:hidden">
           <div className="flex h-[72px] items-center px-3">
             <ExpandableTabs mode="nav" tabs={mobileTabs} aria-label="Navegação principal" className="w-full justify-between border-0 bg-transparent p-0 shadow-none" />
           </div>

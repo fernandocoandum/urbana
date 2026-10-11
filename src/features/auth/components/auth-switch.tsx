@@ -4,6 +4,7 @@
 // lados do cartão. Os estilos ficam em globals.css (.auth-switch). Os dois formulários ficam
 // sempre montados; o inativo fica inert + hidden.
 import { UrbanaLogo } from '@/components/shell/brand';
+import { UrbaninhaMascote } from '@/features/urbaninha/urbaninha-mascote';
 import { useReducedMotion } from 'motion/react';
 import { useEffect, useRef, type ReactNode } from 'react';
 
@@ -44,6 +45,15 @@ export function AuthSwitch({ modo, onModo, login, cadastro, painel }: Props) {
   return (
     <div ref={cardRef} data-modo={modo} className="auth-switch">
       <h1 className="sr-only">Entrar ou criar conta no Urbana</h1>
+
+      {/* Só no celular (< 640px): topo azul com a marca; o formulário sobe por cima dele. */}
+      <div className="auth-switch__hero" aria-hidden>
+        <div className="min-w-0">
+          <UrbanaLogo tone="inverse" className="text-white" />
+          <p className="mt-3 max-w-[220px] text-[0.95rem] leading-snug text-white/85">Registre problemas da sua rua e acompanhe até resolver.</p>
+        </div>
+        <UrbaninhaMascote humor="acenando" className="h-[88px] w-[78px] shrink-0 drop-shadow-[0_6px_12px_rgb(0_0_0/0.3)]" />
+      </div>
 
       <div className="auth-switch__forms">
         <section id="form-login" aria-labelledby="titulo-login" data-ativo={login_} inert={!login_} aria-hidden={!login_} className="auth-switch__form">

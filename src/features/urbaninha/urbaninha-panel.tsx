@@ -79,7 +79,7 @@ export default function UrbaninhaPanel({ aberto, onClose }: { aberto: boolean; o
         >
           <header className="relative flex items-center gap-3 overflow-hidden bg-primary px-4 py-3.5 text-primary-fg">
             {/* brilho decorativo */}
-            <span aria-hidden className="pointer-events-none absolute -right-10 -top-16 size-40 rounded-full bg-white/15 blur-2xl" />
+            <span aria-hidden className="pointer-events-none absolute -right-10 -top-16 size-40 rounded-full bg-white/15 blur-2xl app:hidden" />
             <span className="relative grid size-12 shrink-0 place-items-center rounded-2xl bg-white/90 shadow-sm">
               <UrbaninhaMascote humor={digitando ? 'pensando' : 'feliz'} animado={false} className="size-10" />
               <span aria-hidden className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-primary bg-[#4ade80]" />

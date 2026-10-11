@@ -161,7 +161,7 @@ export function NovaOcorrenciaWizard({ categoriaInicial }: { categoriaInicial?: 
         </div>
       </div>
 
-      <div className="sticky bottom-0 z-30 border-t border-border bg-bg/85 pb-safe backdrop-blur">
+      <div className="sticky bottom-0 z-30 border-t border-border bg-bg/85 pb-safe backdrop-blur app:bg-bg">
         <div className="mx-auto flex w-full max-w-[720px] items-center justify-between gap-3 px-5 py-4 sm:px-8 lg:px-10">
           <Button id="wz-btn-back" variant="secondary" size="lg" onClick={voltar} className={s.step === 1 ? 'invisible' : undefined} tabIndex={s.step === 1 ? -1 : undefined}>
             Voltar

@@ -2,6 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useId } from 'react';
+import { useAppNativo } from '@/lib/app-nativo';
 import { cn } from '@/lib/utils';
 
 export type HumorUrbaninha = 'feliz' | 'pensando' | 'acenando';
@@ -22,8 +23,11 @@ const origemCentro = { transformBox: 'fill-box', transformOrigin: 'center' } as 
  * Mascote da Urbaninha: um pin de mapa com rosto e uma antena de "sinal" (eco do símbolo do Urbana).
  * `animado` liga piscar, flutuar e o brilho da antena; o MotionConfig global já respeita reduced-motion.
  */
-export function UrbaninhaMascote({ humor = 'feliz', animado = true, className }: { humor?: HumorUrbaninha; animado?: boolean; className?: string }) {
+export function UrbaninhaMascote({ humor = 'feliz', animado: animadoProp = true, className }: { humor?: HumorUrbaninha; animado?: boolean; className?: string }) {
   const id = useId();
+  // No app Android o WebView engasga com animações em loop: o mascote fica parado.
+  const app = useAppNativo();
+  const animado = animadoProp && !app;
   const corpo = `${id}-corpo`;
   const pensando = humor === 'pensando';
 

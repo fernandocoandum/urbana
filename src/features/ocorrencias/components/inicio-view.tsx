@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CATEGORIAS, categoriaInfo, statusCssVar } from '@/features/ocorrencias/categorias';
 import { useSession } from '@/features/auth/session-context';
+import { useAppNativo } from '@/lib/app-nativo';
 import { UrbaninhaMascote } from '@/features/urbaninha/urbaninha-mascote';
 import { dataDeHojeExtenso, saudacaoPorHorario } from '@/lib/format';
 import { spring, staggerDelay } from '@/lib/motion';
@@ -37,7 +38,9 @@ function Saudacao({ texto }: { texto: string }) {
     setAnimar(!jaViu);
   }, []);
 
-  if (animar) return <BlurText as="h1" text={texto} delay={140} className={TITULO} />;
+  const app = useAppNativo();
+  // BlurText anima filter: blur, caro demais para o WebView do app
+  if (animar && !app) return <BlurText as="h1" text={texto} delay={140} className={TITULO} />;
   // enquanto decide (SSR/hidratação), o título já ocupa o espaço, invisível, para não saltar o layout
   return (
     <h1 className={TITULO} style={{ opacity: animar === null ? 0 : 1 }}>
@@ -85,7 +88,7 @@ function Destaque({ saudacao }: { saudacao: string }) {
     <section className="relative isolate overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#2563eb_0%,#1d4fc9_55%,#1e3a8a_100%)] p-6 text-white shadow-lg sm:p-8">
       {/* grade de ruas ao fundo */}
       <span aria-hidden className="absolute inset-0 -z-10 opacity-[.07] [background-image:linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] [background-size:28px_28px]" />
-      <span aria-hidden className="absolute -right-16 -top-24 -z-10 size-72 rounded-full bg-sky-300/25 blur-3xl" />
+      <span aria-hidden className="absolute -right-16 -top-24 -z-10 size-72 rounded-full bg-sky-300/25 blur-3xl app:hidden" />
 
       <div className="flex items-end gap-6">
         <div className="min-w-0 flex-1">

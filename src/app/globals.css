@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
+/* Dentro do app Android (data-app="nativo" no <html>, ver src/lib/app-nativo.ts). */
+@custom-variant app (&:where([data-app='nativo'], [data-app='nativo'] *));
 
 /* ------------------------------------------------------------------ tokens */
 :root {
@@ -268,6 +270,18 @@
 
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------------------------------------------------------- app Android */
+/* O WebView do app é bem mais fraco que um navegador: sem desfoque de fundo nem animações em loop. */
+[data-app='nativo'] *,
+[data-app='nativo'] *::before,
+[data-app='nativo'] *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+[data-app='nativo'] .skeleton-shimmer {
+  animation: none;
 }
 
 /* ---------------------------------------------------------- reduced motion */
@@ -544,9 +558,110 @@
     display: flex !important;
   }
 }
-@media (max-width: 569.98px) {
-  .auth-switch__forms {
-    padding: 0 24px;
+.auth-switch__hero {
+  display: none;
+}
+
+/* Celular (< 640px): sem o cartão nem o círculo gigante. Topo azul de ponta a ponta, formulário
+   numa folha que sobe por cima dele e a troca entrar/criar conta no rodapé, sem animação lenta. */
+@media (max-width: 639.98px) {
+  .auth-switch {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    max-width: none;
+    border-radius: 0;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .auth-switch::before {
+    display: none;
+  }
+  .auth-switch__hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: calc(28px + env(safe-area-inset-top)) 24px 52px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4fc9 55%, #1e3a8a 100%);
+  }
+  .auth-switch__forms,
+  .auth-switch[data-modo='cadastro'] .auth-switch__forms {
+    flex: 1;
+    margin-top: -28px;
+    padding: 28px 24px 8px;
+    border-radius: 28px 28px 0 0;
+    background: var(--surface);
+    transform: none;
+    transition: none;
+  }
+  .auth-switch__form {
+    align-self: start;
+    max-width: none;
+    margin: 0;
+    transition: opacity 0.15s linear, visibility 0s linear 0.15s;
+  }
+  .auth-switch__form[data-ativo='true'] {
+    transition: opacity 0.15s linear, visibility 0s;
+  }
+  .auth-switch__form > .auth-switch__so-mobile {
+    display: none !important;
+  }
+  .auth-switch__form > h2 {
+    margin-bottom: 20px;
+    font-size: 1.75rem;
+    text-align: left;
+  }
+  /* "Novo por aqui? / Criar conta" vira um rodapé claro; só o do modo atual aparece */
+  .auth-switch__panels {
+    position: static;
+    display: block;
+    padding: 16px 24px calc(24px + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .auth-switch[data-modo='login'] .auth-switch__panel--dir,
+  .auth-switch[data-modo='cadastro'] .auth-switch__panel--esq {
+    display: none;
+  }
+  .auth-switch__panel,
+  .auth-switch__panel--esq,
+  .auth-switch__panel--dir {
+    padding: 0;
+    color: var(--fg);
+  }
+  .auth-switch__content,
+  .auth-switch__panel--dir .auth-switch__content,
+  .auth-switch[data-modo='cadastro'] .auth-switch__panel--esq .auth-switch__content {
+    transform: none;
+    transition: none;
+    gap: 12px;
+  }
+  .auth-switch__texto {
+    gap: 2px;
+  }
+  .auth-switch__texto > p:first-child {
+    font-size: 1rem;
+  }
+  .auth-switch__texto > p + p {
+    display: none;
+  }
+  .auth-switch__content {
+    align-items: center;
+  }
+  .auth-switch .auth-switch__btn {
+    height: 42px;
+    padding-inline: 18px;
+    border-width: 1.5px;
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .auth-switch .auth-switch__btn:hover {
+    background: var(--primary-soft);
+  }
+  .auth-switch .auth-switch__btn:focus-visible {
+    outline-color: var(--primary);
   }
 }
 

@@ -89,7 +89,7 @@ export function AuthScreen({ resetToken }: { resetToken?: string }) {
     ) : null;
 
   return (
-    <div className="bg-auth relative grid min-h-dvh place-items-center overflow-hidden p-3 sm:p-6">
+    <div className="bg-auth relative grid min-h-dvh place-items-center overflow-hidden sm:p-6">
       <AuthBackdrop />
       {clientId && <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" onReady={() => setGsiPronto(true)} />}
       <motion.div className="relative z-10 w-full" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={spring.gentle}>
